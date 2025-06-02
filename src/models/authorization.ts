@@ -46,8 +46,8 @@ Authorization.init(
     },
     {
         sequelize,
-        modelName: 'AccessAuthorization',
-        tableName: 'AccessAuthorizations',
+        modelName: 'Authorization',
+        tableName: 'Authorizations',
         timestamps: true,
     }
 );
