@@ -9,8 +9,8 @@ class DatabaseConnection {
 
     public static getInstance(): Sequelize {
         if (!DatabaseConnection.instance) {
-            const DB_NAME: string  = process.env.DB_NAME || '' ;
-            const DB_USER:string = process.env.DB_USER || '';
+            const DB_NAME: string = process.env.DB_NAME || '';
+            const DB_USER: string = process.env.DB_USER || '';
             const DB_PASS: string = process.env.DB_PASS || '';
             const DB_HOST: string = process.env.DB_HOST || '';
             const DB_DIALECT: Dialect = (process.env.DB_DIALECT as Dialect) || 'postgres';
