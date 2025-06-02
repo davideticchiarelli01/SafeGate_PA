@@ -25,8 +25,8 @@ export class BadgeDao implements IDao<Badge> {
         return badge;
     }
 
-    async delete(Badge: Badge): Promise<void> {
-        await Badge.destroy();
+    async delete(badge: Badge): Promise<void> {
+        await badge.destroy();
     }
 }
 
