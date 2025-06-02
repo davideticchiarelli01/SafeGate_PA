@@ -1,12 +1,8 @@
-import { CreationOptional, DataTypes, InferAttributes, InferCreationAttributes, Model, Sequelize } from "sequelize";
+import {CreationOptional, DataTypes, InferAttributes, InferCreationAttributes, Model, Sequelize} from "sequelize";
 import db from "../db/database";
+import {TransitStatus} from "../utils/transitStatus";
 
 const sequelize: Sequelize = db.getInstance();
-
-enum TransitStatus {
-    Authorized = "authorized",
-    Unauthorized = "unauthorized"
-}
 
 export class Gate extends Model<InferAttributes<Gate>, InferCreationAttributes<Gate>> {
     declare id: CreationOptional<number>;
