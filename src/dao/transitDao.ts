@@ -1,7 +1,7 @@
 import { IDao } from "./dao";
 import { Transit } from "../models/transit";
-import { TransitStatus } from "../utils/transitStatus";
-import { DPI } from "../utils/dpi";
+import { TransitStatus } from "../enum/transitStatus";
+import { DPI } from "../enum/dpi";
 
 export class TransitDao implements IDao<Transit> {
 
