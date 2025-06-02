@@ -1,6 +1,6 @@
 import {IDao} from "./dao";
 import {Badge} from "../models/badge";
-import {BadgeStatus} from "../utils/badgeStatus";
+import {BadgeStatus} from "../enum/badgeStatus";
 
 export class BadgeDao implements IDao<Badge> {
 
@@ -25,8 +25,8 @@ export class BadgeDao implements IDao<Badge> {
         return badge;
     }
 
-    async delete(Badge: Badge): Promise<void> {
-        await Badge.destroy();
+    async delete(badge: Badge): Promise<void> {
+        await badge.destroy();
     }
 }
 

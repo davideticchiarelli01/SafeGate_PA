@@ -10,7 +10,7 @@ CREATE TYPE transit_status AS ENUM ('authorized', 'unauthorized');
 -- 1. Gates (no FK)
 CREATE TABLE "Gates" (
                          "id" UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-                         "name" VARCHAR NOT NULL,
+                         "name" VARCHAR NOT NULL UNIQUE,
                          "requiredDPIs" dpi[] DEFAULT '{}',
                          "createdAt" TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
                          "updatedAt" TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP

@@ -1,6 +1,6 @@
 import {CreationOptional, DataTypes, InferAttributes, InferCreationAttributes, Model, Sequelize} from 'sequelize';
 import Database from '../db/database';
-import {UserRole} from "../utils/userRoles";
+import {UserRole} from "../enum/userRoles";
 
 const sequelize: Sequelize = Database.getInstance();
 
