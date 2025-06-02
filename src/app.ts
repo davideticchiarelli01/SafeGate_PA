@@ -1,6 +1,7 @@
 import express from 'express';
 import dotenv from 'dotenv';
 import DatabaseConnection from "./db/database";
+import GateRoute from "./routes/gateRoute";
 
 const app = express();
 const PORT = process.env.APP_PORT || 3000;
@@ -14,6 +15,8 @@ DatabaseConnection.getInstance();
 app.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);
 });
+
+app.use('/api', GateRoute);
 
 app.get('/', (req, res) => {
     res.send('Hello from app!');

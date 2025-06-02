@@ -7,7 +7,7 @@ const sequelize: Sequelize = db.getInstance();
 export class Gate extends Model<InferAttributes<Gate>, InferCreationAttributes<Gate>> {
     declare id: CreationOptional<number>;
     declare name: string;
-    declare requiredDPIs: string[];
+    declare requiredDPIs: DPI[];
 }
 
 Gate.init(
