@@ -1,0 +1,35 @@
+services:
+  app:
+    container_name: safegate_app
+    build: .
+    ports:
+      - '${APP_PORT}:${APP_PORT}' # Map the host port to the container port
+    restart: always # when the docker engine is started this option allow starting the container too
+    env_file:
+      - .env
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command: >
+      sh -c "npm start"
+
+  postgres:
+    container_name: postgres_db
+    image: postgres:16
+    restart: always
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASS}
+      POSTGRES_DB: ${DB_NAME}
+    ports:
+      - "${DB_PORT}:${DB_PORT}"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${DB_USER}" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  pgdata:

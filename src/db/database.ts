@@ -9,11 +9,11 @@ class DatabaseConnection {
 
     public static getInstance(): Sequelize {
         if (!DatabaseConnection.instance) {
-            const DB_NAME = process.env.DB_NAME as string;
-            const DB_USER = process.env.DB_USER as string;
-            const DB_PASS = process.env.DB_PASS as string;
-            const DB_HOST = process.env.DB_HOST as string;
-            const DB_DIALECT = process.env.DB_DIALECT as Dialect;
+            const DB_NAME: string  = process.env.DB_NAME || '' ;
+            const DB_USER:string = process.env.DB_USER || '';
+            const DB_PASS: string = process.env.DB_PASS || '';
+            const DB_HOST: string = process.env.DB_HOST || '';
+            const DB_DIALECT: Dialect = (process.env.DB_DIALECT as Dialect) || 'postgres';
 
             if (!DB_NAME || !DB_USER || !DB_PASS || !DB_HOST || !DB_DIALECT) {
                 const msg = 'Missing environment variables for database connection'

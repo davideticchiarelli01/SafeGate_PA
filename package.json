@@ -2,11 +2,11 @@
   "name": "SafeGate_PA",
   "version": "1.0.0",
   "description": "SafeGate Project for Advanced Programming",
-  "main": "dist/server.js",
+  "main": "dist/app.js",
   "scripts": {
     "dev": "ts-node src/app.ts",
     "build": "tsc",
-    "start": "node dist/server.js"
+    "start": "node dist/app.js"
   },
   "dependencies": {
     "dotenv": "^16.5.0",
