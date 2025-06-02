@@ -11,6 +11,7 @@ export class Transit extends Model<InferAttributes<Transit>, InferCreationAttrib
     declare badgeId: number;
     declare status: TransitStatus;
     declare usedDPIs: string[];
+    declare DPIviolation: boolean;
 }
 
 Transit.init(
@@ -25,7 +26,7 @@ Transit.init(
         gateId: {
             type: DataTypes.UUID,
             allowNull: false,
-            references:{
+            references: {
                 model: 'Gate',
                 key: 'id',
             }
@@ -33,7 +34,7 @@ Transit.init(
         badgeId: {
             type: DataTypes.UUID,
             allowNull: false,
-            references:{
+            references: {
                 model: 'Badge',
                 key: 'id',
             }
@@ -47,6 +48,11 @@ Transit.init(
             allowNull: true,
             defaultValue: [],
         },
+        DPIviolation: {
+            type: DataTypes.BOOLEAN,
+            allowNull: false,
+            defaultValue: false,
+        }
     },
     {
         sequelize: sequelize,

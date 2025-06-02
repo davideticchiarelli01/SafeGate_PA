@@ -9,6 +9,7 @@ export class User extends Model<InferAttributes<User>, InferCreationAttributes<U
     declare email: string;
     declare password: string;
     declare role: CreationOptional<UserRole>;
+    declare linkedGateId: CreationOptional<string>;
     declare token: CreationOptional<number>;
 }
 
@@ -34,10 +35,18 @@ User.init(
             allowNull: false,
             defaultValue: UserRole.User,
         },
+        linkedGateId: {
+            type: DataTypes.UUID,
+            allowNull: true,
+            references: {
+                model: 'Gates',
+                key: 'id',
+            },
+        },
         token: {
             type: DataTypes.INTEGER,
             allowNull: false,
-            defaultValue: 10,
+            defaultValue: 100,
         }
     },
     {

@@ -1,4 +1,4 @@
-import { CreationOptional, DataTypes, InferAttributes, InferCreationAttributes, Model, Sequelize } from "sequelize";
+import {CreationOptional, DataTypes, InferAttributes, InferCreationAttributes, Model, Sequelize} from "sequelize";
 import db from "../db/database";
 import {DPI} from "../utils/dpi";
 
@@ -27,7 +27,7 @@ Gate.init(
             type: DataTypes.ARRAY(DataTypes.ENUM(...Object.values(DPI))),
             allowNull: true,
             defaultValue: [],
-        },
+        }
     },
     {
         sequelize: sequelize,
