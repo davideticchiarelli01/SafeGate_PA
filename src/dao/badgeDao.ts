@@ -1,6 +1,6 @@
 import {IDao} from "./dao";
 import {Badge} from "../models/badge";
-import {BadgeStatus} from "../utils/badgeStatus";
+import {BadgeStatus} from "../enum/badgeStatus";
 
 export class BadgeDao implements IDao<Badge> {
 

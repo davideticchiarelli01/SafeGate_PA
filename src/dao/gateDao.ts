@@ -1,6 +1,6 @@
 import {IDao} from "./dao";
 import {Gate} from "../models/gate";
-import {DPI} from "../utils/dpi";
+import {DPI} from "../enum/dpi";
 
 export class GateDao implements IDao<Gate> {
 

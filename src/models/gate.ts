@@ -1,6 +1,6 @@
 import {CreationOptional, DataTypes, InferAttributes, InferCreationAttributes, Model, Sequelize} from "sequelize";
 import db from "../db/database";
-import {DPI} from "../utils/dpi";
+import {DPI} from "../enum/dpi";
 
 const sequelize: Sequelize = db.getInstance();
 

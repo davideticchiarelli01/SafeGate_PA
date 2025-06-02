@@ -7,7 +7,7 @@ import {
     Sequelize
 } from 'sequelize';
 import Database from '../db/database';
-import {BadgeStatus} from "../utils/badgeStatus";
+import {BadgeStatus} from "../enum/badgeStatus";
 
 const sequelize: Sequelize = Database.getInstance();
 
