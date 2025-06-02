@@ -1,5 +1,6 @@
 import { CreationOptional, DataTypes, InferAttributes, InferCreationAttributes, Model, Sequelize } from "sequelize";
 import db from "../db/database";
+import {DPI} from "../utils/dpi";
 
 const sequelize: Sequelize = db.getInstance();
 
@@ -12,7 +13,8 @@ export class Gate extends Model<InferAttributes<Gate>, InferCreationAttributes<G
 Gate.init(
     {
         id: {
-            type: DataTypes.INTEGER,
+            type: DataTypes.UUID,
+            defaultValue: DataTypes.UUIDV4,
             autoIncrement: true,
             primaryKey: true,
             allowNull: false,
@@ -22,7 +24,7 @@ Gate.init(
             allowNull: false,
         },
         requiredDPIs: {
-            type: DataTypes.ARRAY(DataTypes.STRING),
+            type: DataTypes.ARRAY(DataTypes.ENUM(...Object.values(DPI))),
             allowNull: true,
             defaultValue: [],
         },

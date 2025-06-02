@@ -1,10 +1,11 @@
 import {CreationOptional, DataTypes, InferAttributes, InferCreationAttributes, Model, Sequelize} from "sequelize";
 import db from "../db/database";
 import {TransitStatus} from "../utils/transitStatus";
+import {DPI} from "../utils/dpi";
 
 const sequelize: Sequelize = db.getInstance();
 
-export class Gate extends Model<InferAttributes<Gate>, InferCreationAttributes<Gate>> {
+export class Transit extends Model<InferAttributes<Transit>, InferCreationAttributes<Transit>> {
     declare id: CreationOptional<number>;
     declare gateId: number;
     declare badgeId: number;
@@ -12,36 +13,45 @@ export class Gate extends Model<InferAttributes<Gate>, InferCreationAttributes<G
     declare usedDPIs: string[];
 }
 
-Gate.init(
+Transit.init(
     {
         id: {
-            type: DataTypes.INTEGER,
+            type: DataTypes.UUID,
+            defaultValue: DataTypes.UUIDV4,
             autoIncrement: true,
             primaryKey: true,
             allowNull: false,
         },
         gateId: {
-            type: DataTypes.INTEGER,
+            type: DataTypes.UUID,
             allowNull: false,
+            references:{
+                model: 'Gate',
+                key: 'id',
+            }
         },
         badgeId: {
-            type: DataTypes.INTEGER,
+            type: DataTypes.UUID,
             allowNull: false,
+            references:{
+                model: 'Badge',
+                key: 'id',
+            }
         },
         status: {
             type: DataTypes.ENUM(...Object.values(TransitStatus)),
             allowNull: false,
         },
         usedDPIs: {
-            type: DataTypes.ARRAY(DataTypes.STRING),
+            type: DataTypes.ARRAY(DataTypes.ENUM(...Object.values(DPI))),
             allowNull: true,
             defaultValue: [],
         },
     },
     {
         sequelize: sequelize,
-        modelName: 'Gate',
-        tableName: 'Gates',
+        modelName: 'Transit',
+        tableName: 'Transits',
         timestamps: true,
     }
 );
