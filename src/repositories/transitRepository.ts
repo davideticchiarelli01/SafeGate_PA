@@ -1,6 +1,9 @@
 import { IRepository } from "./repository";
 import { TransitDao } from "../dao/transitDao";
 import { Transit, TransitAttributes, TransitCreationAttributes } from "../models/transit";
+import { UserPayload } from "../utils/userPayload";
+import { UserRole } from "../enum/userRoles";
+import { User } from "../models/user";
 
 export class TransitRepository implements IRepository<Transit, TransitCreationAttributes, Partial<TransitAttributes>> {
 

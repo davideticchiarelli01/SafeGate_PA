@@ -3,6 +3,7 @@ import { UserPayload, validateUserPayload } from '../utils/userPayload';
 import { extractAndValidateJwtToken, getPublicJwtKey, jwtVerify } from '../utils/jwt';
 import { ErrorFactory } from "../factories/errorFactory";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
+import { UserRole } from '../enum/userRoles';
 
 export const authMiddleware = async (
     req: Request,
@@ -32,7 +33,7 @@ export const adminMiddleware = (
     }
     return next(ErrorFactory.createError(
         ReasonPhrases.FORBIDDEN,
-        'Only administrators can access this resource'
+        'Forbidden, administrators only can perform this action'
     ));
 };
 
@@ -41,12 +42,12 @@ export const gateOrAdminMiddleware = (
     res: Response,
     next: NextFunction
 ) => {
-    if (req.user && req.user.role === 'gate' || req.user?.role === 'admin') {
+    if (req.user && (req.user.role === UserRole.Gate || req.user?.role === UserRole.Admin)) {
         return next();
     }
     return next(ErrorFactory.createError(
         ReasonPhrases.FORBIDDEN,
-        'Only gate users or administrators can create a new transit'
+        'Forbidden, only gate or admin users can perform this action'
     ));
 }
 

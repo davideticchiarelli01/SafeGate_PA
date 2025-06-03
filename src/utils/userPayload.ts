@@ -22,7 +22,7 @@ export const validateUserPayload = (payload: UserPayload): UserPayload => {
     }
 
     const requiredFields: (keyof UserPayload)[] = ['id', 'email', 'role'];
-    const missingFields = requiredFields.filter(field => !payload[field]);
+    const missingFields = requiredFields.filter(field => !payload[field] || typeof payload[field] !== 'string' || payload[field].trim() === '');
 
     if (missingFields.length > 0) {
         throw ErrorFactory.createError(

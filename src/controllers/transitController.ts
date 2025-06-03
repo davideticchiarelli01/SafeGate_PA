@@ -9,7 +9,12 @@ export class TransitController {
 
     getTransit = async (req: Request, res: Response, next: NextFunction) => {
         try {
-            const transit: Transit | null = await this.service.getTransit(req.params.id);
+            if (!req.user) {
+                return res.status(StatusCodes.UNAUTHORIZED).json({ message: "User not authenticated" });
+            }
+            const user = req.user;
+            const transitId: string = req.params.id;
+            const transit: Transit | null = await this.service.getTransit(transitId, user);
             return res.status(StatusCodes.OK).json(transit);
         } catch (err) {
             next(err);

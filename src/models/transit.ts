@@ -11,27 +11,27 @@ import { DPI } from "../enum/dpi";
 const sequelize: Sequelize = db.getInstance();
 
 export interface TransitAttributes {
-    id: number;
-    gateId: number;
-    badgeId: number;
+    id: string;
+    gateId: string;
+    badgeId: string;
     status: TransitStatus;
     usedDPIs: string[];
     DPIviolation: boolean;
 }
 
 export interface TransitCreationAttributes {
-    id?: number;
-    gateId: number;
-    badgeId: number;
+    id?: string;
+    gateId: string;
+    badgeId: string;
     status: TransitStatus;
     usedDPIs: string[];
     DPIviolation: boolean;
 }
 
 export class Transit extends Model<TransitAttributes, TransitCreationAttributes> implements TransitAttributes {
-    declare id: CreationOptional<number>;
-    declare gateId: number;
-    declare badgeId: number;
+    declare id: CreationOptional<string>;
+    declare gateId: string;
+    declare badgeId: string;
     declare status: TransitStatus;
     declare usedDPIs: string[];
     declare DPIviolation: boolean;
