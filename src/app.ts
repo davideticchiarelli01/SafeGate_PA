@@ -2,6 +2,7 @@ import express from 'express';
 import dotenv from 'dotenv';
 import DatabaseConnection from "./db/database";
 import GateRoute from "./routes/gateRoute";
+import errorMiddleware from './middlewares/errorMiddleware';
 
 const app = express();
 const PORT = process.env.APP_PORT || 3000;
@@ -21,3 +22,5 @@ app.use('/api', GateRoute);
 app.get('/', (req, res) => {
     res.send('Hello from app!');
 });
+
+app.use(errorMiddleware);
