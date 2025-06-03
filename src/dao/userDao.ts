@@ -1,42 +1,33 @@
-import {IDao} from "./dao";
-import {User} from "../models/user";
-import {UserRole} from "../enum/userRoles";
-import {UUID} from "node:crypto";
+import { IDao } from "./dao";
+import { User, UserAttributes, UserCreationAttributes } from "../models/user";
 
-
-export class UserDao {
+export class UserDao implements IDao<User, UserCreationAttributes, Partial<UserAttributes>> {
 
     constructor() {
     }
 
     async get(id: string): Promise<User | null> {
-        return User.findByPk(id);
+        return await User.findByPk(id);
     }
 
     async getAll(): Promise<User[]> {
-        return User.findAll();
+        return await User.findAll();
     }
 
     async getByEmail(email: string): Promise<User | null> {
-        return User.findOne({ where: { email } });
+        return await User.findOne({ where: { email } });
     }
 
-    async create(user: User): Promise<User> {
-        return User.create(user);
+    async create(data: UserCreationAttributes): Promise<User> {
+        return await User.create(data);
     }
 
-    async update(user: User, email: string, password: string, role: UserRole, linkedGateId: UUID, token: number): Promise<User> {
-        user.email = email;
-        user.password = password;
-        user.role = role;
-        user.linkedGateId = linkedGateId;
-        user.token = token;
-        await user.save();
-        return user;
+    async update(user: User, data: Partial<UserAttributes>): Promise<User> {
+        return await user.update(data);
     }
 
     async delete(user: User): Promise<void> {
-        await user.destroy();
+        if (user) await user.destroy();
     }
 }
 
