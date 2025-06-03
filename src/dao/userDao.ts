@@ -17,6 +17,10 @@ export class UserDao implements IDao<User> {
         return User.findAll();
     }
 
+    async getByEmail(email: string): Promise<User | null> {
+        return User.findOne({ where: { email } });
+    }
+
     async create(user: User): Promise<User> {
         return User.create(user);
     }
