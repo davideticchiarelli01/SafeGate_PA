@@ -1,11 +1,11 @@
-export interface IDao<T> {
-    get(id: string): Promise<T | null>;
+export interface IDao<TModel, TCreate, TUpdate = Partial<TModel>> {
+    get(id: string): Promise<TModel | null>;
 
-    getAll(): Promise<T[]>;
+    getAll(): Promise<TModel[]>;
 
-    create(entity: T): Promise<T>;
+    create(data: TCreate): Promise<TModel>;
 
-    update(entity: T, ...args: any[]): Promise<T>;
+    update(id: string, data: TUpdate): Promise<TModel | null>;
 
-    delete(entity: T): Promise<void>;
+    delete(id: string): Promise<void>;
 }

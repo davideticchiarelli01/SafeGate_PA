@@ -1,7 +1,7 @@
 import {IDao} from "./dao";
 import {Authorization} from "../models/authorization";
 
-export class authorizationDao implements IDao<Authorization> {
+export class authorizationDao {
 
     constructor() {
     }

@@ -1,10 +1,10 @@
-import { IDao } from "./dao";
-import { User } from "../models/user";
-import { UserRole } from "../enum/userRoles";
-import { UUID } from "node:crypto";
+import {IDao} from "./dao";
+import {User} from "../models/user";
+import {UserRole} from "../enum/userRoles";
+import {UUID} from "node:crypto";
 
 
-export class UserDao implements IDao<User> {
+export class UserDao {
 
     constructor() {
     }

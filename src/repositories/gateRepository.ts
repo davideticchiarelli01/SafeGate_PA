@@ -1,37 +1,32 @@
+import {Gate, GateAttributes, GateCreationAttributes} from '../models/gate';
+import {GateDao} from '../dao/gateDao';
 import {IRepository} from "./repository";
-import {GateDao} from "../dao/gateDao";
-import {Gate} from "../models/gate";
-import {DPI} from "../enum/dpi";
 
-export class GateRepository implements IRepository<Gate> {
-    constructor(private gateDao: GateDao) {
+export class GateRepository implements IRepository<Gate, GateCreationAttributes, Partial<GateAttributes>> {
+    constructor(private dao: GateDao) {
     }
 
-    async findById(id: string): Promise<Gate | null> {
-        return this.gateDao.get(id);
+    findById(id: string): Promise<Gate | null> {
+        return this.dao.get(id);
     }
 
-    async findAll(): Promise<Gate[]> {
-        return this.gateDao.getAll();
+    findAll(): Promise<Gate[]> {
+        return this.dao.getAll();
     }
 
-    async create(data: { name: string, requiredDPIs: DPI[] }): Promise<Gate> {
-        const gate: Gate = Gate.build(data);
-        return this.gateDao.create(gate);
+    findByName(name: string): Promise<Gate | null> {
+        return this.dao.getByName(name);
     }
 
-    update(id: string, item: Gate): Promise<Gate | null> {
-        throw new Error("Method not implemented.");
+    create(data: GateCreationAttributes): Promise<Gate> {
+        return this.dao.create(data);
     }
 
-    async delete(id: string): Promise<void> {
-        const gate = await this.gateDao.get(id);
+    update(id: string, data: Partial<GateAttributes>): Promise<Gate | null> {
+        return this.dao.update(id, data);
+    }
 
-        if (!gate) {
-            return;
-        }
-
-        await this.gateDao.delete(gate);
-
+    delete(id: string): Promise<void> {
+        return this.dao.delete(id);
     }
 }
