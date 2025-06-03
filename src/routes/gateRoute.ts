@@ -5,7 +5,8 @@ import {controllers} from "../dependencies";
 const gateRouter = Router();
 const {gateController} = controllers;
 
-gateRouter.get("/gates", authMiddleware, adminMiddleware, gateController.getAllGates);
+gateRouter.use(authMiddleware, adminMiddleware);
+gateRouter.get("/gates", gateController.getAllGates);
 gateRouter.get("/gates/:id", gateController.getGate);
 gateRouter.post("/gates", gateController.createGate);
 gateRouter.put("/gates/:id", gateController.updateGate);
