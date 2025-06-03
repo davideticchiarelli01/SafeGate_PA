@@ -1,7 +1,7 @@
 import {Request, Response, NextFunction} from 'express';
 import {GateService} from '../services/gateService';
 import {StatusCodes} from 'http-status-codes';
-import {Gate, GateCreationAttributes} from "../models/gate";
+import {Gate, GateAttributes, GateCreationAttributes} from "../models/gate";
 
 export class GateController {
     constructor(private service: GateService) {
@@ -37,7 +37,7 @@ export class GateController {
 
     updateGate = async (req: Request, res: Response, next: NextFunction) => {
         try {
-            const data = req.body;
+            const data: Partial<GateAttributes> = req.body;
             const gate: Gate | null = await this.service.updateGate(req.params.id, data);
             return res.status(StatusCodes.OK).json(gate);
         } catch (err) {

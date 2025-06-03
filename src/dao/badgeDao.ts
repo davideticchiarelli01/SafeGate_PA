@@ -1,9 +1,7 @@
-import {IDao} from './dao';
-import {Badge, BadgeAttributes, BadgeCreationAttributes} from '../models/badge';
-import {Op} from 'sequelize';
+import {Badge, BadgeAttributes, BadgeCreationAttributes} from "../models/badge";
+import {IDao} from "./dao";
 
-export class BadgeDao {
-
+export class BadgeDao implements IDao<Badge, BadgeCreationAttributes, Partial<BadgeAttributes>> {
     async get(id: string): Promise<Badge | null> {
         return Badge.findByPk(id);
     }
@@ -16,14 +14,11 @@ export class BadgeDao {
         return Badge.create(data);
     }
 
-    async update(id: string, data: Partial<BadgeAttributes>): Promise<Badge | null> {
-        const badge: Badge | null = await Badge.findByPk(id);
-        if (!badge) return null;
-        return badge.update(data);
+    async update(gate: Badge, data: Partial<BadgeAttributes>): Promise<Badge> {
+        return gate.update(data);
     }
 
-    async delete(id: string): Promise<void> {
-        const badge = await Badge.findByPk(id);
-        if (badge) await badge.destroy();
+    async delete(gate: Badge): Promise<void> {
+        if (gate) await gate.destroy();
     }
 }
