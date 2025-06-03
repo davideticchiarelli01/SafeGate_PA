@@ -3,9 +3,9 @@ import dotenv from 'dotenv';
 import DatabaseConnection from "./db/database";
 import GateRoute from "./routes/gateRoute";
 import TransitRoute from "./routes/transitRoute";
-import AuthRoute from "./routes/authorizationRoute";
 import errorMiddleware from './middlewares/errorMiddleware';
 import BadgeRoute from "./routes/badgeRoute";
+import loginRoute from "./routes/loginRoute";
 
 const app = express();
 const PORT = process.env.APP_PORT || 3000;
@@ -23,7 +23,7 @@ app.listen(PORT, () => {
 app.use('/api', GateRoute);
 app.use('/api', BadgeRoute);
 app.use('/api', TransitRoute);
-app.use('/api', AuthRoute);
+app.use('/api', loginRoute);
 
 app.get('/', (req, res) => {
     res.send('Hello from app!');
