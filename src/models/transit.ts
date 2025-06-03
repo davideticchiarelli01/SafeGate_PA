@@ -1,11 +1,34 @@
-import {CreationOptional, DataTypes, InferAttributes, InferCreationAttributes, Model, Sequelize} from "sequelize";
+import {
+    Model,
+    DataTypes,
+    Sequelize,
+    CreationOptional,
+} from 'sequelize';
 import db from "../db/database";
-import {TransitStatus} from "../enum/transitStatus";
-import {DPI} from "../enum/dpi";
+import { TransitStatus } from "../enum/transitStatus";
+import { DPI } from "../enum/dpi";
 
 const sequelize: Sequelize = db.getInstance();
 
-export class Transit extends Model<InferAttributes<Transit>, InferCreationAttributes<Transit>> {
+export interface TransitAttributes {
+    id: number;
+    gateId: number;
+    badgeId: number;
+    status: TransitStatus;
+    usedDPIs: string[];
+    DPIviolation: boolean;
+}
+
+export interface TransitCreationAttributes {
+    id?: number;
+    gateId: number;
+    badgeId: number;
+    status: TransitStatus;
+    usedDPIs: string[];
+    DPIviolation: boolean;
+}
+
+export class Transit extends Model<TransitAttributes, TransitCreationAttributes> implements TransitAttributes {
     declare id: CreationOptional<number>;
     declare gateId: number;
     declare badgeId: number;

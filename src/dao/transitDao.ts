@@ -1,31 +1,22 @@
-import {IDao} from "./dao";
-import {Transit} from "../models/transit";
-import {TransitStatus} from "../enum/transitStatus";
-import {DPI} from "../enum/dpi";
+import { IDao } from "./dao";
+import { Transit, TransitAttributes, TransitCreationAttributes } from "../models/transit";
 
-export class TransitDao {
-
-    constructor() {
-    }
+export class TransitDao implements IDao<Transit, TransitCreationAttributes, Partial<TransitAttributes>> {
 
     async get(id: string): Promise<Transit | null> {
-        return Transit.findByPk(id);
+        return await Transit.findByPk(id);
     }
 
     async getAll(): Promise<Transit[]> {
-        return Transit.findAll();
+        return await Transit.findAll();
     }
 
-    async create(transit: Transit): Promise<Transit> {
-        return Transit.create(transit);
+    async create(transit: TransitCreationAttributes): Promise<Transit> {
+        return await Transit.create(transit);
     }
 
-    async update(transit: Transit, status: TransitStatus, usedDPIs: DPI[], DPIviolation: boolean): Promise<Transit> {
-        transit.status = status;
-        transit.DPIviolation = DPIviolation;
-        transit.usedDPIs = usedDPIs;
-        await transit.save();
-        return transit;
+    async update(transit: Transit, data: Partial<TransitAttributes>): Promise<Transit> {
+        return await transit.update(data);
     }
 
     async delete(transit: Transit): Promise<void> {

@@ -2,6 +2,7 @@ import express from 'express';
 import dotenv from 'dotenv';
 import DatabaseConnection from "./db/database";
 import GateRoute from "./routes/gateRoute";
+import TransitRoute from "./routes/transitRoute";
 import AuthRoute from "./routes/authorizationRoute";
 import errorMiddleware from './middlewares/errorMiddleware';
 import BadgeRoute from "./routes/badgeRoute";
@@ -21,6 +22,7 @@ app.listen(PORT, () => {
 
 app.use('/api', GateRoute);
 app.use('/api', BadgeRoute);
+app.use('/api', TransitRoute);
 app.use('/api', AuthRoute);
 
 app.get('/', (req, res) => {
