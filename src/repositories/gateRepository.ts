@@ -17,7 +17,7 @@ export class GateRepository implements IRepository<Gate> {
 
     async create(data: { name: string, requiredDPIs: DPI[] }): Promise<Gate> {
         const gate: Gate = Gate.build(data);
-        return gate.save();
+        return this.gateDao.create(gate);
     }
 
     update(id: string, item: Gate): Promise<Gate | null> {

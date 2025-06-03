@@ -21,8 +21,8 @@ export class GateService {
         return this.gateRepository.create(data);
     }
 
-    async updateGate(id: string, data: Gate): Promise<Gate | null> {
-        return this.gateRepository.update(id, data);
+    async updateGate(id: string, gate: Gate): Promise<Gate | null> {
+        return this.gateRepository.update(id, gate);
     }
 
     async deleteGate(id: string): Promise<void> {

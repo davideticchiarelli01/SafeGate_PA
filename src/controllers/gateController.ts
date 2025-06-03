@@ -26,5 +26,17 @@ export class GateController {
         }
     }
 
+    createGate = async (req: Request, res: Response, next: NextFunction): Promise<Response | void> => {
+        // creation logic
+    }
+
+    updateGate = async (req: Request, res: Response, next: NextFunction): Promise<Response | void> => {
+        // update logic
+    }
+
+    deletePassage = async (req: Request, res: Response, next: NextFunction): Promise<Response | void> => {
+        // deletion logic
+    }
+
 
 }
