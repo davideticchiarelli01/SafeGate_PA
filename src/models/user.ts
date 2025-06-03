@@ -1,10 +1,33 @@
-import {CreationOptional, DataTypes, InferAttributes, InferCreationAttributes, Model, Sequelize} from 'sequelize';
-import Database from '../db/database';
-import {UserRole} from "../enum/userRoles";
+import {
+    CreationOptional,
+    DataTypes,
+    Model,
+    Sequelize
+} from 'sequelize';
+import db from '../db/database';
+import { UserRole } from "../enum/userRoles";
 
-const sequelize: Sequelize = Database.getInstance();
+const sequelize: Sequelize = db.getInstance();
 
-export class User extends Model<InferAttributes<User>, InferCreationAttributes<User>> {
+export interface UserAttributes {
+    id: CreationOptional<string>;
+    email: string;
+    password: string;
+    role: CreationOptional<UserRole>;
+    linkedGateId: CreationOptional<string>;
+    token: CreationOptional<number>;
+}
+
+export interface UserCreationAttributes {
+    id: CreationOptional<string>;
+    email: string;
+    password: string;
+    role: CreationOptional<UserRole>;
+    linkedGateId: CreationOptional<string>;
+    token: CreationOptional<number>;
+}
+
+export class User extends Model<UserAttributes, UserCreationAttributes> implements UserAttributes {
     declare id: CreationOptional<string>;  // 'id' is optional because it is auto-generated
     declare email: string;
     declare password: string;

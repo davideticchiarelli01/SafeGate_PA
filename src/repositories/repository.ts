@@ -5,7 +5,7 @@ export interface IRepository<TModel, TCreate, TUpdate = Partial<TModel>> {
 
     create(data: TCreate): Promise<TModel>;
 
-    update(instance: TModel, data: TUpdate): Promise<TModel>;
+    update(instance: TModel, data: TUpdate): Promise<TModel | null>;
 
     delete(instance: TModel): Promise<void>;
 }
