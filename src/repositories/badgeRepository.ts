@@ -1,8 +1,7 @@
 import {Badge, BadgeAttributes, BadgeCreationAttributes} from '../models/badge';
 import {BadgeDao} from '../dao/badgeDao';
 import {IRepository} from "./repository";
-import {Op, WhereOptions} from "sequelize";
-import {BadgeStatus} from "../enum/badgeStatus";
+import {Op} from "sequelize";
 
 export class BadgeRepository implements IRepository<Badge, BadgeCreationAttributes, Partial<BadgeAttributes>> {
     constructor(private dao: BadgeDao) {

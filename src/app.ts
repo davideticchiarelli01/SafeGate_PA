@@ -6,6 +6,7 @@ import TransitRoute from "./routes/transitRoute";
 import errorMiddleware from './middlewares/errorMiddleware';
 import BadgeRoute from "./routes/badgeRoute";
 import loginRoute from "./routes/loginRoute";
+import authorizationRoute from "./routes/authorizationRoute";
 
 const app = express();
 const PORT = process.env.APP_PORT || 3000;
@@ -23,6 +24,7 @@ app.listen(PORT, () => {
 app.use('/api', GateRoute);
 app.use('/api', BadgeRoute);
 app.use('/api', TransitRoute);
+app.use('/api', authorizationRoute);
 app.use('/api', loginRoute);
 
 app.get('/', (req, res) => {

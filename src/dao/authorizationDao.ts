@@ -1,30 +1,26 @@
+import {Authorization, AuthorizationAttributes, AuthorizationCreationAttributes} from "../models/authorization";
 import {IDao} from "./dao";
-import {Authorization} from "../models/authorization";
 
-export class authorizationDao {
+export class AuthorizationDao {
 
-    constructor() {
-    }
-
-    async get(id: string): Promise<Authorization | null> {
-        return Authorization.findByPk(id);
+    async get(badgeId: string, gateId: string): Promise<Authorization | null> {
+        return await Authorization.findOne({
+            where: {
+                badgeId: badgeId,
+                gateId: gateId
+            }
+        });
     }
 
     async getAll(): Promise<Authorization[]> {
-        return Authorization.findAll();
+        return await Authorization.findAll();
     }
 
-    async create(badge: Authorization): Promise<Authorization> {
-        return Authorization.create(badge);
-    }
-
-    async update(authorization: Authorization): Promise<Authorization> {
-        await authorization.save();
-        return authorization;
+    async create(data: AuthorizationCreationAttributes): Promise<Authorization> {
+        return await Authorization.create(data);
     }
 
     async delete(authorization: Authorization): Promise<void> {
-        await authorization.destroy();
+        return await authorization.destroy();
     }
 }
-

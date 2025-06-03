@@ -1,22 +1,27 @@
 import {
-    DataTypes,
-    InferAttributes,
-    InferCreationAttributes,
     Model,
+    DataTypes,
     Sequelize,
-    ForeignKey
+    ForeignKey,
 } from 'sequelize';
 import Database from '../db/database';
-import {Badge} from "./badge";
-import {Gate} from "./gate";
-
+import {Badge} from './badge';
+import {Gate} from './gate';
 
 const sequelize: Sequelize = Database.getInstance();
 
-export class Authorization extends Model<
-    InferAttributes<Authorization>,
-    InferCreationAttributes<Authorization>
-> {
+export interface AuthorizationAttributes {
+    badgeId: string;
+    gateId: string;
+}
+
+export interface AuthorizationCreationAttributes {
+    badgeId: string;
+    gateId: string;
+}
+
+export class Authorization extends Model<AuthorizationAttributes, AuthorizationCreationAttributes>
+    implements AuthorizationAttributes {
     declare badgeId: ForeignKey<Badge['id']>;
     declare gateId: ForeignKey<Gate['id']>;
 }
@@ -51,5 +56,3 @@ Authorization.init(
         timestamps: true,
     }
 );
-
-

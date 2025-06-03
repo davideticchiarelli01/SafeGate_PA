@@ -1,15 +1,9 @@
 import {Router} from "express";
-import {BadgeDao} from "../dao/badgeDao";
-import {BadgeRepository} from "../repositories/badgeRepository";
-import {BadgeService} from "../services/badgeService";
-import {BadgeController} from "../controllers/badgeController";
+import {controllers} from "../dependencies";
 
-const badgeDao: BadgeDao = new BadgeDao();
-const badgeRepository: BadgeRepository = new BadgeRepository(badgeDao);
-const badgeService: BadgeService = new BadgeService(badgeRepository);
-const badgeController: BadgeController = new BadgeController(badgeService);
 
 const badgeRouter = Router();
+const {badgeController} = controllers;
 
 badgeRouter.get("/badges", badgeController.getAllBadges);
 badgeRouter.get("/badges/:id", badgeController.getBadge);

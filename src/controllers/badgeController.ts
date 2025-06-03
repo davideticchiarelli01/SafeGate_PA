@@ -9,14 +9,15 @@ export class BadgeController {
 
     getBadge = async (req: Request, res: Response, next: NextFunction) => {
         try {
-            const badge: Badge | null = await this.service.getBadge(req.params.id);
+            const {id} = req.params;
+            const badge: Badge | null = await this.service.getBadge(id);
             return res.status(StatusCodes.OK).json(badge);
         } catch (err) {
             next(err);
         }
     };
 
-    getAllBadges = async (req: Request, res: Response, next: NextFunction) => {
+    getAllBadges = async (_req: Request, res: Response, next: NextFunction) => {
         try {
             const badges: Badge [] = await this.service.getAllBadges();
             return res.status(StatusCodes.OK).json(badges);
@@ -25,7 +26,7 @@ export class BadgeController {
         }
     };
 
-    getSuspendedBadges = async (req: Request, res: Response, next: NextFunction) => {
+    getSuspendedBadges = async (_req: Request, res: Response, next: NextFunction) => {
         try {
             const badges: Badge [] = await this.service.getSuspendedBadges();
             return res.status(StatusCodes.OK).json(badges);
