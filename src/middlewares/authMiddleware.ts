@@ -26,6 +26,7 @@ export const adminMiddleware = (
     res: Response,
     next: NextFunction
 ) => {
+    console.log("req.user:", req.user);
     if (req.user && req.user.role === 'admin') {
         return next();
     }
