@@ -18,7 +18,7 @@ export interface BadgeAttributes {
 }
 
 export interface BadgeCreationAttributes {
-    id?: string;
+    id: string;
     userId: string;
     status?: BadgeStatus;
     unauthorizedAttempts?: number;

@@ -16,7 +16,6 @@ export interface GateAttributes {
 }
 
 export interface GateCreationAttributes {
-    id?: string;
     name: string;
     requiredDPIs?: DPI[];
 }

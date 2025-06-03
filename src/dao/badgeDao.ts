@@ -3,22 +3,26 @@ import {IDao} from "./dao";
 
 export class BadgeDao implements IDao<Badge, BadgeCreationAttributes, Partial<BadgeAttributes>> {
     async get(id: string): Promise<Badge | null> {
-        return Badge.findByPk(id);
+        return await Badge.findByPk(id);
+    }
+
+    async getByUserId(userId: string): Promise<Badge | null> {
+        return await Badge.findOne({where: {userId}});
     }
 
     async getAll(): Promise<Badge[]> {
-        return Badge.findAll();
+        return await Badge.findAll();
     }
 
     async create(data: BadgeCreationAttributes): Promise<Badge> {
-        return Badge.create(data);
+        return await Badge.create(data);
     }
 
-    async update(gate: Badge, data: Partial<BadgeAttributes>): Promise<Badge> {
-        return gate.update(data);
+    async update(badge: Badge, data: Partial<BadgeAttributes>): Promise<Badge> {
+        return await badge.update(data);
     }
 
-    async delete(gate: Badge): Promise<void> {
-        if (gate) await gate.destroy();
+    async delete(badge: Badge): Promise<void> {
+        return await badge.destroy();
     }
 }
