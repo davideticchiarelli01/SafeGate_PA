@@ -10,21 +10,21 @@ import { UserRole } from "../enum/userRoles";
 const sequelize: Sequelize = db.getInstance();
 
 export interface UserAttributes {
-    id: CreationOptional<string>;
+    id: string;
     email: string;
     password: string;
-    role: CreationOptional<UserRole>;
-    linkedGateId: CreationOptional<string>;
-    token: CreationOptional<number>;
+    role: UserRole;
+    linkedGateId: string;
+    token: number;
 }
 
 export interface UserCreationAttributes {
-    id: CreationOptional<string>;
+    id?: string;
     email: string;
     password: string;
-    role: CreationOptional<UserRole>;
-    linkedGateId: CreationOptional<string>;
-    token: CreationOptional<number>;
+    role?: UserRole;
+    linkedGateId?: string;
+    token?: number;
 }
 
 export class User extends Model<UserAttributes, UserCreationAttributes> implements UserAttributes {
