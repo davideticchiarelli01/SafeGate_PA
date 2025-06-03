@@ -1,11 +1,28 @@
-import {CreationOptional, DataTypes, InferAttributes, InferCreationAttributes, Model, Sequelize} from "sequelize";
-import db from "../db/database";
-import {DPI} from "../enum/dpi";
+import {
+    Model,
+    DataTypes,
+    Sequelize,
+    CreationOptional,
+} from 'sequelize';
+import db from '../db/database';
+import {DPI} from '../enum/dpi';
 
 const sequelize: Sequelize = db.getInstance();
 
-export class Gate extends Model<InferAttributes<Gate>, InferCreationAttributes<Gate>> {
-    declare id: CreationOptional<number>;
+export interface GateAttributes {
+    id: string;
+    name: string;
+    requiredDPIs: DPI[];
+}
+
+export interface GateCreationAttributes {
+    id?: string;
+    name: string;
+    requiredDPIs?: DPI[];
+}
+
+export class Gate extends Model<GateAttributes, GateCreationAttributes> implements GateAttributes {
+    declare id: CreationOptional<string>;
     declare name: string;
     declare requiredDPIs: DPI[];
 }
@@ -16,7 +33,6 @@ Gate.init(
             type: DataTypes.UUID,
             defaultValue: DataTypes.UUIDV4,
             primaryKey: true,
-            allowNull: false,
         },
         name: {
             type: DataTypes.STRING,
@@ -25,12 +41,12 @@ Gate.init(
         },
         requiredDPIs: {
             type: DataTypes.ARRAY(DataTypes.ENUM(...Object.values(DPI))),
-            allowNull: true,
+            allowNull: false,
             defaultValue: [],
-        }
+        },
     },
     {
-        sequelize: sequelize,
+        sequelize,
         modelName: 'Gate',
         tableName: 'Gates',
         timestamps: true,

@@ -2,7 +2,7 @@ import {IDao} from "./dao";
 import {Badge} from "../models/badge";
 import {BadgeStatus} from "../enum/badgeStatus";
 
-export class BadgeDao implements IDao<Badge> {
+export class BadgeDao {
 
     constructor() {
     }

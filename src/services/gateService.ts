@@ -1,31 +1,34 @@
-import {Gate} from "../models/gate";
-import {DPI} from "../enum/dpi";
-import {GateDao} from "../dao/gateDao";
-import {GateRepository} from "../repositories/gateRepository";
+import {GateRepository} from '../repositories/gateRepository';
+import {DPI} from '../enum/dpi';
+import {Gate, GateAttributes, GateCreationAttributes} from '../models/gate';
+import {ErrorFactory} from '../factories/errorFactory';
+import {ReasonPhrases} from 'http-status-codes';
 
 export class GateService {
-
-    constructor(private gateRepository: GateRepository) {
-
+    constructor(private repo: GateRepository) {
     }
 
-    async getGate(id: string): Promise<Gate | null> {
-        return this.gateRepository.findById(id);
+    getGate(id: string): Promise<Gate | null> {
+        return this.repo.findById(id);
     }
 
-    async getAllGates(): Promise<Gate[]> {
-        return this.gateRepository.findAll();
+    getAllGates(): Promise<Gate[]> {
+        return this.repo.findAll();
     }
 
-    async createGate(data: { name: string, requiredDPIs: DPI[] }): Promise<Gate> {
-        return this.gateRepository.create(data);
+    async createGate(data: GateCreationAttributes): Promise<Gate> {
+        const exists: Gate | null = await this.repo.findByName(data.name);
+        if (exists) {
+            throw ErrorFactory.createError(ReasonPhrases.CONFLICT, 'Gate name already in use');
+        }
+        return this.repo.create(data);
     }
 
-    async updateGate(id: string, gate: Gate): Promise<Gate | null> {
-        return this.gateRepository.update(id, gate);
+    updateGate(id: string, data: Partial<GateAttributes>): Promise<Gate | null> {
+        return this.repo.update(id, data);
     }
 
-    async deleteGate(id: string): Promise<void> {
-        await this.gateRepository.delete(id);
+    deleteGate(id: string): Promise<void> {
+        return this.repo.delete(id);
     }
 }

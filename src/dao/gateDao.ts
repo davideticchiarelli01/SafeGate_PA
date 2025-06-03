@@ -1,12 +1,7 @@
+import {Gate, GateAttributes, GateCreationAttributes} from "../models/gate";
 import {IDao} from "./dao";
-import {Gate} from "../models/gate";
-import {DPI} from "../enum/dpi";
 
-export class GateDao implements IDao<Gate> {
-
-    constructor() {
-    }
-
+export class GateDao implements IDao<Gate, GateCreationAttributes, Partial<GateAttributes>> {
     async get(id: string): Promise<Gate | null> {
         return Gate.findByPk(id);
     }
@@ -15,18 +10,22 @@ export class GateDao implements IDao<Gate> {
         return Gate.findAll();
     }
 
-    async create(gate: Gate): Promise<Gate> {
-        return Gate.create(gate);
+    async getByName(name: string): Promise<Gate | null> {
+        return Gate.findOne({where: {name}});
     }
 
-    async update(gate: Gate, requiredDPIs: DPI[]): Promise<Gate> {
-        gate.requiredDPIs = requiredDPIs;
-        await gate.save();
-        return gate;
+    async create(data: GateCreationAttributes): Promise<Gate> {
+        return Gate.create(data);
     }
 
-    async delete(badge: Gate): Promise<void> {
-        await badge.destroy();
+    async update(id: string, data: Partial<GateAttributes>): Promise<Gate | null> {
+        const gate: Gate | null = await Gate.findByPk(id);
+        if (!gate) return null;
+        return gate.update(data);
+    }
+
+    async delete(id: string): Promise<void> {
+        const gate = await Gate.findByPk(id);
+        if (gate) await gate.destroy();
     }
 }
-

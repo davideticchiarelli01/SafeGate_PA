@@ -1,12 +1,11 @@
-export interface IRepository<T> {
-    findById(id: string): Promise<T | null>;
+export interface IRepository<TModel, TCreate, TUpdate = Partial<TModel>> {
+    findById(id: string): Promise<TModel | null>;
 
-    findAll(): Promise<T[]>;
+    findAll(): Promise<TModel[]>;
 
-    create(item: T): Promise<T>;
+    create(data: TCreate): Promise<TModel>;
 
-    update(id: string, item: T): Promise<T | null>;
+    update(id: string, data: TUpdate): Promise<TModel | null>;
 
     delete(id: string): Promise<void>;
 }
-
