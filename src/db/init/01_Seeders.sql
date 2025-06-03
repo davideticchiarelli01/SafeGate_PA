@@ -5,9 +5,9 @@ INSERT INTO "Gates" ("id", "name", "requiredDPIs", "createdAt", "updatedAt") VAL
 
 -- === Insert into Users ===
 INSERT INTO "Users" ("id", "email", "password", "role", "linkedGateId", "token", "createdAt", "updatedAt") VALUES
-                                                                                                               ('b1b19876-bff4-42cd-90ae-0e497ff50c99', 'admin@example.com', 'hashed_password1', 'admin', NULL, 100, now(), now()),
-                                                                                                               ('fa4d116f-7b3f-4c9d-88d6-8f01b36dc8c6', 'user@example.com', 'hashed_password2', 'user', NULL, 100, now(), now()),
-                                                                                                               ('d2f221d7-22ad-45c8-a1aa-b6535e6c7dd7', 'gate@example.com', 'hashed_password3', 'gate', '8a8e1f4d-bb7a-4b6e-bb44-7386228f637c', 0, now(), now());
+                                                                                                               ('b1b19876-bff4-42cd-90ae-0e497ff50c99', 'admin@example.com', '$2a$12$X922aZOiAT73n20.B2MEKe5EpBPnbL41dt3KjgAh582Qottsvl4Cu', 'admin', NULL, 100, now(), now()),
+                                                                                                               ('fa4d116f-7b3f-4c9d-88d6-8f01b36dc8c6', 'user@example.com', '$2a$12$s2OzLPWUfkTsqH6oFdU7Tu4UqMjd9/izm1Ua.A4/Ab8NS/T646lXu', 'user', NULL, 100, now(), now()),
+                                                                                                               ('d2f221d7-22ad-45c8-a1aa-b6535e6c7dd7', 'gate@example.com', '$2a$12$uJ0PYypoD7ln88fea9Fyv.J4AZQFI3xe21RwCRxDvl3E78FV9okeG', 'gate', '8a8e1f4d-bb7a-4b6e-bb44-7386228f637c', 0, now(), now());
 
 -- === Insert into Badges ===
 INSERT INTO "Badges" ("id", "userId", "status", "unauthorizedAttempts", "firstUnauthorizedAttempt", "createdAt", "updatedAt") VALUES
