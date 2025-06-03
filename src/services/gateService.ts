@@ -17,18 +17,27 @@ export class GateService {
     }
 
     async createGate(data: GateCreationAttributes): Promise<Gate> {
-        const exists: Gate | null = await this.repo.findByName(data.name);
-        if (exists) {
+        const gate: Gate | null = await this.repo.findByName(data.name);
+        if (gate) {
             throw ErrorFactory.createError(ReasonPhrases.CONFLICT, 'Gate name already in use');
         }
         return this.repo.create(data);
     }
 
-    updateGate(id: string, data: Partial<GateAttributes>): Promise<Gate | null> {
-        return this.repo.update(id, data);
+    async updateGate(id: string, data: Partial<GateAttributes>): Promise<Gate> {
+        const gate = await this.repo.findById(id);
+        if (!gate) {
+            throw ErrorFactory.createError(ReasonPhrases.NOT_FOUND, 'Gate not found');
+        }
+        return this.repo.update(gate, data);
     }
 
-    deleteGate(id: string): Promise<void> {
-        return this.repo.delete(id);
+
+    async deleteGate(id: string): Promise<void> {
+        const gate = await this.repo.findById(id);
+        if (!gate) {
+            throw ErrorFactory.createError(ReasonPhrases.NOT_FOUND, 'Gate not found');
+        }
+        return this.repo.delete(gate);
     }
 }

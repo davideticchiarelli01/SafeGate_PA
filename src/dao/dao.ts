@@ -5,7 +5,7 @@ export interface IDao<TModel, TCreate, TUpdate = Partial<TModel>> {
 
     create(data: TCreate): Promise<TModel>;
 
-    update(id: string, data: TUpdate): Promise<TModel | null>;
+    update(entity: TModel, data: TUpdate): Promise<TModel>;
 
-    delete(id: string): Promise<void>;
+    delete(entity: TModel): Promise<void>;
 }

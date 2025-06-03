@@ -43,7 +43,7 @@ Gate.init(
             type: DataTypes.ARRAY(DataTypes.ENUM(...Object.values(DPI))),
             allowNull: false,
             defaultValue: [],
-        },
+        }
     },
     {
         sequelize,

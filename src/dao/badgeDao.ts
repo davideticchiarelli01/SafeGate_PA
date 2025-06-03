@@ -1,11 +1,8 @@
-import {IDao} from "./dao";
-import {Badge} from "../models/badge";
-import {BadgeStatus} from "../enum/badgeStatus";
+import {IDao} from './dao';
+import {Badge, BadgeAttributes, BadgeCreationAttributes} from '../models/badge';
+import {Op} from 'sequelize';
 
 export class BadgeDao {
-
-    constructor() {
-    }
 
     async get(id: string): Promise<Badge | null> {
         return Badge.findByPk(id);
@@ -15,18 +12,18 @@ export class BadgeDao {
         return Badge.findAll();
     }
 
-    async create(badge: Badge): Promise<Badge> {
-        return Badge.create(badge);
+    async create(data: BadgeCreationAttributes): Promise<Badge> {
+        return Badge.create(data);
     }
 
-    async update(badge: Badge, status: BadgeStatus): Promise<Badge> {
-        badge.status = status;
-        await badge.save();
-        return badge;
+    async update(id: string, data: Partial<BadgeAttributes>): Promise<Badge | null> {
+        const badge: Badge | null = await Badge.findByPk(id);
+        if (!badge) return null;
+        return badge.update(data);
     }
 
-    async delete(badge: Badge): Promise<void> {
-        await badge.destroy();
+    async delete(id: string): Promise<void> {
+        const badge = await Badge.findByPk(id);
+        if (badge) await badge.destroy();
     }
 }
-

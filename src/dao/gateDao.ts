@@ -18,14 +18,11 @@ export class GateDao implements IDao<Gate, GateCreationAttributes, Partial<GateA
         return Gate.create(data);
     }
 
-    async update(id: string, data: Partial<GateAttributes>): Promise<Gate | null> {
-        const gate: Gate | null = await Gate.findByPk(id);
-        if (!gate) return null;
+    async update(gate: Gate, data: Partial<GateAttributes>): Promise<Gate> {
         return gate.update(data);
     }
 
-    async delete(id: string): Promise<void> {
-        const gate = await Gate.findByPk(id);
+    async delete(gate: Gate): Promise<void> {
         if (gate) await gate.destroy();
     }
 }

@@ -22,11 +22,11 @@ export class GateRepository implements IRepository<Gate, GateCreationAttributes,
         return this.dao.create(data);
     }
 
-    update(id: string, data: Partial<GateAttributes>): Promise<Gate | null> {
-        return this.dao.update(id, data);
+    update(gate: Gate, data: Partial<GateAttributes>): Promise<Gate> {
+        return this.dao.update(gate, data);
     }
 
-    delete(id: string): Promise<void> {
-        return this.dao.delete(id);
+    delete(gate: Gate): Promise<void> {
+        return this.dao.delete(gate);
     }
 }

@@ -1,18 +1,31 @@
 import {
-    CreationOptional,
-    DataTypes,
-    InferAttributes,
-    InferCreationAttributes,
     Model,
-    Sequelize
+    DataTypes,
+    Sequelize,
+    CreationOptional
 } from 'sequelize';
-import Database from '../db/database';
-import {BadgeStatus} from "../enum/badgeStatus";
+import db from '../db/database';
+import {BadgeStatus} from '../enum/badgeStatus';
 
-const sequelize: Sequelize = Database.getInstance();
+const sequelize: Sequelize = db.getInstance();
 
+export interface BadgeAttributes {
+    id: string;
+    userId: string;
+    status: BadgeStatus;
+    unauthorizedAttempts: number;
+    firstUnauthorizedAttempt: Date | null;
+}
 
-export class Badge extends Model<InferAttributes<Badge>, InferCreationAttributes<Badge>> {
+export interface BadgeCreationAttributes {
+    id?: string;
+    userId: string;
+    status?: BadgeStatus;
+    unauthorizedAttempts?: number;
+    firstUnauthorizedAttempt?: Date | null;
+}
+
+export class Badge extends Model<BadgeAttributes, BadgeCreationAttributes> implements BadgeAttributes {
     declare id: CreationOptional<string>;
     declare userId: string;
     declare status: CreationOptional<BadgeStatus>;
