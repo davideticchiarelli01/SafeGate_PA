@@ -25,6 +25,15 @@ export class BadgeController {
         }
     };
 
+    getSuspendedBadges = async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            const badges: Badge [] = await this.service.getSuspendedBadges();
+            return res.status(StatusCodes.OK).json(badges);
+        } catch (err) {
+            next(err);
+        }
+    }
+
     createBadge = async (req: Request, res: Response, next: NextFunction) => {
         try {
             const data: BadgeCreationAttributes = req.body;
@@ -45,9 +54,20 @@ export class BadgeController {
         }
     };
 
+    reactivateBadges = async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            const {badgeIds} = req.body;
+            const updatedBadges: Badge[] = await this.service.reactivateBadges(badgeIds);
+            return res.status(StatusCodes.OK).json(updatedBadges);
+        } catch (err) {
+            next(err);
+        }
+    };
+
     deleteBadge = async (req: Request, res: Response, next: NextFunction) => {
         try {
-            await this.service.deleteBadge(req.params.id);
+            const {id} = req.params;
+            await this.service.deleteBadge(id);
             return res.status(StatusCodes.NO_CONTENT).send();
         } catch (err) {
             next(err);

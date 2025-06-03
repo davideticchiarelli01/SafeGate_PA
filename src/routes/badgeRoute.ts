@@ -17,4 +17,7 @@ badgeRouter.post("/badges", badgeController.createBadge);
 badgeRouter.put("/badges/:id", badgeController.updateBadge);
 badgeRouter.delete("/badges/:id", badgeController.deleteBadge);
 
+badgeRouter.get("/badges_suspended", badgeController.getSuspendedBadges);
+badgeRouter.put("/reactivate_badges", badgeController.reactivateBadges);
+
 export default badgeRouter;
