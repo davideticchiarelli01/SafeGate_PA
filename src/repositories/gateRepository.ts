@@ -6,7 +6,7 @@ export class GateRepository implements IRepository<Gate, GateCreationAttributes,
     constructor(private dao: GateDao) {
     }
 
-    findById(id: string): Promise<Gate | null> {
+    async findById(id: string): Promise<Gate | null> {
         return this.dao.get(id);
     }
 
