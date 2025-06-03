@@ -25,15 +25,15 @@ export class TransitController {
         }
     };
 
-    /*createTransit = async (req: Request, res: Response, next: NextFunction) => {
+    createTransit = async (req: Request, res: Response, next: NextFunction) => {
         try {
             const data: TransitCreationAttributes = req.body;
             const transit: Transit = await this.service.createTransit(data);
-            return res.status(StatusCodes.CREATED).json({message: 'Transit created', transit});
+            return res.status(StatusCodes.CREATED).json({ message: 'Transit created', transit });
         } catch (err) {
             next(err);
         }
-    };*/
+    };
 
     updateTransit = async (req: Request, res: Response, next: NextFunction) => {
         try {

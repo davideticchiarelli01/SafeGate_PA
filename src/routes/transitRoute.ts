@@ -14,7 +14,7 @@ const transitRouter = Router();
 
 transitRouter.get("/transits", transitController.getAllTransits);
 transitRouter.get("/transits/:id", transitController.getTransit);
-//transitRouter.post("/transits", authMiddleware, gateOrAdminMiddleware, transitController.createTransit);
+transitRouter.post("/transit", authMiddleware, gateOrAdminMiddleware, transitController.createTransit);
 transitRouter.put("/transits/:id", transitController.updateTransit);
 transitRouter.delete("/transits/:id", transitController.deleteTransit);
 

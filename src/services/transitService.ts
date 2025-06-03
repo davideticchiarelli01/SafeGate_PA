@@ -15,9 +15,9 @@ export class TransitService {
         return this.repo.findAll();
     }
 
-    //async createTransit(data: TransitCreationAttributes): Promise<Transit> {
-    //    return this.repo.create(data);
-    //}
+    async createTransit(data: TransitCreationAttributes): Promise<Transit> {
+        return this.repo.create(data);
+    }
 
     async updateTransit(id: string, data: Partial<TransitAttributes>): Promise<Transit> {
         const transit: Transit | null = await this.repo.findById(id);
