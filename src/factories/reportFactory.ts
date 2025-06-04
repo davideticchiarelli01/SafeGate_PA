@@ -1,9 +1,9 @@
-import { GateTransitsReport } from '../types/reportTypes';
-import { ReportFormats } from '../enum/reportFormats';
-import { Parser as Json2CsvParser } from 'json2csv';
+import {GateTransitsReport} from '../enum/reportTypes';
+import {ReportFormats} from '../enum/reportFormats';
+import {Parser as Json2CsvParser} from 'json2csv';
 import PDFDocument from 'pdfkit';
 
-export class ReportFormatterFactory {
+export class ReportFactory {
     static async format(format: ReportFormats, data: GateTransitsReport[]): Promise<Buffer | string | object> {
         switch (format) {
             case ReportFormats.PDF:
@@ -26,7 +26,7 @@ export class ReportFormatterFactory {
         const chunks: any[] = [];
 
         doc.on('data', chunk => chunks.push(chunk));
-        doc.fontSize(16).text("Gate Transits Report", { align: 'center' }).moveDown();
+        doc.fontSize(16).text("Gate Transits Report", {align: 'center'}).moveDown();
 
         for (const d of data) {
             doc.fontSize(12).text(

@@ -9,8 +9,8 @@ import {Badge} from "../models/badge";
 import {TransitStatus} from "../enum/transitStatus";
 import {GateRepository} from "../repositories/gateRepository";
 import {Gate} from "../models/gate";
-import {GateTransitsReport} from '../types/reportTypes';
-import {ReportFormatterFactory} from '../factories/reportFormatterFactory';
+import {GateTransitsReport} from '../enum/reportTypes';
+import {ReportFactory} from '../factories/reportFactory';
 import {ReportFormats} from '../enum/reportFormats';
 
 export class TransitService {
@@ -166,6 +166,6 @@ export class TransitService {
         }
 
         const reportData = Object.values(grouped);
-        return await ReportFormatterFactory.format(format, reportData);
+        return await ReportFactory.format(format, reportData);
     }
 }
