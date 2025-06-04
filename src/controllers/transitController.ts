@@ -1,10 +1,10 @@
-import {Request, Response, NextFunction} from 'express';
-import {TransitService} from '../services/transitService';
-import {ReasonPhrases, StatusCodes} from 'http-status-codes';
-import {Transit, TransitAttributes, TransitCreationAttributes} from "../models/transit";
-import {ReportFormats} from "../enum/reportFormats";
-import {ErrorFactory} from "../factories/errorFactory";
-import {UserPayload} from "../utils/userPayload";
+import { Request, Response, NextFunction } from 'express';
+import { TransitService } from '../services/transitService';
+import { ReasonPhrases, StatusCodes } from 'http-status-codes';
+import { Transit, TransitAttributes, TransitCreationAttributes } from "../models/transit";
+import { ReportFormats } from "../enum/reportFormats";
+import { ErrorFactory } from "../factories/errorFactory";
+import { UserPayload } from "../utils/userPayload";
 
 export class TransitController {
     constructor(private service: TransitService) {
@@ -34,7 +34,7 @@ export class TransitController {
         try {
             const data: TransitCreationAttributes = req.body;
             const transit: Transit = await this.service.createTransit(data);
-            return res.status(StatusCodes.CREATED).json({message: 'Transit created', transit});
+            return res.status(StatusCodes.CREATED).json({ message: 'Transit created', transit });
         } catch (err) {
             next(err);
         }
@@ -60,7 +60,7 @@ export class TransitController {
     };
 
     getTransitStats = async (req: Request, res: Response, next: NextFunction) => {
-        const {badgeId} = req.params;
+        const { badgeId } = req.params;
         const query = req.query;
 
         try {
@@ -77,14 +77,14 @@ export class TransitController {
 
     getGateReport = async (req: Request, res: Response, next: NextFunction) => {
         try {
-            const {start_date, end_date, format = ReportFormats.JSON} = req.query as {
+            const { start_date, end_date, format = ReportFormats.JSON } = req.query as {
                 start_date: string;
                 end_date: string;
                 format: ReportFormats;
             };
 
-            if (!start_date || !end_date) return res.status(StatusCodes.BAD_REQUEST).json({message: 'Start date and end date are required'});
-            if (start_date > end_date) return res.status(StatusCodes.BAD_REQUEST).json({message: 'Start date cannot be after end date'});
+            if (!start_date || !end_date) return res.status(StatusCodes.BAD_REQUEST).json({ message: 'Start date and end date are required' });
+            if (start_date > end_date) return res.status(StatusCodes.BAD_REQUEST).json({ message: 'Start date cannot be after end date' });
 
             console.log(`Generating gate report from ${start_date} to ${end_date} in format ${format}`);
 
@@ -108,7 +108,37 @@ export class TransitController {
     };
 
     getBadgeReport = async (req: Request, res: Response, next: NextFunction) => {
-        // logic for generating badge report
+        try {
+            const { start_date, end_date, format = ReportFormats.JSON } = req.query as {
+                start_date: string;
+                end_date: string;
+                format: ReportFormats;
+            };
+
+            const user: UserPayload | undefined = req.user;
+
+            if (!start_date || !end_date) return res.status(StatusCodes.BAD_REQUEST).json({ message: 'Start date and end date are required' });
+            if (start_date > end_date) return res.status(StatusCodes.BAD_REQUEST).json({ message: 'Start date cannot be after end date' });
+
+            console.log(`Generating gate report from ${start_date} to ${end_date} in format ${format}`);
+
+            const result = await this.service.generateBadgeReport(start_date, end_date, format as ReportFormats, user);
+
+            switch (format) {
+                case 'pdf':
+                    res.setHeader('Content-Type', 'application/pdf');
+                    res.setHeader('Content-Disposition', 'attachment; filename="gate-report.pdf"');
+                    return res.send(result);
+                case 'csv':
+                    res.setHeader('Content-Type', 'text/csv');
+                    res.setHeader('Content-Disposition', 'attachment; filename="gate-report.csv"');
+                    return res.send(result);
+                default:
+                    return res.status(StatusCodes.OK).json(result);
+            }
+        } catch (err) {
+            next(err);
+        }
     }
 
 

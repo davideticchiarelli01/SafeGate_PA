@@ -1,10 +1,10 @@
-import {GateTransitsReport} from '../enum/reportTypes';
-import {ReportFormats} from '../enum/reportFormats';
-import {Parser as Json2CsvParser} from 'json2csv';
+import { BadgeTransitsReport, GateTransitsReport } from '../enum/reportTypes';
+import { ReportFormats } from '../enum/reportFormats';
+import { Parser as Json2CsvParser } from 'json2csv';
 import PDFDocument from 'pdfkit';
 
 export class ReportFactory {
-    static async format(format: ReportFormats, data: GateTransitsReport[]): Promise<Buffer | string | object> {
+    static async format(format: ReportFormats, data: GateTransitsReport[] | BadgeTransitsReport[]): Promise<Buffer | string | object> {
         switch (format) {
             case ReportFormats.PDF:
                 return this.generatePdf(data);
@@ -16,22 +16,36 @@ export class ReportFactory {
         }
     }
 
-    private static generateCsv(data: GateTransitsReport[]): string {
+    private static generateCsv(data: GateTransitsReport[] | BadgeTransitsReport[]): string {
         const parser = new Json2CsvParser();
         return parser.parse(data);
     }
 
-    private static generatePdf(data: GateTransitsReport[]): Promise<Buffer> {
+    private static generatePdf(data: GateTransitsReport[] | BadgeTransitsReport[]): Promise<Buffer> {
         const doc = new PDFDocument();
         const chunks: any[] = [];
 
         doc.on('data', chunk => chunks.push(chunk));
-        doc.fontSize(16).text("Gate Transits Report", {align: 'center'}).moveDown();
+
+        console.log('Generating PDF report with data:', data);
+
+        const isGateReport: boolean = 'gateId' in data[0];
+        const title = isGateReport ? 'Gate Transits Report' : 'Badge Transits Report'; // se è gate allora è un gay report senno è un beeggg report
+
+        doc.fontSize(16).text(title, { align: 'center' }).moveDown();
 
         for (const d of data) {
-            doc.fontSize(12).text(
-                `Gate: ${d.gateId} | Authorized: ${d.authorized} | Unauthorized: ${d.unauthorized} | DPI Violations: ${d.dpiViolations}`
-            );
+            if (isGateReport) {
+                const record = d as GateTransitsReport;
+                doc.fontSize(12).text(
+                    `Gate: ${record.gateId} | Authorized: ${record.authorized} | Unauthorized: ${record.unauthorized} | DPI Violations: ${record.dpiViolations}`
+                );
+            } else {
+                const record = d as BadgeTransitsReport;
+                doc.fontSize(12).text(
+                    `Badge: ${record.badgeId} | Authorized: ${record.authorized} | Unauthorized: ${record.unauthorized} | Status: ${record.status}`
+                );
+            }
         }
 
         doc.end();

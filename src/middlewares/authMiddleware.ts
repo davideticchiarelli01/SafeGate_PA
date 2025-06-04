@@ -51,3 +51,17 @@ export const gateOrAdminMiddleware = (
     ));
 }
 
+export const userOrAdminMiddleware = (
+    req: Request,
+    res: Response,
+    next: NextFunction
+) => {
+    if (req.user && (req.user.role === UserRole.User || req.user?.role === UserRole.Admin)) {
+        return next();
+    }
+    return next(ErrorFactory.createError(
+        ReasonPhrases.FORBIDDEN,
+        'Forbidden, only users or administrators can perform this action'
+    ));
+}
+

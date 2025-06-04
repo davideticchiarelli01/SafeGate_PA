@@ -1,17 +1,18 @@
-import {TransitRepository} from '../repositories/transitRepository';
-import {BadgeRepository} from '../repositories/badgeRepository';
-import {Transit, TransitAttributes, TransitCreationAttributes} from "../models/transit";
-import {ErrorFactory} from '../factories/errorFactory';
-import {ReasonPhrases} from 'http-status-codes';
-import {UserPayload} from '../utils/userPayload';
-import {UserRole} from '../enum/userRoles';
-import {Badge} from "../models/badge";
-import {TransitStatus} from "../enum/transitStatus";
-import {GateRepository} from "../repositories/gateRepository";
-import {Gate} from "../models/gate";
-import {GateTransitsReport} from '../enum/reportTypes';
-import {ReportFactory} from '../factories/reportFactory';
-import {ReportFormats} from '../enum/reportFormats';
+import { TransitRepository } from '../repositories/transitRepository';
+import { BadgeRepository } from '../repositories/badgeRepository';
+import { Transit, TransitAttributes, TransitCreationAttributes } from "../models/transit";
+import { ErrorFactory } from '../factories/errorFactory';
+import { ReasonPhrases } from 'http-status-codes';
+import { UserPayload } from '../utils/userPayload';
+import { UserRole } from '../enum/userRoles';
+import { Badge } from "../models/badge";
+import { TransitStatus } from "../enum/transitStatus";
+import { GateRepository } from "../repositories/gateRepository";
+import { Gate } from "../models/gate";
+import { BadgeTransitsReport, GateTransitsReport } from '../enum/reportTypes';
+import { ReportFactory } from '../factories/reportFactory';
+import { ReportFormats } from '../enum/reportFormats';
+import { BadgeStatus } from '../enum/badgeStatus';
 
 export class TransitService {
     constructor(
@@ -164,6 +165,51 @@ export class TransitService {
             else grouped[gateId].unauthorized++;
 
             if (t.DPIviolation) grouped[gateId].dpiViolations++;
+        }
+
+        const reportData = Object.values(grouped);
+        return await ReportFactory.format(format, reportData);
+    }
+
+    async generateBadgeReport(
+        start_date: string,
+        end_date: string,
+        format: ReportFormats,
+        user?: UserPayload
+    ): Promise<Buffer | string | object> {
+
+        if (!user) throw ErrorFactory.createError(ReasonPhrases.UNAUTHORIZED, 'User not authenticated');
+
+        const startDate = new Date(start_date as string);
+        const endDate = new Date(end_date as string);
+
+        const transits = user.role === UserRole.Admin
+            ? await this.repo.findAllInRange(startDate, endDate)
+            : await (async () => {
+                const badge: Badge | null = await this.badgeRepo.findByUserId(user.id);
+                if (!badge) {
+                    throw ErrorFactory.createError(ReasonPhrases.NOT_FOUND, 'Badge not found for this user');
+                }
+                return await this.repo.findByBadgeGateAndDate(badge.id, undefined, startDate, endDate);
+            })();
+
+        //console.log(`Generating badge report for user ${user.id} with role ${user.role}, with ${transits.length} transits found`);
+        const grouped: Record<string, BadgeTransitsReport> = {};
+
+        for (const t of transits) {
+            const badgeId = t.badgeId;
+            if (!grouped[badgeId]) {
+                const badge: Badge | null = await this.badgeRepo.findById(badgeId);
+                grouped[badgeId] = {
+                    badgeId,
+                    authorized: 0,
+                    unauthorized: 0,
+                    status: badge?.status ?? BadgeStatus.Suspended //fallback default perchè senno mega arrotate
+                };
+            }
+
+            if (t.status == TransitStatus.Authorized) grouped[badgeId].authorized++;
+            else grouped[badgeId].unauthorized++;
         }
 
         const reportData = Object.values(grouped);
