@@ -1,14 +1,16 @@
-import {TransitRepository} from '../repositories/transitRepository';
-import {BadgeRepository} from '../repositories/badgeRepository';
-import {Transit, TransitAttributes, TransitCreationAttributes} from "../models/transit";
-import {ErrorFactory} from '../factories/errorFactory';
-import {ReasonPhrases} from 'http-status-codes';
-import {UserPayload} from '../utils/userPayload';
-import {UserRole} from '../enum/userRoles';
-import {Badge} from "../models/badge";
-import {TransitStatus} from "../enum/transitStatus";
-import {GateRepository} from "../repositories/gateRepository";
-import {Gate} from "../models/gate";
+import { TransitRepository } from '../repositories/transitRepository';
+import { BadgeRepository } from '../repositories/badgeRepository';
+import { Transit, TransitAttributes, TransitCreationAttributes } from "../models/transit";
+import { ErrorFactory } from '../factories/errorFactory';
+import { ReasonPhrases } from 'http-status-codes';
+import { UserPayload } from '../utils/userPayload';
+import { UserRole } from '../enum/userRoles';
+import { Badge } from "../models/badge";
+import { TransitStatus } from "../enum/transitStatus";
+import { GateRepository } from "../repositories/gateRepository";
+import { Gate } from "../models/gate";
+import { GateTransitsReport } from '../types/reportTypes';
+import { ReportFormatterFactory } from '../utils/reportFormatterFactory';
 
 export class TransitService {
     constructor(
@@ -130,5 +132,39 @@ export class TransitService {
             totalDpiViolation,
             gateStats
         };
+    }
+
+    async generateGateReport(
+        start_date: string,
+        end_date: string,
+        format: 'pdf' | 'csv' | 'json'
+    ): Promise<Buffer | string | object> {
+
+        const startDate = new Date(start_date as string);
+        const endDate = new Date(end_date as string);
+
+        const transits = await this.repo.findAllInRange(startDate, endDate);
+
+        const grouped: Record<string, GateTransitsReport> = {};
+
+        for (const t of transits) {
+            const gateId = t.gateId;
+            if (!grouped[gateId]) {
+                grouped[gateId] = {
+                    gateId,
+                    authorized: 0,
+                    unauthorized: 0,
+                    dpiViolations: 0
+                };
+            }
+
+            if (t.status == TransitStatus.Authorized) grouped[gateId].authorized++;
+            else grouped[gateId].unauthorized++;
+
+            if (t.DPIviolation) grouped[gateId].dpiViolations++;
+        }
+
+        const reportData = Object.values(grouped);
+        return await ReportFormatterFactory.format(format, reportData);
     }
 }

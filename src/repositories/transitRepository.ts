@@ -1,11 +1,11 @@
-import {IRepository} from "./repository";
-import {TransitDao} from "../dao/transitDao";
-import {Transit, TransitAttributes, TransitCreationAttributes} from "../models/transit";
-import {UserPayload} from "../utils/userPayload";
-import {UserRole} from "../enum/userRoles";
-import {User} from "../models/user";
-import {Badge} from "../models/badge";
-import {Op, WhereOptions} from "sequelize";
+import { IRepository } from "./repository";
+import { TransitDao } from "../dao/transitDao";
+import { Transit, TransitAttributes, TransitCreationAttributes } from "../models/transit";
+import { UserPayload } from "../utils/userPayload";
+import { UserRole } from "../enum/userRoles";
+import { User } from "../models/user";
+import { Badge } from "../models/badge";
+import { Op, WhereOptions } from "sequelize";
 
 export class TransitRepository implements IRepository<Transit, TransitCreationAttributes, Partial<TransitAttributes>> {
 
@@ -17,7 +17,7 @@ export class TransitRepository implements IRepository<Transit, TransitCreationAt
     }
 
     findByBadgeGateAndDate(badgeId: string, gateId?: string, startDate?: Date, endDate?: Date): Promise<Transit[]> {
-        let filter: WhereOptions<TransitAttributes> = {badgeId: badgeId};
+        let filter: WhereOptions<TransitAttributes> = { badgeId: badgeId };
         if (gateId) filter.gateId = gateId;
 
         if (startDate && endDate) {
@@ -34,6 +34,17 @@ export class TransitRepository implements IRepository<Transit, TransitCreationAt
             };
         }
 
+        return this.transitDao.getManyFiltered(filter);
+    }
+
+    async findAllInRange(start: Date, end: Date): Promise<Transit[]> {
+
+        const filter = {
+            createdAt: {
+                [Op.between]: [start, end]
+
+            }
+        }
         return this.transitDao.getManyFiltered(filter);
     }
 
