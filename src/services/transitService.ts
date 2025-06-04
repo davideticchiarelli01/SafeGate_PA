@@ -127,14 +127,13 @@ export class TransitService {
     async getTransitStats(badgeId: string, gateId?: string, startDate?: Date, endDate?: Date): Promise<object> {
 
         if (!badgeId) throw ErrorFactory.createError(ReasonPhrases.BAD_REQUEST, 'Badge ID is required');
+
         const badge: Badge | null = await this.badgeRepo.findById(badgeId);
         if (!badge) throw ErrorFactory.createError(ReasonPhrases.NOT_FOUND, 'Badge not found');
 
         if (gateId) {
             const gate: Gate | null = await this.gateRepo.findById(gateId);
-            if (!gate) {
-                throw ErrorFactory.createError(ReasonPhrases.NOT_FOUND, 'Gate not found');
-            }
+            if (!gate) throw ErrorFactory.createError(ReasonPhrases.NOT_FOUND, 'Gate not found');
         }
 
         if (startDate && endDate && startDate > endDate) {
@@ -190,6 +189,7 @@ export class TransitService {
         };
     }
 
+    // handle case where start_date and end_date are not provided (the filter is optional)
     async generateGateReport(
         start_date: string,
         end_date: string,
@@ -224,6 +224,7 @@ export class TransitService {
         return await ReportFactory.format(format, reportData);
     }
 
+    // handle case where start_date and end_date are not provided (the filter is optional)
     async generateBadgeReport(
         start_date: string,
         end_date: string,
@@ -236,34 +237,38 @@ export class TransitService {
         const startDate = new Date(start_date as string);
         const endDate = new Date(end_date as string);
 
-        const transits = user.role === UserRole.Admin
-            ? await this.repo.findAllInRange(startDate, endDate)
-            : await (async () => {
-                const badge: Badge | null = await this.badgeRepo.findByUserId(user.id);
-                if (!badge) {
-                    throw ErrorFactory.createError(ReasonPhrases.NOT_FOUND, 'Badge not found for this user');
-                }
-                return await this.repo.findByBadgeGateAndDate(badge.id, undefined, startDate, endDate);
-            })();
-
-        //console.log(`Generating badge report for user ${user.id} with role ${user.role}, with ${transits.length} transits found`);
+        let transits: Transit []
         const grouped: Record<string, BadgeTransitsReport> = {};
 
+        if (user.role === UserRole.Admin) {
+            transits = await this.repo.findAllInRange(startDate, endDate);
+        } else {
+            const badge: Badge | null = await this.badgeRepo.findByUserId(user.id);
+            if (!badge) throw ErrorFactory.createError(ReasonPhrases.NOT_FOUND, 'Badge not found for this user');
+            return await this.repo.findByBadgeGateAndDate(badge.id, undefined, startDate, endDate);
+        }
+
+        const badgeIds: string[] = transits.map(t => t.badgeId);
+        const badges: Badge[] = await this.badgeRepo.findManyFilteredById(badgeIds);
+        const badgeMap: Map<string, Badge> = new Map(badges.map(b => [b.id, b]));
+
         for (const t of transits) {
-            const badgeId = t.badgeId;
+            const badgeId: string = t.badgeId;
+
             if (!grouped[badgeId]) {
-                const badge: Badge | null = await this.badgeRepo.findById(badgeId);
+                const badge: Badge | undefined = badgeMap.get(badgeId);
                 grouped[badgeId] = {
                     badgeId,
                     authorized: 0,
                     unauthorized: 0,
-                    status: badge?.status ?? BadgeStatus.Suspended //fallback default perchè senno mega arrotate
+                    status: badge?.status ?? BadgeStatus.Suspended
                 };
             }
 
-            if (t.status == TransitStatus.Authorized) grouped[badgeId].authorized++;
+            if (t.status === TransitStatus.Authorized) grouped[badgeId].authorized++;
             else grouped[badgeId].unauthorized++;
         }
+
 
         const reportData = Object.values(grouped);
         return await ReportFactory.format(format, reportData);
