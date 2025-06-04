@@ -11,6 +11,7 @@ import { GateRepository } from "../repositories/gateRepository";
 import { Gate } from "../models/gate";
 import { GateTransitsReport } from '../types/reportTypes';
 import { ReportFormatterFactory } from '../utils/reportFormatterFactory';
+import { ReportFormats } from '../enum/reportFormats';
 
 export class TransitService {
     constructor(
@@ -137,7 +138,7 @@ export class TransitService {
     async generateGateReport(
         start_date: string,
         end_date: string,
-        format: 'pdf' | 'csv' | 'json'
+        format: ReportFormats
     ): Promise<Buffer | string | object> {
 
         const startDate = new Date(start_date as string);

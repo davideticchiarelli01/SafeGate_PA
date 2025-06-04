@@ -89,7 +89,7 @@ export class TransitController {
 
             console.log(`Generating gate report from ${start_date} to ${end_date} in format ${format}`);
 
-            const result = await this.service.generateGateReport(start_date, end_date, format as 'pdf' | 'csv' | 'json');
+            const result = await this.service.generateGateReport(start_date, end_date, format as ReportFormats);
 
             switch (format) {
                 case 'pdf':

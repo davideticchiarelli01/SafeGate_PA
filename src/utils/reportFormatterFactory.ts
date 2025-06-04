@@ -1,15 +1,16 @@
 import { GateTransitsReport } from '../types/reportTypes';
+import { ReportFormats } from '../enum/reportFormats';
 import { Parser as Json2CsvParser } from 'json2csv';
 import PDFDocument from 'pdfkit';
 
 export class ReportFormatterFactory {
-    static async format(format: 'pdf' | 'csv' | 'json', data: GateTransitsReport[]): Promise<Buffer | string | object> {
+    static async format(format: ReportFormats, data: GateTransitsReport[]): Promise<Buffer | string | object> {
         switch (format) {
-            case 'pdf':
+            case ReportFormats.PDF:
                 return this.generatePdf(data);
-            case 'csv':
+            case ReportFormats.CSV:
                 return this.generateCsv(data);
-            case 'json':
+            case ReportFormats.JSON:
             default:
                 return data;
         }

@@ -7,7 +7,7 @@ const { transitController } = controllers;
 
 transitRouter.get("/transits", transitController.getAllTransits);
 transitRouter.get("/transits/:id", transitController.getTransit);
-transitRouter.post("/transits", gateOrAdminMiddleware, transitController.createTransit);
+transitRouter.post("/transits", authMiddleware, gateOrAdminMiddleware, transitController.createTransit);
 transitRouter.put("/transits/:id", adminMiddleware, transitController.updateTransit);
 transitRouter.delete("/transits/:id", adminMiddleware, transitController.deleteTransit);
 
