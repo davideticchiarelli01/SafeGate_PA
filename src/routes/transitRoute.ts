@@ -1,9 +1,9 @@
-import { Router } from "express";
-import { authMiddleware, adminMiddleware, gateOrAdminMiddleware } from "../middlewares/authMiddleware";
-import { controllers } from "../dependencies";
+import {Router} from "express";
+import {authMiddleware, adminMiddleware, gateOrAdminMiddleware} from "../middlewares/authMiddleware";
+import {controllers} from "../dependencies";
 
 const transitRouter = Router();
-const { transitController } = controllers;
+const {transitController} = controllers;
 
 transitRouter.get("/transits", transitController.getAllTransits);
 transitRouter.get("/transits/:id", transitController.getTransit);
@@ -14,5 +14,6 @@ transitRouter.delete("/transits/:id", adminMiddleware, transitController.deleteT
 transitRouter.get("/transits_stats/:badgeId", transitController.getTransitStats);
 
 transitRouter.get('/gate_report', authMiddleware, adminMiddleware, transitController.getGateReport);
+transitRouter.get('/badge_report', authMiddleware, adminMiddleware, transitController.getBadgeReport);
 
 export default transitRouter;

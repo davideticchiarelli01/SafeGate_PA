@@ -21,12 +21,13 @@ export class TransitService {
     ) {
     }
 
-    async getTransit(id: string, user: UserPayload): Promise<Transit | null> {
-        const transit: Transit | null = await this.repo.findById(id);
+    async getTransit(id: string, user?: UserPayload): Promise<Transit | null> {
 
-        if (!transit) {
-            throw ErrorFactory.createError(ReasonPhrases.NOT_FOUND, 'Transit not found');
-        }
+        if (!user) throw ErrorFactory.createError(ReasonPhrases.UNAUTHORIZED, 'User not authenticated');
+
+        const transit: Transit | null = await this.repo.findById(id);
+        if (!transit) throw ErrorFactory.createError(ReasonPhrases.NOT_FOUND, 'Transit not found');
+
         switch (user.role) {
             case UserRole.Admin:
                 return transit;
