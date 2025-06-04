@@ -1,17 +1,17 @@
-import { TransitRepository } from '../repositories/transitRepository';
-import { BadgeRepository } from '../repositories/badgeRepository';
-import { Transit, TransitAttributes, TransitCreationAttributes } from "../models/transit";
-import { ErrorFactory } from '../factories/errorFactory';
-import { ReasonPhrases } from 'http-status-codes';
-import { UserPayload } from '../utils/userPayload';
-import { UserRole } from '../enum/userRoles';
-import { Badge } from "../models/badge";
-import { TransitStatus } from "../enum/transitStatus";
-import { GateRepository } from "../repositories/gateRepository";
-import { Gate } from "../models/gate";
-import { GateTransitsReport } from '../types/reportTypes';
-import { ReportFormatterFactory } from '../utils/reportFormatterFactory';
-import { ReportFormats } from '../enum/reportFormats';
+import {TransitRepository} from '../repositories/transitRepository';
+import {BadgeRepository} from '../repositories/badgeRepository';
+import {Transit, TransitAttributes, TransitCreationAttributes} from "../models/transit";
+import {ErrorFactory} from '../factories/errorFactory';
+import {ReasonPhrases} from 'http-status-codes';
+import {UserPayload} from '../utils/userPayload';
+import {UserRole} from '../enum/userRoles';
+import {Badge} from "../models/badge";
+import {TransitStatus} from "../enum/transitStatus";
+import {GateRepository} from "../repositories/gateRepository";
+import {Gate} from "../models/gate";
+import {GateTransitsReport} from '../types/reportTypes';
+import {ReportFormatterFactory} from '../factories/reportFormatterFactory';
+import {ReportFormats} from '../enum/reportFormats';
 
 export class TransitService {
     constructor(
