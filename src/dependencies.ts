@@ -55,7 +55,8 @@ export const services = {
     transitService: new TransitService(
         repositories.transitRepository,
         repositories.badgeRepository,
-        repositories.gateRepository
+        repositories.gateRepository,
+        repositories.authorizationRepository
     )
 };
 

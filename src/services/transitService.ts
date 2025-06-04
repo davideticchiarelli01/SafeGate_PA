@@ -1,24 +1,28 @@
-import { TransitRepository } from '../repositories/transitRepository';
-import { BadgeRepository } from '../repositories/badgeRepository';
-import { Transit, TransitAttributes, TransitCreationAttributes } from "../models/transit";
-import { ErrorFactory } from '../factories/errorFactory';
-import { ReasonPhrases } from 'http-status-codes';
-import { UserPayload } from '../utils/userPayload';
-import { UserRole } from '../enum/userRoles';
-import { Badge } from "../models/badge";
-import { TransitStatus } from "../enum/transitStatus";
-import { GateRepository } from "../repositories/gateRepository";
-import { Gate } from "../models/gate";
-import { BadgeTransitsReport, GateTransitsReport } from '../enum/reportTypes';
-import { ReportFactory } from '../factories/reportFactory';
-import { ReportFormats } from '../enum/reportFormats';
-import { BadgeStatus } from '../enum/badgeStatus';
+import {TransitRepository} from "../repositories/transitRepository";
+import {BadgeRepository} from "../repositories/badgeRepository";
+import {AuthorizationRepository} from "../repositories/authorizationRepository";
+import {GateRepository} from "../repositories/gateRepository";
+import {UserPayload} from "../utils/userPayload";
+import {ErrorFactory} from "../factories/errorFactory";
+import {ReasonPhrases} from "http-status-codes";
+import {Transit, TransitAttributes, TransitCreationAttributes} from "../models/transit";
+import {UserRole} from "../enum/userRoles";
+import {TransitStatus} from "../enum/transitStatus";
+import {Gate} from "../models/gate";
+import {Badge} from "../models/badge";
+import {BadgeStatus} from "../enum/badgeStatus";
+import {Authorization} from "../models/authorization";
+import {ReportFactory} from "../factories/reportFactory";
+import {ReportFormats} from "../enum/reportFormats";
+import {BadgeTransitsReport, GateTransitsReport} from "../enum/reportTypes";
+
 
 export class TransitService {
     constructor(
         private repo: TransitRepository,
         private badgeRepo: BadgeRepository,
-        private gateRepo: GateRepository
+        private gateRepo: GateRepository,
+        private authRepo: AuthorizationRepository
     ) {
     }
 
@@ -49,12 +53,61 @@ export class TransitService {
         }
     }
 
-
     getAllTransits(): Promise<Transit[]> {
         return this.repo.findAll();
     }
 
     async createTransit(data: TransitCreationAttributes): Promise<Transit> {
+
+        let authorized: TransitStatus = TransitStatus.Unauthorized;
+        let dpiViolation: boolean = false;
+
+        const gateId: string = data.gateId;
+        const gate: Gate | null = await this.gateRepo.findById(gateId);
+        if (!gate) throw ErrorFactory.createError(ReasonPhrases.NOT_FOUND, 'Gate not found');
+
+        const badgeId: string = data.badgeId;
+        const badge: Badge | null = await this.badgeRepo.findById(badgeId);
+        if (!badge) throw ErrorFactory.createError(ReasonPhrases.NOT_FOUND, 'Badge not found');
+
+        if (badge.status === BadgeStatus.Active) {
+            const gateAuth: Authorization | null = await this.authRepo.findById(badgeId, gateId);
+            if (gateAuth) {
+                const requiredDPIs: string[] = gate.requiredDPIs || [];
+                const usedDPIs: string[] = data.usedDPIs || [];
+
+                dpiViolation = requiredDPIs.some(dpi => !usedDPIs.includes(dpi));
+                if (!dpiViolation) authorized = TransitStatus.Authorized;
+            }
+        }
+
+        if (authorized === TransitStatus.Unauthorized) {
+            badge.unauthorizedAttempts = (badge.unauthorizedAttempts || 0) + 1;
+            badge.firstUnauthorizedAttempt = badge.firstUnauthorizedAttempt || new Date();
+            const currentDate: Date = new Date();
+            const differenceInMinutes: number = (currentDate.getTime() - badge.firstUnauthorizedAttempt.getTime()) / (1000 * 60);
+
+            const MAX_ATTEMPTS = parseInt(process.env.MAX_UNAUTHORIZED_ATTEMPTS || '3');
+            const ATTEMPT_WINDOW = parseInt(process.env.UNAUTHORIZED_ATTEMPTS_WINDOW_MINUTES || '20');
+            if (badge.unauthorizedAttempts >= MAX_ATTEMPTS && differenceInMinutes <= ATTEMPT_WINDOW) {
+                badge.status = BadgeStatus.Suspended;
+            }
+        } else {
+            badge.unauthorizedAttempts = 0;
+            badge.firstUnauthorizedAttempt = null;
+        }
+
+        const badgeNewValue = {
+            status: badge.status,
+            unauthorizedAttempts: badge.unauthorizedAttempts,
+            firstUnauthorizedAttempt: badge.firstUnauthorizedAttempt
+        };
+
+        await this.badgeRepo.update(badge, badgeNewValue);
+
+        data.status = authorized;
+        data.DPIviolation = dpiViolation;
+
         return this.repo.create(data);
     }
 
