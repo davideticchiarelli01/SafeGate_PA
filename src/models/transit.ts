@@ -17,6 +17,7 @@ export interface TransitAttributes {
     status: TransitStatus;
     usedDPIs: string[];
     DPIviolation: boolean;
+    createdAt?: Date;
 }
 
 export interface TransitCreationAttributes {
@@ -26,6 +27,7 @@ export interface TransitCreationAttributes {
     status: TransitStatus;
     usedDPIs: string[];
     DPIviolation: boolean;
+    createdAt?: Date;
 }
 
 export class Transit extends Model<TransitAttributes, TransitCreationAttributes> implements TransitAttributes {
@@ -76,6 +78,7 @@ Transit.init(
             allowNull: false,
             defaultValue: false,
         }
+
     },
     {
         sequelize: sequelize,
