@@ -1,5 +1,7 @@
-import { IDao } from "./dao";
-import { Transit, TransitAttributes, TransitCreationAttributes } from "../models/transit";
+import {IDao} from "./dao";
+import {Transit, TransitAttributes, TransitCreationAttributes} from "../models/transit";
+import {WhereOptions} from "sequelize";
+import {Badge, BadgeAttributes} from "../models/badge";
 
 export class TransitDao implements IDao<Transit, TransitCreationAttributes, Partial<TransitAttributes>> {
 
@@ -9,6 +11,10 @@ export class TransitDao implements IDao<Transit, TransitCreationAttributes, Part
 
     async getAll(): Promise<Transit[]> {
         return await Transit.findAll();
+    }
+
+    async getManyFiltered(filter: WhereOptions<TransitAttributes>): Promise<Transit[]> {
+        return await Transit.findAll({where: filter});
     }
 
     async create(transit: TransitCreationAttributes): Promise<Transit> {

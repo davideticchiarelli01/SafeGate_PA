@@ -54,7 +54,8 @@ export const services = {
     gateService: new GateService(repositories.gateRepository),
     transitService: new TransitService(
         repositories.transitRepository,
-        repositories.badgeRepository
+        repositories.badgeRepository,
+        repositories.gateRepository
     )
 };
 
