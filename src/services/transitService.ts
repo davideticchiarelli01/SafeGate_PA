@@ -1,20 +1,20 @@
-import {TransitRepository} from "../repositories/transitRepository";
-import {BadgeRepository} from "../repositories/badgeRepository";
-import {AuthorizationRepository} from "../repositories/authorizationRepository";
-import {GateRepository} from "../repositories/gateRepository";
-import {UserPayload} from "../utils/userPayload";
-import {ErrorFactory} from "../factories/errorFactory";
-import {ReasonPhrases} from "http-status-codes";
-import {Transit, TransitAttributes, TransitCreationAttributes} from "../models/transit";
-import {UserRole} from "../enum/userRoles";
-import {TransitStatus} from "../enum/transitStatus";
-import {Gate} from "../models/gate";
-import {Badge} from "../models/badge";
-import {BadgeStatus} from "../enum/badgeStatus";
-import {Authorization} from "../models/authorization";
-import {ReportFactory} from "../factories/reportFactory";
-import {ReportFormats} from "../enum/reportFormats";
-import {BadgeTransitsReport, GateTransitsReport} from "../enum/reportTypes";
+import { TransitRepository } from "../repositories/transitRepository";
+import { BadgeRepository } from "../repositories/badgeRepository";
+import { AuthorizationRepository } from "../repositories/authorizationRepository";
+import { GateRepository } from "../repositories/gateRepository";
+import { UserPayload } from "../utils/userPayload";
+import { ErrorFactory } from "../factories/errorFactory";
+import { ReasonPhrases, StatusCodes } from "http-status-codes";
+import { Transit, TransitAttributes, TransitCreationAttributes } from "../models/transit";
+import { UserRole } from "../enum/userRoles";
+import { TransitStatus } from "../enum/transitStatus";
+import { Gate } from "../models/gate";
+import { Badge } from "../models/badge";
+import { BadgeStatus } from "../enum/badgeStatus";
+import { Authorization } from "../models/authorization";
+import { ReportFactory } from "../factories/reportFactory";
+import { ReportFormats } from "../enum/reportFormats";
+import { BadgeTransitsReport, GateTransitsReport } from "../enum/reportTypes";
 
 
 export class TransitService {
@@ -199,6 +199,9 @@ export class TransitService {
         const startDate = new Date(start_date as string);
         const endDate = new Date(end_date as string);
 
+        if (!start_date || !end_date) throw ErrorFactory.createError(ReasonPhrases.BAD_REQUEST, 'Start date and end date are required');
+        if (start_date > end_date) throw ErrorFactory.createError(ReasonPhrases.BAD_REQUEST, 'Start date cannot be after end date');
+
         const transits = await this.repo.findAllInRange(startDate, endDate);
 
         const grouped: Record<string, GateTransitsReport> = {};
@@ -237,7 +240,10 @@ export class TransitService {
         const startDate = new Date(start_date as string);
         const endDate = new Date(end_date as string);
 
-        let transits: Transit []
+        if (!start_date || !end_date) throw ErrorFactory.createError(ReasonPhrases.BAD_REQUEST, 'Start date and end date are required');
+        if (start_date > end_date) throw ErrorFactory.createError(ReasonPhrases.BAD_REQUEST, 'Start date cannot be after end date');
+
+        let transits: Transit[]
         const grouped: Record<string, BadgeTransitsReport> = {};
 
         if (user.role === UserRole.Admin) {

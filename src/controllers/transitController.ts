@@ -83,11 +83,6 @@ export class TransitController {
                 format: ReportFormats;
             };
 
-            if (!start_date || !end_date) return res.status(StatusCodes.BAD_REQUEST).json({ message: 'Start date and end date are required' });
-            if (start_date > end_date) return res.status(StatusCodes.BAD_REQUEST).json({ message: 'Start date cannot be after end date' });
-
-            console.log(`Generating gate report from ${start_date} to ${end_date} in format ${format}`);
-
             const result = await this.service.generateGateReport(start_date, end_date, format as ReportFormats);
 
             switch (format) {
@@ -116,12 +111,6 @@ export class TransitController {
             };
 
             const user: UserPayload | undefined = req.user;
-
-            if (!start_date || !end_date) return res.status(StatusCodes.BAD_REQUEST).json({ message: 'Start date and end date are required' });
-            if (start_date > end_date) return res.status(StatusCodes.BAD_REQUEST).json({ message: 'Start date cannot be after end date' });
-
-            console.log(`Generating gate report from ${start_date} to ${end_date} in format ${format}`);
-
             const result = await this.service.generateBadgeReport(start_date, end_date, format as ReportFormats, user);
 
             switch (format) {
