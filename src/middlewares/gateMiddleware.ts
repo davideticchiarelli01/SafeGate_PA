@@ -42,9 +42,9 @@ const handleValidation = (req: Request, res: Response, next: NextFunction) => {
 
         return next(error);
     }
-    req.body = matchedData(req, {locations: ['body']});
-    req.params = matchedData(req, {locations: ['params']});
-    req.query = matchedData(req, {locations: ['query']});
+    // req.body = matchedData(req, {locations: ['body']});
+    // req.params = matchedData(req, {locations: ['params']});
+    // req.query = matchedData(req, {locations: ['query']});
     next();
 };
 
