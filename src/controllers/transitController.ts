@@ -6,6 +6,7 @@ import { ReportFormats } from "../enum/reportFormats";
 import { ErrorFactory } from "../factories/errorFactory";
 import { UserPayload } from "../utils/userPayload";
 import { start } from 'repl';
+import Logger from '../logger/logger';
 
 export class TransitController {
     constructor(private service: TransitService) {
@@ -35,6 +36,7 @@ export class TransitController {
         try {
             const data: TransitCreationAttributes = req.body;
             const transit: Transit = await this.service.createTransit(data);
+            Logger.info(`Transit created with ID: ${transit.id}`);
             return res.status(StatusCodes.CREATED).json({ message: 'Transit created', transit });
         } catch (err) {
             next(err);

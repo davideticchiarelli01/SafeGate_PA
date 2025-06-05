@@ -9,6 +9,7 @@ services:
       - .env
     volumes:
       - ./jwt_keys:/usr/src/app/jwt_keys:ro # Read-only volume for JWT keys
+      - ./src/logger/logs:/usr/src/app/src/logger/logs
     depends_on:
       postgres:
         condition: service_healthy
