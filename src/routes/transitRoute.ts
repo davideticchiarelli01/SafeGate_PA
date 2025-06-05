@@ -9,7 +9,7 @@ transitRouter.get("/transits", transitController.getAllTransits);
 transitRouter.get("/transits/:id", transitController.getTransit);
 //transitRouter.post("/transits", authMiddleware, gateOrAdminMiddleware, transitController.createTransit);
 transitRouter.post("/transits", transitController.createTransit);
-transitRouter.put("/transits/:id", adminMiddleware, transitController.updateTransit);
+transitRouter.put("/transits/:id", authMiddleware, adminMiddleware, transitController.updateTransit);
 transitRouter.delete("/transits/:id", adminMiddleware, transitController.deleteTransit);
 
 transitRouter.get("/transits_stats/:badgeId", transitController.getTransitStats);
