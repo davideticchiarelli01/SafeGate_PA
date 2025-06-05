@@ -1,6 +1,6 @@
 import { IRepository } from "./repository";
 import { TransitDao } from "../dao/transitDao";
-import { Transit, TransitAttributes, TransitCreationAttributes } from "../models/transit";
+import { Transit, TransitAttributes, TransitCreationAttributes, TransitUpdateAttributes } from "../models/transit";
 import { UserPayload } from "../utils/userPayload";
 import { UserRole } from "../enum/userRoles";
 import { User } from "../models/user";
@@ -64,7 +64,7 @@ export class TransitRepository implements IRepository<Transit, TransitCreationAt
         return this.transitDao.create(data);
     }
 
-    update(transit: Transit, data: Partial<TransitAttributes>): Promise<Transit> {
+    update(transit: Transit, data: TransitUpdateAttributes): Promise<Transit> {
         return this.transitDao.update(transit, data);
     }
 

@@ -1,5 +1,5 @@
 import { IDao } from "./dao";
-import { Transit, TransitAttributes, TransitCreationAttributes } from "../models/transit";
+import { Transit, TransitAttributes, TransitCreationAttributes, TransitUpdateAttributes } from "../models/transit";
 import { WhereOptions } from "sequelize";
 import { Badge, BadgeAttributes } from "../models/badge";
 
@@ -21,7 +21,7 @@ export class TransitDao implements IDao<Transit, TransitCreationAttributes, Part
         return await Transit.create(transit);
     }
 
-    async update(transit: Transit, data: Partial<TransitAttributes>): Promise<Transit> {
+    async update(transit: Transit, data: TransitUpdateAttributes): Promise<Transit> {
         return await transit.update(data);
     }
 
