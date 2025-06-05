@@ -1,9 +1,9 @@
-import { ReasonPhrases, StatusCodes } from "http-status-codes";
-import { NextFunction, Request, Response } from "express";
-import { ErrorFactory, HttpError } from "../factories/errorFactory";
+import {ReasonPhrases, StatusCodes} from "http-status-codes";
+import {NextFunction, Request, Response} from "express";
+import {ErrorFactory, HttpError} from "../factories/errorFactory";
 
 const handleError = (err: HttpError, res: Response) => {
-    const { statusCode, message } = err;
+    const {statusCode, message} = err;
 
     res.status(statusCode || StatusCodes.INTERNAL_SERVER_ERROR).json({
         status: "error",
@@ -13,7 +13,8 @@ const handleError = (err: HttpError, res: Response) => {
             .replace(/&quot;/g, '"')
             .replace(/&amp;/g, '&')
             .replace(/&lt;/g, '<')
-            .replace(/&gt;/g, '>')
+            .replace(/&gt;/g, '>'),
+        details: err.details || {},
     });
 };
 

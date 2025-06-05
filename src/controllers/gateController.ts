@@ -1,7 +1,7 @@
 import {Request, Response, NextFunction} from 'express';
 import {GateService} from '../services/gateService';
-import {StatusCodes} from 'http-status-codes';
 import {Gate, GateAttributes, GateCreationAttributes} from "../models/gate";
+import {StatusCodes} from 'http-status-codes';
 
 export class GateController {
     constructor(private service: GateService) {
@@ -9,7 +9,8 @@ export class GateController {
 
     getGate = async (req: Request, res: Response, next: NextFunction) => {
         try {
-            const gate: Gate | null = await this.service.getGate(req.params.id);
+            const {id} = req.params;
+            const gate: Gate = await this.service.getGate(id);
             return res.status(StatusCodes.OK).json(gate);
         } catch (err) {
             next(err);
@@ -27,7 +28,9 @@ export class GateController {
 
     createGate = async (req: Request, res: Response, next: NextFunction) => {
         try {
-            const data: GateCreationAttributes = req.body;
+            const {name, requiredDPIs} = req.body;
+            const data: GateCreationAttributes = {name, requiredDPIs};
+
             const gate: Gate = await this.service.createGate(data);
             return res.status(StatusCodes.CREATED).json({message: 'Gate created', gate});
         } catch (err) {
@@ -37,17 +40,23 @@ export class GateController {
 
     updateGate = async (req: Request, res: Response, next: NextFunction) => {
         try {
-            const data: Partial<GateAttributes> = req.body;
-            const gate: Gate | null = await this.service.updateGate(req.params.id, data);
+            const {id} = req.params;
+            const {requiredDPIs} = req.body;
+            const data: Partial<GateAttributes> = {requiredDPIs};
+
+            const gate: Gate = await this.service.updateGate(id, data);
             return res.status(StatusCodes.OK).json(gate);
         } catch (err) {
             next(err);
         }
     };
 
+
     deleteGate = async (req: Request, res: Response, next: NextFunction) => {
         try {
-            await this.service.deleteGate(req.params.id);
+            const {id} = req.params;
+
+            await this.service.deleteGate(id);
             return res.status(StatusCodes.NO_CONTENT).send();
         } catch (err) {
             next(err);
