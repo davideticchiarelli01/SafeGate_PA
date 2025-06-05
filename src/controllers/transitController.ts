@@ -31,10 +31,27 @@ export class TransitController {
             next(err);
         }
     };
-
+//     export interface TransitCreationAttributes {
+//     id?: string
+//     gateId: string
+//     badgeId: string
+//     status: TransitStatus
+//     usedDPIs: string[]
+//     DPIviolation: boolean
+//     createdAt?: Date
+// }
     createTransit = async (req: Request, res: Response, next: NextFunction) => {
         try {
-            const data: TransitCreationAttributes = req.body;
+            const {gateId, badgeId, status, usedDPIs, DPIviolation} = req.body;
+
+            const data: TransitCreationAttributes = {
+                gateId,
+                badgeId,
+                status,
+                usedDPIs,
+                DPIviolation
+            }
+
             const transit: Transit = await this.service.createTransit(data);
             return res.status(StatusCodes.CREATED).json({message: 'Transit created', transit});
         } catch (err) {
@@ -42,6 +59,15 @@ export class TransitController {
         }
     };
 
+//     export interface TransitAttributes {
+//     id: string
+//     gateId: string
+//     badgeId: string
+//     status: TransitStatus
+//     usedDPIs: string[]
+//     DPIviolation: boolean
+//     createdAt?: Date
+// }
     updateTransit = async (req: Request, res: Response, next: NextFunction) => {
         try {
             const data: Partial<TransitAttributes> = req.body;

@@ -1,7 +1,7 @@
-import { param, body, matchedData, validationResult } from 'express-validator';
-import { NextFunction, Request, Response } from 'express';
-import { ErrorFactory, HttpError } from '../factories/errorFactory';
-import { ReasonPhrases } from 'http-status-codes';
+import {param, body, matchedData, validationResult} from 'express-validator';
+import {NextFunction, Request, Response} from 'express';
+import {ErrorFactory, HttpError} from '../factories/errorFactory';
+import {ReasonPhrases} from 'http-status-codes';
 
 const badgeIdParamValidation = param('badgeId')
     .exists().withMessage('Param "badgeId" is required')
@@ -44,7 +44,9 @@ const handleValidation = (req: Request, res: Response, next: NextFunction) => {
 
         return next(error);
     }
-    req.body = matchedData(req, { locations: ['body', 'params', 'query'] }); // remove not validated fields from req.body
+    req.body = matchedData(req, {locations: ['body']});
+    req.params = matchedData(req, {locations: ['params']});
+    req.query = matchedData(req, {locations: ['query']});
     next();
 };
 

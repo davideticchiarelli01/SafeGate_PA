@@ -42,10 +42,11 @@ const handleValidation = (req: Request, res: Response, next: NextFunction) => {
 
         return next(error);
     }
-    req.body = matchedData(req, {locations: ['body', 'params', 'query']}); // remove not validated fields from req.body
+    req.body = matchedData(req, {locations: ['body']});
+    req.params = matchedData(req, {locations: ['params']});
+    req.query = matchedData(req, {locations: ['query']});
     next();
 };
-
 
 export const validateGateCreation = [
     nameValidation,
