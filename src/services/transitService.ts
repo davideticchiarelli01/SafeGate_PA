@@ -1,20 +1,20 @@
-import {TransitRepository} from "../repositories/transitRepository";
-import {BadgeRepository} from "../repositories/badgeRepository";
-import {AuthorizationRepository} from "../repositories/authorizationRepository";
-import {GateRepository} from "../repositories/gateRepository";
-import {UserPayload} from "../utils/userPayload";
-import {ErrorFactory} from "../factories/errorFactory";
-import {ReasonPhrases} from "http-status-codes";
-import {Transit, TransitAttributes, TransitCreationAttributes} from "../models/transit";
-import {UserRole} from "../enum/userRoles";
-import {TransitStatus} from "../enum/transitStatus";
-import {Gate} from "../models/gate";
-import {Badge} from "../models/badge";
-import {BadgeStatus} from "../enum/badgeStatus";
-import {Authorization} from "../models/authorization";
-import {ReportFactory} from "../factories/reportFactory";
-import {ReportFormats} from "../enum/reportFormats";
-import {BadgeTransitsReport, GateTransitsReport} from "../enum/reportTypes";
+import { TransitRepository } from "../repositories/transitRepository";
+import { BadgeRepository } from "../repositories/badgeRepository";
+import { AuthorizationRepository } from "../repositories/authorizationRepository";
+import { GateRepository } from "../repositories/gateRepository";
+import { UserPayload } from "../utils/userPayload";
+import { ErrorFactory } from "../factories/errorFactory";
+import { ReasonPhrases } from "http-status-codes";
+import { Transit, TransitAttributes, TransitCreationAttributes, TransitUpdateAttributes } from "../models/transit";
+import { UserRole } from "../enum/userRoles";
+import { TransitStatus } from "../enum/transitStatus";
+import { Gate } from "../models/gate";
+import { Badge } from "../models/badge";
+import { BadgeStatus } from "../enum/badgeStatus";
+import { Authorization } from "../models/authorization";
+import { ReportFactory } from "../factories/reportFactory";
+import { ReportFormats } from "../enum/reportFormats";
+import { BadgeTransitsReport, GateTransitsReport } from "../enum/reportTypes";
 import Logger from "../logger/logger";
 
 
@@ -135,7 +135,7 @@ export class TransitService {
         return this.repo.create(data);
     }
 
-    async updateTransit(id: string, data: Partial<TransitAttributes>): Promise<Transit> {
+    async updateTransit(id: string, data: TransitUpdateAttributes): Promise<Transit> {
         const transit: Transit | null = await this.repo.findById(id);
         if (!transit) throw ErrorFactory.createError(ReasonPhrases.NOT_FOUND, 'Transit not found');
         return this.repo.update(transit, data);

@@ -87,3 +87,5 @@ Transit.init(
         timestamps: true,
     }
 );
+
+export type TransitUpdateAttributes = Partial<Omit<TransitAttributes, 'id' | 'badgeId' | 'gateId' | 'createdAt'>>;
