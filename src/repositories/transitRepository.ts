@@ -37,14 +37,22 @@ export class TransitRepository implements IRepository<Transit, TransitCreationAt
         return this.transitDao.getManyFiltered(filter);
     }
 
-    async findAllInRange(start: Date, end: Date): Promise<Transit[]> {
-
-        const filter = {
-            createdAt: {
+    async findAllInRange(start?: Date, end?: Date): Promise<Transit[]> {
+        const filter: WhereOptions<TransitAttributes> = {};
+        if (start && end) {
+            filter.createdAt = {
                 [Op.between]: [start, end]
-
-            }
+            };
+        } else if (start) {
+            filter.createdAt = {
+                [Op.gte]: start
+            };
+        } else if (end) {
+            filter.createdAt = {
+                [Op.lte]: end
+            };
         }
+
         return this.transitDao.getManyFiltered(filter);
     }
 

@@ -189,21 +189,17 @@ export class TransitService {
         };
     }
 
-    // handle case where start_date and end_date are not provided (the filter is optional)
     async generateGateReport(
-        start_date: string,
-        end_date: string,
-        format: ReportFormats
+        format: ReportFormats,
+        startDate?: Date,
+        endDate?: Date,
     ): Promise<Buffer | string | object> {
 
-        const startDate = new Date(start_date as string);
-        const endDate = new Date(end_date as string);
-
-        if (!start_date || !end_date) throw ErrorFactory.createError(ReasonPhrases.BAD_REQUEST, 'Start date and end date are required');
-        if (start_date > end_date) throw ErrorFactory.createError(ReasonPhrases.BAD_REQUEST, 'Start date cannot be after end date');
+        if (startDate && endDate && startDate > endDate) {
+            throw ErrorFactory.createError(ReasonPhrases.BAD_REQUEST, 'Start date cannot be after end date');
+        }
 
         const transits = await this.repo.findAllInRange(startDate, endDate);
-
         const grouped: Record<string, GateTransitsReport> = {};
 
         for (const t of transits) {
@@ -227,21 +223,18 @@ export class TransitService {
         return await ReportFactory.format(format, reportData);
     }
 
-    // handle case where start_date and end_date are not provided (the filter is optional)
     async generateBadgeReport(
-        start_date: string,
-        end_date: string,
         format: ReportFormats,
+        startDate?: Date,
+        endDate?: Date,
         user?: UserPayload
     ): Promise<Buffer | string | object> {
 
         if (!user) throw ErrorFactory.createError(ReasonPhrases.UNAUTHORIZED, 'User not authenticated');
 
-        const startDate = new Date(start_date as string);
-        const endDate = new Date(end_date as string);
-
-        if (!start_date || !end_date) throw ErrorFactory.createError(ReasonPhrases.BAD_REQUEST, 'Start date and end date are required');
-        if (start_date > end_date) throw ErrorFactory.createError(ReasonPhrases.BAD_REQUEST, 'Start date cannot be after end date');
+        if (startDate && endDate && startDate > endDate) {
+            throw ErrorFactory.createError(ReasonPhrases.BAD_REQUEST, 'Start date cannot be after end date');
+        }
 
         let transits: Transit[]
         const grouped: Record<string, BadgeTransitsReport> = {};

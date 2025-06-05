@@ -5,6 +5,7 @@ import { Transit, TransitAttributes, TransitCreationAttributes } from "../models
 import { ReportFormats } from "../enum/reportFormats";
 import { ErrorFactory } from "../factories/errorFactory";
 import { UserPayload } from "../utils/userPayload";
+import { start } from 'repl';
 
 export class TransitController {
     constructor(private service: TransitService) {
@@ -77,13 +78,16 @@ export class TransitController {
 
     getGateReport = async (req: Request, res: Response, next: NextFunction) => {
         try {
-            const { start_date, end_date, format = ReportFormats.JSON } = req.query as {
-                start_date: string;
-                end_date: string;
-                format: ReportFormats;
-            };
+            const { format = ReportFormats.JSON } = req.query;
+            const queryParams = req.query;
 
-            const result = await this.service.generateGateReport(start_date, end_date, format as ReportFormats);
+            const startDate: Date | undefined = queryParams.startDate ? new Date(queryParams.startDate as string) : undefined;
+            const endDate: Date | undefined = queryParams.endDate ? new Date(queryParams.endDate as string) : undefined;
+
+            console.log('Query params:', req.query);
+            console.log('Start date:', startDate, 'End date:', endDate, 'Format:', format);
+
+            const result = await this.service.generateGateReport(format as ReportFormats, startDate, endDate);
 
             switch (format) {
                 case 'pdf':
@@ -104,14 +108,14 @@ export class TransitController {
 
     getBadgeReport = async (req: Request, res: Response, next: NextFunction) => {
         try {
-            const { start_date, end_date, format = ReportFormats.JSON } = req.query as {
-                start_date: string;
-                end_date: string;
-                format: ReportFormats;
-            };
+            const { format = ReportFormats.JSON } = req.query;
+            const queryParams = req.query;
 
             const user: UserPayload | undefined = req.user;
-            const result = await this.service.generateBadgeReport(start_date, end_date, format as ReportFormats, user);
+            const startDate: Date | undefined = queryParams.startDate ? new Date(queryParams.startDate as string) : undefined;
+            const endDate: Date | undefined = queryParams.endDate ? new Date(queryParams.endDate as string) : undefined;
+
+            const result = await this.service.generateBadgeReport(format as ReportFormats, startDate, endDate, user);
 
             switch (format) {
                 case 'pdf':
