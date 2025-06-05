@@ -1,20 +1,20 @@
-import { TransitRepository } from "../repositories/transitRepository";
-import { BadgeRepository } from "../repositories/badgeRepository";
-import { AuthorizationRepository } from "../repositories/authorizationRepository";
-import { GateRepository } from "../repositories/gateRepository";
-import { UserPayload } from "../utils/userPayload";
-import { ErrorFactory } from "../factories/errorFactory";
-import { ReasonPhrases, StatusCodes } from "http-status-codes";
-import { Transit, TransitAttributes, TransitCreationAttributes } from "../models/transit";
-import { UserRole } from "../enum/userRoles";
-import { TransitStatus } from "../enum/transitStatus";
-import { Gate } from "../models/gate";
-import { Badge } from "../models/badge";
-import { BadgeStatus } from "../enum/badgeStatus";
-import { Authorization } from "../models/authorization";
-import { ReportFactory } from "../factories/reportFactory";
-import { ReportFormats } from "../enum/reportFormats";
-import { BadgeTransitsReport, GateTransitsReport } from "../enum/reportTypes";
+import {TransitRepository} from "../repositories/transitRepository";
+import {BadgeRepository} from "../repositories/badgeRepository";
+import {AuthorizationRepository} from "../repositories/authorizationRepository";
+import {GateRepository} from "../repositories/gateRepository";
+import {UserPayload} from "../utils/userPayload";
+import {ErrorFactory} from "../factories/errorFactory";
+import {ReasonPhrases} from "http-status-codes";
+import {Transit, TransitAttributes, TransitCreationAttributes} from "../models/transit";
+import {UserRole} from "../enum/userRoles";
+import {TransitStatus} from "../enum/transitStatus";
+import {Gate} from "../models/gate";
+import {Badge} from "../models/badge";
+import {BadgeStatus} from "../enum/badgeStatus";
+import {Authorization} from "../models/authorization";
+import {ReportFactory} from "../factories/reportFactory";
+import {ReportFormats} from "../enum/reportFormats";
+import {BadgeTransitsReport, GateTransitsReport} from "../enum/reportTypes";
 import Logger from "../logger/logger";
 
 
@@ -39,17 +39,29 @@ export class TransitService {
                 return transit;
 
             case UserRole.User:
-                const badge = await this.badgeRepo.findById(transit.badgeId);
-                if (badge && badge.userId === user.id) {
-                    return transit;
+                const badge: Badge | null = await this.badgeRepo.findById(transit.badgeId);
+
+                if (!badge) {
+                    throw ErrorFactory.createError(
+                        ReasonPhrases.NOT_FOUND,
+                        'Badge associated with this transit not found'
+                    );
                 }
-                throw ErrorFactory.createError(ReasonPhrases.NOT_FOUND, 'Transit not found for this user');
+
+                if (badge.userId !== user.id) {
+                    throw ErrorFactory.createError(
+                        ReasonPhrases.NOT_FOUND,
+                        'Transit not found for this user'
+                    );
+                }
+
+                return transit;
 
             case UserRole.Gate:
             default:
                 throw ErrorFactory.createError(
-                    ReasonPhrases.UNAUTHORIZED,
-                    'Permission denied: gate users cannot access this resource'
+                    ReasonPhrases.FORBIDDEN,
+                    'Access to this resource is not allowed'
                 );
         }
     }
@@ -80,20 +92,21 @@ export class TransitService {
 
                 dpiViolation = requiredDPIs.some(dpi => !usedDPIs.includes(dpi));
                 if (!dpiViolation) authorized = TransitStatus.Authorized;
-                else {
-                    message = `DPI violation detected`;
-                }
+                else message = `DPI violation detected`;
             }
         }
 
         if (authorized === TransitStatus.Unauthorized) {
+
             badge.unauthorizedAttempts = (badge.unauthorizedAttempts || 0) + 1;
             badge.firstUnauthorizedAttempt = badge.firstUnauthorizedAttempt || new Date();
+
             const currentDate: Date = new Date();
             const differenceInMinutes: number = (currentDate.getTime() - badge.firstUnauthorizedAttempt.getTime()) / (1000 * 60);
 
-            const MAX_ATTEMPTS = parseInt(process.env.MAX_UNAUTHORIZED_ATTEMPTS || '3');
-            const ATTEMPT_WINDOW = parseInt(process.env.UNAUTHORIZED_ATTEMPTS_WINDOW_MINUTES || '20');
+            const MAX_ATTEMPTS: number = parseInt(process.env.MAX_UNAUTHORIZED_ATTEMPTS || '3');
+            const ATTEMPT_WINDOW: number = parseInt(process.env.UNAUTHORIZED_ATTEMPTS_WINDOW_MINUTES || '20');
+
             if (badge.unauthorizedAttempts >= MAX_ATTEMPTS && differenceInMinutes <= ATTEMPT_WINDOW) {
                 badge.status = BadgeStatus.Suspended;
             }

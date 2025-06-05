@@ -1,11 +1,11 @@
-import { Request, Response, NextFunction } from 'express';
-import { TransitService } from '../services/transitService';
-import { ReasonPhrases, StatusCodes } from 'http-status-codes';
-import { Transit, TransitAttributes, TransitCreationAttributes } from "../models/transit";
-import { ReportFormats } from "../enum/reportFormats";
-import { ErrorFactory } from "../factories/errorFactory";
-import { UserPayload } from "../utils/userPayload";
-import { start } from 'repl';
+import {Request, Response, NextFunction} from 'express';
+import {TransitService} from '../services/transitService';
+import {ReasonPhrases, StatusCodes} from 'http-status-codes';
+import {Transit, TransitAttributes, TransitCreationAttributes} from "../models/transit";
+import {ReportFormats} from "../enum/reportFormats";
+import {ErrorFactory} from "../factories/errorFactory";
+import {UserPayload} from "../utils/userPayload";
+import {start} from 'repl';
 import Logger from '../logger/logger';
 
 export class TransitController {
@@ -36,7 +36,7 @@ export class TransitController {
         try {
             const data: TransitCreationAttributes = req.body;
             const transit: Transit = await this.service.createTransit(data);
-            return res.status(StatusCodes.CREATED).json({ message: 'Transit created', transit });
+            return res.status(StatusCodes.CREATED).json({message: 'Transit created', transit});
         } catch (err) {
             next(err);
         }
@@ -54,7 +54,8 @@ export class TransitController {
 
     deleteTransit = async (req: Request, res: Response, next: NextFunction) => {
         try {
-            await this.service.deleteTransit(req.params.id);
+            const id: string = req.params.id;
+            await this.service.deleteTransit(id);
             return res.status(StatusCodes.NO_CONTENT).send();
         } catch (err) {
             next(err);
@@ -62,7 +63,7 @@ export class TransitController {
     };
 
     getTransitStats = async (req: Request, res: Response, next: NextFunction) => {
-        const { badgeId } = req.params;
+        const {badgeId} = req.params;
         const query = req.query;
 
         try {
@@ -79,7 +80,7 @@ export class TransitController {
 
     getGateReport = async (req: Request, res: Response, next: NextFunction) => {
         try {
-            const { format = ReportFormats.JSON } = req.query;
+            const {format = ReportFormats.JSON} = req.query;
             const queryParams = req.query;
 
             const startDate: Date | undefined = queryParams.startDate ? new Date(queryParams.startDate as string) : undefined;
@@ -109,7 +110,7 @@ export class TransitController {
 
     getBadgeReport = async (req: Request, res: Response, next: NextFunction) => {
         try {
-            const { format = ReportFormats.JSON } = req.query;
+            const {format = ReportFormats.JSON} = req.query;
             const queryParams = req.query;
 
             const user: UserPayload | undefined = req.user;
