@@ -3,9 +3,11 @@ import {BadgeRepository} from '../repositories/badgeRepository';
 import {BadgeStatus} from "../enum/badgeStatus";
 import {ErrorFactory} from '../factories/errorFactory';
 import {ReasonPhrases} from 'http-status-codes';
+import {User} from "../models/user";
+import {UserRepository} from "../repositories/userRepository";
 
 export class BadgeService {
-    constructor(private repo: BadgeRepository) {
+    constructor(private repo: BadgeRepository, private userRepo: UserRepository) {
     }
 
     async getBadge(id: string): Promise<Badge> {
@@ -24,19 +26,32 @@ export class BadgeService {
     }
 
     async createBadge(data: BadgeCreationAttributes): Promise<Badge> {
+        const user: User | null = await this.userRepo.findById(data.userId);
+        if (!user) throw ErrorFactory.createError(ReasonPhrases.NOT_FOUND, 'User not found');
+
         const badge: Badge | null = await this.repo.findByUserId(data.userId);
         if (badge) throw ErrorFactory.createError(ReasonPhrases.CONFLICT, 'A Badge already exists for this user');
+
         return this.repo.create(data);
     }
 
     async updateBadge(id: string, data: Partial<BadgeAttributes>): Promise<Badge> {
         const badge: Badge | null = await this.repo.findById(id);
         if (!badge) throw ErrorFactory.createError(ReasonPhrases.NOT_FOUND, 'Badge not found');
+
+        // If the unauthorized attempts are set to 0, reset the firstUnauthorizedAttempt to null
+        if (data.unauthorizedAttempts === 0) {
+            data.firstUnauthorizedAttempt = null;
+        }
+
         return this.repo.update(badge, data);
     }
 
     async reactivateBadges(ids: string[]): Promise<Badge[]> {
-        if (ids.length === 0) return [];
+        if (!Array.isArray(ids) || ids.length === 0) {
+            throw ErrorFactory.createError(ReasonPhrases.BAD_REQUEST, 'The list of badge IDs cannot be empty');
+        }
+
         const suspended: Badge[] = await this.repo.findManyByIdAndStatus(ids, BadgeStatus.Suspended);
         if (suspended.length === 0) return [];
 

@@ -1,21 +1,22 @@
-import { TransitRepository } from "../repositories/transitRepository";
-import { BadgeRepository } from "../repositories/badgeRepository";
-import { AuthorizationRepository } from "../repositories/authorizationRepository";
-import { GateRepository } from "../repositories/gateRepository";
-import { UserPayload } from "../utils/userPayload";
-import { ErrorFactory } from "../factories/errorFactory";
-import { ReasonPhrases } from "http-status-codes";
-import { Transit, TransitAttributes, TransitCreationAttributes, TransitUpdateAttributes } from "../models/transit";
-import { UserRole } from "../enum/userRoles";
-import { TransitStatus } from "../enum/transitStatus";
-import { Gate } from "../models/gate";
-import { Badge } from "../models/badge";
-import { BadgeStatus } from "../enum/badgeStatus";
-import { Authorization } from "../models/authorization";
-import { ReportFactory } from "../factories/reportFactory";
-import { ReportFormats } from "../enum/reportFormats";
-import { BadgeTransitsReport, GateTransitsReport } from "../enum/reportTypes";
+import {TransitRepository} from "../repositories/transitRepository";
+import {BadgeRepository} from "../repositories/badgeRepository";
+import {AuthorizationRepository} from "../repositories/authorizationRepository";
+import {GateRepository} from "../repositories/gateRepository";
+import {UserPayload} from "../utils/userPayload";
+import {ErrorFactory} from "../factories/errorFactory";
+import {ReasonPhrases} from "http-status-codes";
+import {Transit, TransitAttributes, TransitCreationAttributes, TransitUpdateAttributes} from "../models/transit";
+import {UserRole} from "../enum/userRoles";
+import {TransitStatus} from "../enum/transitStatus";
+import {Gate} from "../models/gate";
+import {Badge} from "../models/badge";
+import {BadgeStatus} from "../enum/badgeStatus";
+import {Authorization} from "../models/authorization";
+import {ReportFactory} from "../factories/reportFactory";
+import {ReportFormats} from "../enum/reportFormats";
+import {BadgeTransitsReport, GateTransitsReport} from "../enum/reportTypes";
 import Logger from "../logger/logger";
+import {DPI} from "../enum/dpi";
 
 
 export class TransitService {
@@ -85,10 +86,11 @@ export class TransitService {
         if (!badge) throw ErrorFactory.createError(ReasonPhrases.NOT_FOUND, 'Badge not found');
 
         if (badge.status === BadgeStatus.Active) {
+
             const gateAuth: Authorization | null = await this.authRepo.findById(badgeId, gateId);
             if (gateAuth) {
-                const requiredDPIs: string[] = gate.requiredDPIs || [];
-                const usedDPIs: string[] = data.usedDPIs || [];
+                const requiredDPIs: DPI[] = gate.requiredDPIs || [];
+                const usedDPIs: DPI[] = data.usedDPIs || [];
 
                 dpiViolation = requiredDPIs.some(dpi => !usedDPIs.includes(dpi));
                 if (!dpiViolation) authorized = TransitStatus.Authorized;

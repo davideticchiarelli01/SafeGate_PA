@@ -5,8 +5,8 @@ import {
     CreationOptional,
 } from 'sequelize';
 import db from "../db/database";
-import { TransitStatus } from "../enum/transitStatus";
-import { DPI } from "../enum/dpi";
+import {TransitStatus} from "../enum/transitStatus";
+import {DPI} from "../enum/dpi";
 
 const sequelize: Sequelize = db.getInstance();
 
@@ -25,17 +25,19 @@ export interface TransitCreationAttributes {
     gateId: string;
     badgeId: string;
     status: TransitStatus;
-    usedDPIs: string[];
+    usedDPIs: DPI[];
     DPIviolation: boolean;
     createdAt?: Date;
 }
+
+export type TransitUpdateAttributes = Partial<Omit<TransitAttributes, 'id' | 'badgeId' | 'gateId' | 'createdAt'>>;
 
 export class Transit extends Model<TransitAttributes, TransitCreationAttributes> implements TransitAttributes {
     declare id: CreationOptional<string>;
     declare gateId: string;
     declare badgeId: string;
     declare status: TransitStatus;
-    declare usedDPIs: string[];
+    declare usedDPIs: CreationOptional<DPI[]>;
     declare DPIviolation: boolean;
 }
 
@@ -88,4 +90,3 @@ Transit.init(
     }
 );
 
-export type TransitUpdateAttributes = Partial<Omit<TransitAttributes, 'id' | 'badgeId' | 'gateId' | 'createdAt'>>;

@@ -50,8 +50,13 @@ export const services = {
         repositories.badgeRepository,
         repositories.gateRepository
     ),
-    badgeService: new BadgeService(repositories.badgeRepository),
-    gateService: new GateService(repositories.gateRepository),
+    badgeService: new BadgeService(
+        repositories.badgeRepository,
+        repositories.userRepository
+    ),
+    gateService: new GateService(
+        repositories.gateRepository
+    ),
     transitService: new TransitService(
         repositories.transitRepository,
         repositories.badgeRepository,

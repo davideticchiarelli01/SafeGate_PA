@@ -86,6 +86,7 @@ export const validateReactivateBadges = [
 
     body('badgeIds.*')
         .isString().withMessage('Each badge ID in badgeIds must be a string')
-        .customSanitizer((value) => value.trim())
-        .isUUID(4).withMessage('Each badge ID in badgeIds must be a valid UUIDv4')
+        .customSanitizer((value) => typeof value === 'string' ? value.trim() : value)
+        .isUUID(4).withMessage('Each badge ID in badgeIds must be a valid UUIDv4'),
+    handleValidation
 ];
