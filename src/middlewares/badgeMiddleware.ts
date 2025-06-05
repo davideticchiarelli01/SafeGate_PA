@@ -21,7 +21,6 @@ const statusValidation = body('status')
     .customSanitizer(value => value.toLowerCase())
     .isIn(Object.values(BadgeStatus)).withMessage(`Field "status" must be one of: ${Object.values(BadgeStatus).join(', ')}`);
 
-
 const unauthorizedAttemptsValidation = body('unauthorizedAttempts')
     .optional()
     .isInt({min: 0}).withMessage('Field "unauthorizedAttempts" must be a non-negative integer')
@@ -29,12 +28,8 @@ const unauthorizedAttemptsValidation = body('unauthorizedAttempts')
 
 const firstUnauthorizedAttemptValidation = body('firstUnauthorizedAttempt')
     .optional()
-    .custom((value) => {
-        const date = new Date(value);
-        return !isNaN(date.getTime());
-    }).withMessage('Field "firstUnauthorizedAttempt" must be a valid date')
+    .isISO8601().withMessage('Must be a valid ISO 8601 date (Es. "2023-10-01T12:00:00Z")')
     .toDate();
-
 
 const handleValidation = (req: Request, res: Response, next: NextFunction) => {
     const errors = validationResult(req);
