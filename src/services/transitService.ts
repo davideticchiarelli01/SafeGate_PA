@@ -15,6 +15,7 @@ import { Authorization } from "../models/authorization";
 import { ReportFactory } from "../factories/reportFactory";
 import { ReportFormats } from "../enum/reportFormats";
 import { BadgeTransitsReport, GateTransitsReport } from "../enum/reportTypes";
+import Logger from "../logger/logger";
 
 
 export class TransitService {
@@ -61,6 +62,7 @@ export class TransitService {
 
         let authorized: TransitStatus = TransitStatus.Unauthorized;
         let dpiViolation: boolean = false;
+        let message: string = 'Unauthorized access attempt';
 
         const gateId: string = data.gateId;
         const gate: Gate | null = await this.gateRepo.findById(gateId);
@@ -78,6 +80,9 @@ export class TransitService {
 
                 dpiViolation = requiredDPIs.some(dpi => !usedDPIs.includes(dpi));
                 if (!dpiViolation) authorized = TransitStatus.Authorized;
+                else {
+                    message = `DPI violation detected`;
+                }
             }
         }
 
@@ -107,6 +112,12 @@ export class TransitService {
 
         data.status = authorized;
         data.DPIviolation = dpiViolation;
+
+        if (authorized === TransitStatus.Authorized) {
+            Logger.info(`Creating transit for badge ID: ${badgeId}, gate ID: ${gateId}, status: ${authorized}, DPI violation: ${dpiViolation}`);
+        } else {
+            Logger.warn(`Creating transit for badge ID: ${badgeId}, gate ID: ${gateId}, status: ${authorized}, DPI violation: ${dpiViolation}, message: ${message}`);
+        }
 
         return this.repo.create(data);
     }

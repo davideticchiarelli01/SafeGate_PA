@@ -36,7 +36,6 @@ export class TransitController {
         try {
             const data: TransitCreationAttributes = req.body;
             const transit: Transit = await this.service.createTransit(data);
-            Logger.info(`Transit created with ID: ${transit.id}`);
             return res.status(StatusCodes.CREATED).json({ message: 'Transit created', transit });
         } catch (err) {
             next(err);
