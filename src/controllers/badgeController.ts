@@ -37,7 +37,14 @@ export class BadgeController {
 
     createBadge = async (req: Request, res: Response, next: NextFunction) => {
         try {
-            const data: BadgeCreationAttributes = req.body;
+            const {userId, status, unauthorizedAttempts, firstUnauthorizedAttempt} = req.body;
+            const data: BadgeCreationAttributes = {
+                userId,
+                status,
+                unauthorizedAttempts,
+                firstUnauthorizedAttempt
+            };
+
             const badge: Badge = await this.service.createBadge(data);
             return res.status(StatusCodes.CREATED).json({message: 'Badge created', badge});
         } catch (err) {
@@ -47,7 +54,13 @@ export class BadgeController {
 
     updateBadge = async (req: Request, res: Response, next: NextFunction) => {
         try {
-            const data: Partial<BadgeAttributes> = req.body;
+
+            const {status, unauthorizedAttempts, firstUnauthorizedAttempt} = req.body;
+            const data: Partial<BadgeAttributes> = {
+                status,
+                unauthorizedAttempts,
+                firstUnauthorizedAttempt
+            }
             const badge: Badge | null = await this.service.updateBadge(req.params.id, data);
             return res.status(StatusCodes.OK).json(badge);
         } catch (err) {

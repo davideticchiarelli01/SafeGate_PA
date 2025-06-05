@@ -18,11 +18,10 @@ export interface BadgeAttributes {
 }
 
 export interface BadgeCreationAttributes {
-    id: string;
     userId: string;
     status?: BadgeStatus;
     unauthorizedAttempts?: number;
-    firstUnauthorizedAttempt?: Date | null;
+    firstUnauthorizedAttempt?: Date;
 }
 
 export class Badge extends Model<BadgeAttributes, BadgeCreationAttributes> implements BadgeAttributes {

@@ -30,9 +30,8 @@ export class BadgeDao implements IDao<Badge, BadgeCreationAttributes, Partial<Ba
     async updateMany(badges: Badge[], data: Partial<BadgeAttributes>): Promise<Badge[]> {
         const ids = badges.map(b => b.id);
         await Badge.update(data, {where: {id: ids}});
-        return Badge.findAll({where: {id: ids}});
+        return await Badge.findAll({where: {id: ids}}); // this solution works with all DB
     }
-
 
     async delete(badge: Badge): Promise<void> {
         return await badge.destroy();

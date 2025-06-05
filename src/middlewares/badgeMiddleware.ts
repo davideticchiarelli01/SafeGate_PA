@@ -1,0 +1,94 @@
+import {param, body, matchedData, validationResult} from 'express-validator';
+import {NextFunction, Request, Response} from 'express';
+import {ErrorFactory, HttpError} from '../factories/errorFactory';
+import {ReasonPhrases} from 'http-status-codes';
+import {BadgeStatus} from "../enum/badgeStatus";
+
+const idParamValidation = param('id')
+    .exists().withMessage('Param "id" is required')
+    .trim()
+    .isUUID(4).withMessage('Param "id" must be a valid UUIDv4');
+
+const userIdValidation = body('userId')
+    .exists().withMessage('Field "userId" is required')
+    .trim()
+    .isUUID(4).withMessage('Field "userId" must be a valid UUIDv4');
+
+const statusValidation = body('status')
+    .optional()
+    .isString().withMessage('Field "status" must be a string')
+    .trim()
+    .customSanitizer(value => value.toLowerCase())
+    .isIn(Object.values(BadgeStatus)).withMessage(`Field "status" must be one of: ${Object.values(BadgeStatus).join(', ')}`);
+
+
+const unauthorizedAttemptsValidation = body('unauthorizedAttempts')
+    .optional()
+    .isInt({min: 0}).withMessage('Field "unauthorizedAttempts" must be a non-negative integer')
+    .toInt();
+
+const firstUnauthorizedAttemptValidation = body('firstUnauthorizedAttempt')
+    .optional()
+    .custom((value) => {
+        const date = new Date(value);
+        return !isNaN(date.getTime());
+    }).withMessage('Field "firstUnauthorizedAttempt" must be a valid date')
+    .toDate();
+
+
+const handleValidation = (req: Request, res: Response, next: NextFunction) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+
+        const formattedDetails = errors.array().map((e) => {
+            return {
+                field: e.type === 'field' ? e.path : 'unknown',
+                message: e.msg ? e.msg : 'Unexpected validation error'
+            };
+        });
+
+        const error: HttpError = ErrorFactory.createError(
+            ReasonPhrases.BAD_REQUEST,
+            'Input validation failed',
+            undefined,
+            formattedDetails
+        );
+
+        return next(error);
+    }
+    req.body = matchedData(req, {locations: ['body', 'params', 'query']}); // remove not validated fields from req.body
+    next();
+};
+
+
+export const validateBadgeCreation = [
+    userIdValidation,
+    statusValidation,
+    unauthorizedAttemptsValidation,
+    firstUnauthorizedAttemptValidation,
+    handleValidation
+];
+
+export const validateBadgeUpdate = [
+    idParamValidation,
+    statusValidation,
+    unauthorizedAttemptsValidation,
+    firstUnauthorizedAttemptValidation,
+    handleValidation,
+];
+
+export const validateBadgeId = [
+    idParamValidation,
+    handleValidation,
+];
+
+export const validateReactivateBadges = [
+    body('badgeIds')
+        .notEmpty().withMessage('Field "badgeIds" is required and cannot be empty')
+        .isArray({min: 1}).withMessage('Field "badgeIds" must be a non-empty array'),
+
+    body('badgeIds.*')
+        .isString().withMessage('Each badge ID in badgeIds must be a string')
+        .customSanitizer((value) => value.trim())
+        .isUUID(4).withMessage('Each badge ID in badgeIds must be a valid UUIDv4')
+];

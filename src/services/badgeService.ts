@@ -8,8 +8,10 @@ export class BadgeService {
     constructor(private repo: BadgeRepository) {
     }
 
-    getBadge(id: string): Promise<Badge | null> {
-        return this.repo.findById(id);
+    async getBadge(id: string): Promise<Badge> {
+        const badge: Badge | null = await this.repo.findById(id);
+        if (!badge) throw ErrorFactory.createError(ReasonPhrases.NOT_FOUND, 'Badge not found');
+        return badge;
     }
 
     getAllBadges(): Promise<Badge[]> {
@@ -17,7 +19,7 @@ export class BadgeService {
     }
 
     getSuspendedBadges(): Promise<Badge[]> {
-        const status: string = BadgeStatus.Suspended;
+        const status: BadgeStatus = BadgeStatus.Suspended;
         return this.repo.findManyFilteredByStatus(status);
     }
 
@@ -35,12 +37,13 @@ export class BadgeService {
 
     async reactivateBadges(ids: string[]): Promise<Badge[]> {
         if (ids.length === 0) return [];
-        const filteredBadges: Badge[] = await this.repo.findManyFilteredById(ids);
-        const suspended: Badge[] = filteredBadges.filter(b => b.status === BadgeStatus.Suspended);
+        const suspended: Badge[] = await this.repo.findManyByIdAndStatus(ids, BadgeStatus.Suspended);
         if (suspended.length === 0) return [];
-        await this.repo.updateMany(suspended, {status: BadgeStatus.Active});
-        return await this.repo.findManyFilteredById(ids);
+
+        const data: Partial<BadgeAttributes> = {status: BadgeStatus.Active};
+        return await this.repo.updateMany(suspended, data);
     }
+
 
     async deleteBadge(id: string): Promise<void> {
         const badge: Badge | null = await this.repo.findById(id);
