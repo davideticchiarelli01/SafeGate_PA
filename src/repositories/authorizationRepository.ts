@@ -1,7 +1,8 @@
 import {Authorization, AuthorizationAttributes, AuthorizationCreationAttributes} from '../models/authorization';
 import {AuthorizationDao} from '../dao/authorizationDao';
+import {IRepository} from "./repository";
 
-export class AuthorizationRepository {
+export class AuthorizationRepository implements IRepository<Authorization, AuthorizationCreationAttributes, Partial<AuthorizationAttributes>> {
     constructor(private dao: AuthorizationDao) {
     }
 

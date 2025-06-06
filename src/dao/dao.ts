@@ -1,6 +1,7 @@
 export interface IDao<TModel, TCreate, TUpdate = Partial<TModel>> {
-    get(id: string): Promise<TModel | null>;
 
+    get(...ids: string[]): Promise<TModel | null>;
+    
     getAll(): Promise<TModel[]>;
 
     create(data: TCreate): Promise<TModel>;
