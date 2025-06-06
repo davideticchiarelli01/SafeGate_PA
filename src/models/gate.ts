@@ -20,6 +20,8 @@ export interface GateCreationAttributes {
     requiredDPIs?: DPI[];
 }
 
+export type GateUpdateAttributes = Partial<Omit<GateAttributes, 'id' | 'name' | 'createdAt'>>;
+
 export class Gate extends Model<GateAttributes, GateCreationAttributes> implements GateAttributes {
     declare id: CreationOptional<string>;
     declare name: string;

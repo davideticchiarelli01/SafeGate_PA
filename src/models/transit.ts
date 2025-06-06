@@ -30,7 +30,7 @@ export interface TransitCreationAttributes {
     createdAt?: Date;
 }
 
-export type TransitUpdateAttributes = Partial<Omit<TransitAttributes, 'id' | 'badgeId' | 'gateId' | 'createdAt'>>;
+export type TransitUpdateAttributes = Partial<Omit<TransitAttributes, 'id' | 'gateId' | 'badgeId' | 'createdAt'>>;
 
 export class Transit extends Model<TransitAttributes, TransitCreationAttributes> implements TransitAttributes {
     declare id: CreationOptional<string>;

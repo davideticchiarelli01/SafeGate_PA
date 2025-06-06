@@ -24,6 +24,8 @@ export interface BadgeCreationAttributes {
     firstUnauthorizedAttempt?: Date;
 }
 
+export type BadgeUpdateAttributes = Partial<Omit<BadgeAttributes, 'id' | 'userId' | 'createdAt'>>;
+
 export class Badge extends Model<BadgeAttributes, BadgeCreationAttributes> implements BadgeAttributes {
     declare id: CreationOptional<string>;
     declare userId: string;
