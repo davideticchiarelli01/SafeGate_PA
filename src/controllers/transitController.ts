@@ -1,12 +1,9 @@
 import { Request, Response, NextFunction } from 'express';
 import { TransitService } from '../services/transitService';
-import { ReasonPhrases, StatusCodes } from 'http-status-codes';
-import { Transit, TransitAttributes, TransitCreationAttributes, TransitUpdateAttributes } from "../models/transit";
+import { StatusCodes } from 'http-status-codes';
+import { Transit, TransitCreationAttributes, TransitUpdateAttributes } from "../models/transit";
 import { ReportFormats } from "../enum/reportFormats";
-import { ErrorFactory } from "../factories/errorFactory";
 import { UserPayload } from "../utils/userPayload";
-import { start } from 'repl';
-import Logger from '../logger/logger';
 
 export class TransitController {
     constructor(private service: TransitService) {
@@ -31,15 +28,7 @@ export class TransitController {
             next(err);
         }
     };
-    //     export interface TransitCreationAttributes {
-    //     id?: string
-    //     gateId: string
-    //     badgeId: string
-    //     status: TransitStatus
-    //     usedDPIs: string[]
-    //     DPIviolation: boolean
-    //     createdAt?: Date
-    // }
+
     createTransit = async (req: Request, res: Response, next: NextFunction) => {
         try {
             const { gateId, badgeId, status, usedDPIs, DPIviolation } = req.body;
@@ -59,15 +48,6 @@ export class TransitController {
         }
     };
 
-    //     export interface TransitAttributes {
-    //     id: string
-    //     gateId: string
-    //     badgeId: string
-    //     status: TransitStatus
-    //     usedDPIs: string[]
-    //     DPIviolation: boolean
-    //     createdAt?: Date
-    // }
     updateTransit = async (req: Request, res: Response, next: NextFunction) => {
         try {
             const data: TransitUpdateAttributes = req.body;
@@ -161,6 +141,5 @@ export class TransitController {
             next(err);
         }
     }
-
 
 }

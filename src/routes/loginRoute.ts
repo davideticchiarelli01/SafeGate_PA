@@ -3,7 +3,7 @@ import { UserDao } from "../dao/userDao";
 import { UserRepository } from "../repositories/userRepository";
 import { AuthService } from "../services/authService";
 import AuthController from '../controllers/authController';
-import { validateLogin } from '../middlewares/loginMIddleware';
+import { validateLogin } from '../middlewares/loginMiddleware';
 
 const userDao: UserDao = new UserDao();
 const userRepository: UserRepository = new UserRepository(userDao);

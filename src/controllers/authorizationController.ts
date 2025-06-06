@@ -1,8 +1,7 @@
-import {Request, Response, NextFunction} from 'express';
-import {AuthorizationService} from '../services/authorizationService';
-import {StatusCodes} from 'http-status-codes';
-import {Authorization, AuthorizationAttributes, AuthorizationCreationAttributes} from "../models/authorization";
-import {Badge} from "../models/badge";
+import { Request, Response, NextFunction } from 'express';
+import { AuthorizationService } from '../services/authorizationService';
+import { StatusCodes } from 'http-status-codes';
+import { Authorization, AuthorizationCreationAttributes } from "../models/authorization";
 
 export class AuthorizationController {
     constructor(private service: AuthorizationService) {
@@ -10,7 +9,7 @@ export class AuthorizationController {
 
     getAuthorization = async (req: Request, res: Response, next: NextFunction) => {
         try {
-            const {badgeId, gateId} = req.params;
+            const { badgeId, gateId } = req.params;
             const authorization: Authorization | null = await this.service.getAuthorization(badgeId, gateId);
             return res.status(StatusCodes.OK).json(authorization);
         } catch (err) {
@@ -20,7 +19,7 @@ export class AuthorizationController {
 
     getAllAuthorizations = async (_req: Request, res: Response, next: NextFunction) => {
         try {
-            const authorizations: Authorization [] = await this.service.getAllAuthorizations();
+            const authorizations: Authorization[] = await this.service.getAllAuthorizations();
             return res.status(StatusCodes.OK).json(authorizations);
         } catch (err) {
             next(err);
@@ -31,7 +30,7 @@ export class AuthorizationController {
         try {
             const data: AuthorizationCreationAttributes = req.body;
             const authorization: Authorization = await this.service.createAuthorization(data);
-            return res.status(StatusCodes.CREATED).json({message: 'Authorization created', authorization});
+            return res.status(StatusCodes.CREATED).json({ message: 'Authorization created', authorization });
         } catch (err) {
             next(err);
         }
@@ -39,7 +38,7 @@ export class AuthorizationController {
 
     deleteAuthorization = async (req: Request, res: Response, next: NextFunction) => {
         try {
-            const {badgeId, gateId} = req.params;
+            const { badgeId, gateId } = req.params;
             await this.service.deleteAuthorization(badgeId, gateId);
             return res.status(StatusCodes.NO_CONTENT).send();
         } catch (err) {

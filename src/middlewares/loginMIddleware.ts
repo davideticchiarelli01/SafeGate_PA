@@ -3,7 +3,7 @@ import { ReasonPhrases } from "http-status-codes"
 import { body, validationResult } from 'express-validator';
 import { Request, Response, NextFunction } from 'express';
 
-const emailRegex = /^[a-zA-Z0-9._!?%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/; //verify existance of '@' and if there's something before and after it
+const emailRegex = /^[a-zA-Z0-9._!?%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 
 const emailValidation = body('email')
     .exists().withMessage('Field "email" is required')
@@ -37,9 +37,6 @@ const handleValidation = (req: Request, res: Response, next: NextFunction) => {
 
         return next(error);
     }
-    // req.body = matchedData(req, {locations: ['body']});
-    // req.params = matchedData(req, {locations: ['params']});
-    // req.query = matchedData(req, {locations: ['query']});
     next();
 };
 

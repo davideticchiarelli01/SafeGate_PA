@@ -1,8 +1,8 @@
-import {param, body, matchedData, validationResult} from 'express-validator';
-import {NextFunction, Request, Response} from 'express';
-import {ErrorFactory, HttpError} from '../factories/errorFactory';
-import {ReasonPhrases} from 'http-status-codes';
-import {BadgeStatus} from "../enum/badgeStatus";
+import { param, body, matchedData, validationResult } from 'express-validator';
+import { NextFunction, Request, Response } from 'express';
+import { ErrorFactory, HttpError } from '../factories/errorFactory';
+import { ReasonPhrases } from 'http-status-codes';
+import { BadgeStatus } from "../enum/badgeStatus";
 
 const idParamValidation = param('id')
     .exists().withMessage('Param "id" is required')
@@ -23,7 +23,7 @@ const statusValidation = body('status')
 
 const unauthorizedAttemptsValidation = body('unauthorizedAttempts')
     .optional()
-    .isInt({min: 0}).withMessage('Field "unauthorizedAttempts" must be a non-negative integer')
+    .isInt({ min: 0 }).withMessage('Field "unauthorizedAttempts" must be a non-negative integer')
     .toInt();
 
 const firstUnauthorizedAttemptValidation = body('firstUnauthorizedAttempt')
@@ -51,9 +51,6 @@ const handleValidation = (req: Request, res: Response, next: NextFunction) => {
 
         return next(error);
     }
-    // req.body = matchedData(req, {locations: ['body']});
-    // req.params = matchedData(req, {locations: ['params']});
-    // req.query = matchedData(req, {locations: ['query']});
     next();
 };
 
@@ -82,7 +79,7 @@ export const validateBadgeId = [
 export const validateReactivateBadges = [
     body('badgeIds')
         .notEmpty().withMessage('Field "badgeIds" is required and cannot be empty')
-        .isArray({min: 1}).withMessage('Field "badgeIds" must be a non-empty array'),
+        .isArray({ min: 1 }).withMessage('Field "badgeIds" must be a non-empty array'),
 
     body('badgeIds.*')
         .isString().withMessage('Each badge ID in badgeIds must be a string')
