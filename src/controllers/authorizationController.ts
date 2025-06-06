@@ -1,7 +1,8 @@
-import { Request, Response, NextFunction } from 'express';
-import { AuthorizationService } from '../services/authorizationService';
-import { StatusCodes } from 'http-status-codes';
-import { Authorization, AuthorizationCreationAttributes } from "../models/authorization";
+import {NextFunction, Request, Response} from 'express';
+import {AuthorizationService} from '../services/authorizationService';
+import {StatusCodes} from 'http-status-codes';
+import {Authorization, AuthorizationCreationAttributes} from "../models/authorization";
+import {matchedData} from "express-validator";
 
 export class AuthorizationController {
     constructor(private service: AuthorizationService) {
@@ -9,7 +10,7 @@ export class AuthorizationController {
 
     getAuthorization = async (req: Request, res: Response, next: NextFunction) => {
         try {
-            const { badgeId, gateId } = req.params;
+            const {badgeId, gateId} = matchedData(req, {locations: ['params']});
             const authorization: Authorization | null = await this.service.getAuthorization(badgeId, gateId);
             return res.status(StatusCodes.OK).json(authorization);
         } catch (err) {
@@ -28,9 +29,9 @@ export class AuthorizationController {
 
     createAuthorization = async (req: Request, res: Response, next: NextFunction) => {
         try {
-            const data: AuthorizationCreationAttributes = req.body;
+            const data = matchedData(req, {locations: ['body']}) as AuthorizationCreationAttributes;
             const authorization: Authorization = await this.service.createAuthorization(data);
-            return res.status(StatusCodes.CREATED).json({ message: 'Authorization created', authorization });
+            return res.status(StatusCodes.CREATED).json({message: 'Authorization created', authorization});
         } catch (err) {
             next(err);
         }
@@ -38,7 +39,7 @@ export class AuthorizationController {
 
     deleteAuthorization = async (req: Request, res: Response, next: NextFunction) => {
         try {
-            const { badgeId, gateId } = req.params;
+            const {badgeId, gateId} = matchedData(req, {locations: ['params']});
             await this.service.deleteAuthorization(badgeId, gateId);
             return res.status(StatusCodes.NO_CONTENT).send();
         } catch (err) {

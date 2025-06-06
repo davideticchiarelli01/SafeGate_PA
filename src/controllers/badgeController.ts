@@ -1,8 +1,8 @@
-import { Request, Response, NextFunction } from 'express';
-import { BadgeService } from '../services/badgeService';
-import { StatusCodes } from 'http-status-codes';
-import { Badge, BadgeAttributes, BadgeCreationAttributes } from "../models/badge";
-import { matchedData } from "express-validator";
+import {NextFunction, Request, Response} from 'express';
+import {BadgeService} from '../services/badgeService';
+import {StatusCodes} from 'http-status-codes';
+import {Badge, BadgeCreationAttributes} from "../models/badge";
+import {matchedData} from "express-validator";
 
 export class BadgeController {
     constructor(private service: BadgeService) {
@@ -10,7 +10,7 @@ export class BadgeController {
 
     getBadge = async (req: Request, res: Response, next: NextFunction) => {
         try {
-            const { id } = matchedData(req, { locations: ['params'] });
+            const {id} = matchedData(req, {locations: ['params']});
 
             const badge: Badge | null = await this.service.getBadge(id);
             return res.status(StatusCodes.OK).json(badge);
@@ -39,9 +39,10 @@ export class BadgeController {
 
     createBadge = async (req: Request, res: Response, next: NextFunction) => {
         try {
-            const data = matchedData(req, { locations: ['body'] }) as BadgeCreationAttributes;
+            const data = matchedData(req, {locations: ['body']}) as BadgeCreationAttributes;
+
             const badge: Badge = await this.service.createBadge(data);
-            return res.status(StatusCodes.CREATED).json({ message: 'Badge created', badge });
+            return res.status(StatusCodes.CREATED).json({message: 'Badge created', badge});
         } catch (err) {
             next(err);
         }
@@ -49,8 +50,8 @@ export class BadgeController {
 
     updateBadge = async (req: Request, res: Response, next: NextFunction) => {
         try {
-            const { id } = matchedData(req, { locations: ['params'] });
-            const data = matchedData(req, { locations: ['body'] }) as BadgeCreationAttributes;
+            const {id} = matchedData(req, {locations: ['params']});
+            const data = matchedData(req, {locations: ['body']}) as BadgeCreationAttributes;
 
             const badge: Badge | null = await this.service.updateBadge(id, data);
             return res.status(StatusCodes.OK).json(badge);
@@ -61,7 +62,7 @@ export class BadgeController {
 
     reactivateBadges = async (req: Request, res: Response, next: NextFunction) => {
         try {
-            const { badgeIds } = matchedData(req, { locations: ['body'] });
+            const {badgeIds} = matchedData(req, {locations: ['body']});
 
             const updatedBadges: Badge[] = await this.service.reactivateBadges(badgeIds);
             return res.status(StatusCodes.OK).json(updatedBadges);
@@ -72,7 +73,7 @@ export class BadgeController {
 
     deleteBadge = async (req: Request, res: Response, next: NextFunction) => {
         try {
-            const { id } = matchedData(req, { locations: ['params'] });
+            const {id} = matchedData(req, {locations: ['params']});
 
             await this.service.deleteBadge(id);
             return res.status(StatusCodes.NO_CONTENT).send();
