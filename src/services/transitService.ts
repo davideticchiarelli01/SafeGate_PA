@@ -1,24 +1,24 @@
-import {TransitRepository} from "../repositories/transitRepository";
-import {BadgeRepository} from "../repositories/badgeRepository";
-import {AuthorizationRepository} from "../repositories/authorizationRepository";
-import {GateRepository} from "../repositories/gateRepository";
-import {UserPayload} from "../utils/userPayload";
-import {ErrorFactory} from "../factories/errorFactory";
-import {ReasonPhrases} from "http-status-codes";
-import {Transit, TransitCreationAttributes, TransitUpdateAttributes} from "../models/transit";
-import {UserRole} from "../enum/userRoles";
-import {TransitStatus} from "../enum/transitStatus";
-import {Gate} from "../models/gate";
-import {Badge, BadgeUpdateAttributes} from "../models/badge";
-import {BadgeStatus} from "../enum/badgeStatus";
-import {Authorization} from "../models/authorization";
-import {ReportFactory} from "../factories/reportFactory";
-import {ReportFormats} from "../enum/reportFormats";
-import {BadgeTransitsReport, GateTransitsReport} from "../enum/reportTypes";
+import { TransitRepository } from "../repositories/transitRepository";
+import { BadgeRepository } from "../repositories/badgeRepository";
+import { AuthorizationRepository } from "../repositories/authorizationRepository";
+import { GateRepository } from "../repositories/gateRepository";
+import { UserPayload } from "../utils/userPayload";
+import { ErrorFactory } from "../factories/errorFactory";
+import { ReasonPhrases } from "http-status-codes";
+import { Transit, TransitCreationAttributes, TransitUpdateAttributes } from "../models/transit";
+import { UserRole } from "../enum/userRoles";
+import { TransitStatus } from "../enum/transitStatus";
+import { Gate } from "../models/gate";
+import { Badge, BadgeUpdateAttributes } from "../models/badge";
+import { BadgeStatus } from "../enum/badgeStatus";
+import { Authorization } from "../models/authorization";
+import { ReportFactory } from "../factories/reportFactory";
+import { ReportFormats } from "../enum/reportFormats";
+import { BadgeTransitsReport, GateTransitsReport } from "../factories/reportFactory";
 import Logger from "../logger/logger";
-import {DPI} from "../enum/dpi";
+import { DPI } from "../enum/dpi";
 import DatabaseConnection from "../db/database";
-import {Sequelize, Transaction} from "sequelize";
+import { Sequelize, Transaction } from "sequelize";
 
 
 export class TransitService {
@@ -135,9 +135,9 @@ export class TransitService {
         data.DPIviolation = dpiViolation;
 
         try {
-            await this.badgeRepo.update(badge, badgeUpdate, {transaction});
+            await this.badgeRepo.update(badge, badgeUpdate, { transaction });
 
-            const transit: Transit = await this.transitRepo.create(data, {transaction});
+            const transit: Transit = await this.transitRepo.create(data, { transaction });
             await transaction.commit();
 
             if (authorized === TransitStatus.Authorized) {
