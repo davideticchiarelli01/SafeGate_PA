@@ -1,4 +1,4 @@
-import {getStatusCode, ReasonPhrases, StatusCodes} from 'http-status-codes';
+import {getStatusCode, ReasonPhrases} from 'http-status-codes';
 
 export class HttpError extends Error {
     statusCode: number;
