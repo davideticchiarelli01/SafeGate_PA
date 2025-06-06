@@ -2,7 +2,7 @@ import { NextFunction, Request, Response } from 'express';
 import { UserPayload, validateUserPayload } from '../utils/userPayload';
 import { extractAndValidateJwtToken, getPublicJwtKey, jwtVerify } from '../utils/jwt';
 import { ErrorFactory } from "../factories/errorFactory";
-import { ReasonPhrases, StatusCodes } from "http-status-codes";
+import { ReasonPhrases } from "http-status-codes";
 import { UserRole } from '../enum/userRoles';
 
 export const authMiddleware = async (
