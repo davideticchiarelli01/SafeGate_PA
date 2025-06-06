@@ -7,7 +7,7 @@ import {
 import db from '../db/database';
 import { DPI } from '../enum/dpi';
 
-const sequelize: Sequelize = db.getInstance();
+//const sequelize: Sequelize = db.getInstance();
 
 export interface GateAttributes {
     id: string;

@@ -8,7 +8,7 @@ import db from "../db/database";
 import { TransitStatus } from "../enum/transitStatus";
 import { DPI } from "../enum/dpi";
 
-const sequelize: Sequelize = db.getInstance();
+//const sequelize: Sequelize = db.getInstance();
 
 export interface TransitAttributes {
     id: string;

@@ -7,7 +7,7 @@ import {
 import db from '../db/database';
 import { UserRole } from "../enum/userRoles";
 
-const sequelize: Sequelize = db.getInstance();
+//const sequelize: Sequelize = db.getInstance();
 
 export interface UserAttributes {
     id: string;

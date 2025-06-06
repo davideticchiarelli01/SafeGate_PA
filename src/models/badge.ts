@@ -7,7 +7,7 @@ import {
 import db from '../db/database';
 import { BadgeStatus } from '../enum/badgeStatus';
 
-const sequelize: Sequelize = db.getInstance();
+//const sequelize: Sequelize = db.getInstance();
 
 export interface BadgeAttributes {
     id: string;

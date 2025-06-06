@@ -8,7 +8,7 @@ import Database from '../db/database';
 import { Badge } from './badge';
 import { Gate } from './gate';
 
-const sequelize: Sequelize = Database.getInstance();
+//const sequelize: Sequelize = Database.getInstance();
 
 export interface AuthorizationAttributes {
     badgeId: string;
