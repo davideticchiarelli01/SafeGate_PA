@@ -1,10 +1,10 @@
-import { Badge, BadgeAttributes, BadgeCreationAttributes, BadgeUpdateAttributes } from '../models/badge';
-import { BadgeDao } from '../dao/badgeDao';
-import { IRepository } from "./repository";
-import { Op } from "sequelize";
-import { BadgeStatus } from "../enum/badgeStatus";
+import {Badge, BadgeAttributes, BadgeCreationAttributes, BadgeUpdateAttributes} from '../models/badge';
+import {BadgeDao} from '../dao/badgeDao';
+import {IRepository} from "./repository";
+import {Op} from "sequelize";
+import {BadgeStatus} from "../enum/badgeStatus";
 
-export class BadgeRepository implements IRepository<Badge, BadgeCreationAttributes, Partial<BadgeAttributes>> {
+export class BadgeRepository implements IRepository<Badge, BadgeCreationAttributes, BadgeUpdateAttributes> {
     constructor(private dao: BadgeDao) {
     }
 
@@ -18,19 +18,19 @@ export class BadgeRepository implements IRepository<Badge, BadgeCreationAttribut
 
     findManyFilteredById(ids: string[]): Promise<Badge[]> {
         const filter = {
-            id: { [Op.in]: ids }
+            id: {[Op.in]: ids}
         };
         return this.dao.getManyFiltered(filter);
     }
 
     findManyFilteredByStatus(status: BadgeStatus): Promise<Badge[]> {
-        const filter = { status: status };
+        const filter = {status: status};
         return this.dao.getManyFiltered(filter);
     }
 
     findManyByIdAndStatus(ids: string[], status: BadgeStatus): Promise<Badge[]> {
         const filter = {
-            id: { [Op.in]: ids },
+            id: {[Op.in]: ids},
             status: status
         };
         return this.dao.getManyFiltered(filter);

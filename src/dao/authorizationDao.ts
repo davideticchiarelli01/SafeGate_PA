@@ -1,8 +1,8 @@
-import {Authorization, AuthorizationAttributes, AuthorizationCreationAttributes} from "../models/authorization";
+import {Authorization, AuthorizationCreationAttributes} from "../models/authorization";
 import {IDao} from "./dao";
 
 
-export class AuthorizationDao implements IDao<Authorization, AuthorizationCreationAttributes, Partial<AuthorizationAttributes>> {
+export class AuthorizationDao implements IDao<Authorization, AuthorizationCreationAttributes> {
 
     async get(badgeId: string, gateId: string): Promise<Authorization | null> {
         return await Authorization.findOne({

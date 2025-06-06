@@ -1,7 +1,7 @@
-import { Gate, GateAttributes, GateCreationAttributes, GateUpdateAttributes } from "../models/gate";
-import { IDao } from "./dao";
+import {Gate, GateCreationAttributes, GateUpdateAttributes} from "../models/gate";
+import {IDao} from "./dao";
 
-export class GateDao implements IDao<Gate, GateCreationAttributes, Partial<GateAttributes>> {
+export class GateDao implements IDao<Gate, GateCreationAttributes, GateUpdateAttributes> {
     async get(id: string): Promise<Gate | null> {
         return await Gate.findByPk(id);
     }
@@ -11,7 +11,7 @@ export class GateDao implements IDao<Gate, GateCreationAttributes, Partial<GateA
     }
 
     async getByName(name: string): Promise<Gate | null> {
-        return await Gate.findOne({ where: { name } });
+        return await Gate.findOne({where: {name}});
     }
 
     async create(data: GateCreationAttributes): Promise<Gate> {

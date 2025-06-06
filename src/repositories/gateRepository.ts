@@ -1,8 +1,8 @@
-import { Gate, GateAttributes, GateCreationAttributes, GateUpdateAttributes } from '../models/gate';
-import { GateDao } from '../dao/gateDao';
-import { IRepository } from "./repository";
+import {Gate, GateAttributes, GateCreationAttributes, GateUpdateAttributes} from '../models/gate';
+import {GateDao} from '../dao/gateDao';
+import {IRepository} from "./repository";
 
-export class GateRepository implements IRepository<Gate, GateCreationAttributes, Partial<GateAttributes>> {
+export class GateRepository implements IRepository<Gate, GateCreationAttributes, GateUpdateAttributes> {
     constructor(private dao: GateDao) {
     }
 
