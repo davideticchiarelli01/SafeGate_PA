@@ -1,4 +1,6 @@
 import {Dialect, Sequelize} from "sequelize";
+import {ErrorFactory} from "../factories/errorFactory";
+import {ReasonPhrases} from "http-status-codes";
 
 class DatabaseConnection {
     private static instance: Sequelize;
@@ -17,9 +19,7 @@ class DatabaseConnection {
 
             if (!DB_NAME || !DB_USER || !DB_PASS || !DB_HOST || !DB_DIALECT) {
                 const msg = 'Missing environment variables for database connection'
-                console.log(msg);
-            } else {
-                console.log(`Connecting to database ${DB_NAME} at ${DB_HOST} with user ${DB_USER}`);
+                throw ErrorFactory.createError(ReasonPhrases.INTERNAL_SERVER_ERROR, msg);
             }
 
             DatabaseConnection.instance = new Sequelize(DB_NAME, DB_USER, DB_PASS, {

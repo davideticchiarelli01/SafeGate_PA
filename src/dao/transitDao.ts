@@ -1,7 +1,6 @@
 import {IDao} from "./dao";
 import {Transit, TransitAttributes, TransitCreationAttributes, TransitUpdateAttributes} from "../models/transit";
-import {WhereOptions} from "sequelize";
-import {Badge, BadgeAttributes} from "../models/badge";
+import {Transaction, WhereOptions} from "sequelize";
 
 export class TransitDao implements IDao<Transit, TransitCreationAttributes, TransitUpdateAttributes> {
 
@@ -17,16 +16,32 @@ export class TransitDao implements IDao<Transit, TransitCreationAttributes, Tran
         return await Transit.findAll({where: filter});
     }
 
-    async create(transit: TransitCreationAttributes): Promise<Transit> {
-        return await Transit.create(transit);
+    async create(
+        transit: TransitCreationAttributes,
+        options?: { transaction?: Transaction }
+    ): Promise<Transit> {
+        return await Transit.create(transit, {
+            transaction: options?.transaction
+        });
     }
 
-    async update(transit: Transit, data: TransitUpdateAttributes): Promise<Transit> {
-        return await transit.update(data);
+    async update(
+        transit: Transit,
+        data: TransitUpdateAttributes,
+        options?: { transaction?: Transaction }
+    ): Promise<Transit> {
+        return await transit.update(data, {
+            transaction: options?.transaction
+        });
     }
 
-    async delete(transit: Transit): Promise<void> {
-        await transit.destroy();
+    async delete(
+        transit: Transit,
+        options?: { transaction?: Transaction }
+    ): Promise<void> {
+        await transit.destroy({
+            transaction: options?.transaction
+        });
     }
 }
 

@@ -1,7 +1,7 @@
 import {Badge, BadgeAttributes, BadgeCreationAttributes, BadgeUpdateAttributes} from '../models/badge';
 import {BadgeDao} from '../dao/badgeDao';
 import {IRepository} from "./repository";
-import {Op} from "sequelize";
+import {Op, Transaction} from "sequelize";
 import {BadgeStatus} from "../enum/badgeStatus";
 
 export class BadgeRepository implements IRepository<Badge, BadgeCreationAttributes, BadgeUpdateAttributes> {
@@ -44,8 +44,12 @@ export class BadgeRepository implements IRepository<Badge, BadgeCreationAttribut
         return this.dao.create(data);
     }
 
-    update(badge: Badge, data: BadgeUpdateAttributes): Promise<Badge> {
-        return this.dao.update(badge, data);
+    update(
+        badge: Badge,
+        data: BadgeUpdateAttributes,
+        options?: { transaction?: Transaction }
+    ): Promise<Badge> {
+        return this.dao.update(badge, data, options);
     }
 
     updateMany(badges: Badge[], data: BadgeUpdateAttributes): Promise<Badge[]> {

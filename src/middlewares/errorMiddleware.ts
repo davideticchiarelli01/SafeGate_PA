@@ -30,4 +30,8 @@ const errorMiddleware = (err: unknown, req: Request, res: Response, next: NextFu
     handleError(errorToHandle, res);
 };
 
+const sequelizeErrorMiddleware = (err: any, req: Request, res: Response, next: NextFunction) => {
+    
+}
+
 export default errorMiddleware;

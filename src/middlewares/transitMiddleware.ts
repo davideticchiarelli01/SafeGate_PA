@@ -36,14 +36,19 @@ const statusValidation = body('status')
 
 const DPIviolationValidation = body('DPIviolation')
     .optional()
-    .isBoolean().withMessage('Field "DPIviolation" must be a boolean');
+    .isBoolean().withMessage('Field "DPIviolation" must be a boolean')
+    .toBoolean();
 
-const usedDPIsValidation = body('c')
+const usedDPIsValidation = body('usedDPIs')
     .optional()
-    .isArray().withMessage('Field "usedDPIs" must be an array')
-    .customSanitizer((arr) => Array.isArray(arr) ? arr.map((item: string) => item.trim().toLowerCase()) : [])
-    .custom((arr) => Array.isArray(arr) && arr.every(item => Object.values(DPI).includes(item)))
-    .withMessage(`Field "usedDPIs" must contain only valid DPI values: ${Object.values(DPI).join(', ')}`)
+    .isArray().withMessage('Field "requiredDPIs" must be an array')
+    .customSanitizer((arr) =>
+        Array.isArray(arr) ? arr.map((item) => String(item).trim().toLowerCase()) : [])
+    .custom((arr) =>
+        Array.isArray(arr) && arr.every(item => Object.values(DPI).includes(item))
+    )
+    .withMessage(`Field "requiredDPIs" must contain only valid DPI values: ${Object.values(DPI).join(', ')}`);
+
 
 const gateIdQueryValidation = query('gateId')
     .optional()

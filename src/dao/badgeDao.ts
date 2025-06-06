@@ -1,6 +1,6 @@
 import {Badge, BadgeAttributes, BadgeCreationAttributes, BadgeUpdateAttributes} from "../models/badge";
 import {IDao} from "./dao";
-import {WhereOptions} from "sequelize";
+import {Transaction, WhereOptions} from "sequelize";
 
 export class BadgeDao implements IDao<Badge, BadgeCreationAttributes, BadgeUpdateAttributes> {
     async get(id: string): Promise<Badge | null> {
@@ -23,8 +23,12 @@ export class BadgeDao implements IDao<Badge, BadgeCreationAttributes, BadgeUpdat
         return await Badge.create(data);
     }
 
-    async update(badge: Badge, data: BadgeUpdateAttributes): Promise<Badge> {
-        return await badge.update(data);
+    async update(
+        badge: Badge,
+        data: BadgeUpdateAttributes,
+        options?: { transaction?: Transaction }
+    ): Promise<Badge> {
+        return await badge.update(data, {transaction: options?.transaction});
     }
 
     async updateMany(badges: Badge[], data: BadgeUpdateAttributes): Promise<Badge[]> {

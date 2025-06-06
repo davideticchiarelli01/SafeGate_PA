@@ -15,12 +15,16 @@ const nameValidation = body('name')
     .trim()
     .notEmpty().withMessage('Field "name" cannot be empty')
 
-const DPIsValidation = body('requiredDPIs')
+const requiredDPIsValidation = body('requiredDPIs')
     .optional()
     .isArray().withMessage('Field "requiredDPIs" must be an array')
-    .customSanitizer((arr) => Array.isArray(arr) ? arr.map((item: string) => item.trim().toLowerCase()) : [])
-    .custom((arr) => Array.isArray(arr) && arr.every(item => Object.values(DPI).includes(item)))
-    .withMessage(`Field "requiredDPIs" must contain only valid DPI values: ${Object.values(DPI).join(', ')}`)
+    .customSanitizer((arr) =>
+        Array.isArray(arr) ? arr.map((item) => String(item).trim().toLowerCase()) : [])
+    .custom((arr) =>
+        Array.isArray(arr) && arr.every(item => Object.values(DPI).includes(item))
+    )
+    .withMessage(`Field "requiredDPIs" must contain only valid DPI values: ${Object.values(DPI).join(', ')}`);
+
 
 const handleValidation = (req: Request, res: Response, next: NextFunction) => {
     const errors = validationResult(req);
@@ -50,13 +54,13 @@ const handleValidation = (req: Request, res: Response, next: NextFunction) => {
 
 export const validateGateCreation = [
     nameValidation,
-    DPIsValidation,
+    requiredDPIsValidation,
     handleValidation
 ];
 
 export const validateGateUpdate = [
     idParamValidation,
-    DPIsValidation,
+    requiredDPIsValidation,
     handleValidation,
 ];
 

@@ -1,11 +1,7 @@
 import {IRepository} from "./repository";
 import {TransitDao} from "../dao/transitDao";
 import {Transit, TransitAttributes, TransitCreationAttributes, TransitUpdateAttributes} from "../models/transit";
-import {UserPayload} from "../utils/userPayload";
-import {UserRole} from "../enum/userRoles";
-import {User} from "../models/user";
-import {Badge} from "../models/badge";
-import {Op, WhereOptions} from "sequelize";
+import {Op, Transaction, WhereOptions} from "sequelize";
 
 export class TransitRepository implements IRepository<Transit, TransitCreationAttributes, TransitUpdateAttributes> {
 
@@ -60,15 +56,15 @@ export class TransitRepository implements IRepository<Transit, TransitCreationAt
         return this.transitDao.getAll();
     }
 
-    create(data: TransitCreationAttributes): Promise<Transit> {
-        return this.transitDao.create(data);
+    create(data: TransitCreationAttributes, options?: { transaction?: Transaction }): Promise<Transit> {
+        return this.transitDao.create(data, options);
     }
 
-    update(transit: Transit, data: TransitUpdateAttributes): Promise<Transit> {
-        return this.transitDao.update(transit, data);
+    update(transit: Transit, data: TransitUpdateAttributes, options?: { transaction?: Transaction }): Promise<Transit> {
+        return this.transitDao.update(transit, data, options);
     }
 
-    delete(transit: Transit): Promise<void> {
-        return this.transitDao.delete(transit);
+    delete(transit: Transit, options?: { transaction?: Transaction }): Promise<void> {
+        return this.transitDao.delete(transit, options);
     }
 }
