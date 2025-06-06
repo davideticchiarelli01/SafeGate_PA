@@ -1,9 +1,21 @@
-import { BadgeTransitsReport, GateTransitsReport } from '../enum/reportTypes';
-import { ReportFormats } from '../enum/reportFormats';
-import { Parser as Json2CsvParser } from 'json2csv';
+import {ReportFormats} from '../enum/reportFormats';
+import {Parser as Json2CsvParser} from 'json2csv';
 import PDFDocument from 'pdfkit';
-import { ErrorFactory } from './errorFactory';
-import { ReasonPhrases } from 'http-status-codes';
+import {BadgeStatus} from "../enum/badgeStatus";
+
+export interface GateTransitsReport {
+    gateId: string;
+    authorized: number;
+    unauthorized: number;
+    dpiViolations: number;
+}
+
+export interface BadgeTransitsReport {
+    badgeId: string;
+    authorized: number;
+    unauthorized: number;
+    status: BadgeStatus;
+}
 
 export class ReportFactory {
     static async format(format: ReportFormats, data: GateTransitsReport[] | BadgeTransitsReport[]): Promise<Buffer | string | object> {
@@ -24,16 +36,16 @@ export class ReportFactory {
     }
 
     private static generatePdf(data: GateTransitsReport[] | BadgeTransitsReport[]): Promise<Buffer> {
-        const doc = new PDFDocument({ margin: 50 });
+        const doc = new PDFDocument({margin: 50});
         const chunks: any[] = [];
 
         doc.on('data', chunk => chunks.push(chunk));
 
         const now = new Date();
 
-        doc.fontSize(20).font('Helvetica-Bold').text('SafeGate - Transit Report', { align: 'center' });
+        doc.fontSize(20).font('Helvetica-Bold').text('SafeGate - Transit Report', {align: 'center'});
         doc.moveDown();
-        doc.fontSize(10).font('Helvetica').text(`Generated at: ${now.toLocaleString()}`, { align: 'right' });
+        doc.fontSize(10).font('Helvetica').text(`Generated at: ${now.toLocaleString()}`, {align: 'right'});
         doc.moveDown();
 
         if (!data || data.length === 0) {
@@ -57,22 +69,22 @@ export class ReportFactory {
 
         const columns = isGateReport
             ? [
-                { label: 'Gate ID', width: 220 },
-                { label: 'Authorized', width: 100, align: 'center' },
-                { label: 'Unauthorized', width: 100, align: 'center' },
-                { label: 'DPI violations', width: 100, align: 'center' },
+                {label: 'Gate ID', width: 220},
+                {label: 'Authorized', width: 100, align: 'center'},
+                {label: 'Unauthorized', width: 100, align: 'center'},
+                {label: 'DPI violations', width: 100, align: 'center'},
             ]
             : [
-                { label: 'Badge ID', width: 220 },
-                { label: 'Authorized', width: 100, align: 'center' },
-                { label: 'Unauthorized', width: 120, align: 'center' },
-                { label: 'Status', width: 100, align: 'center' },
+                {label: 'Badge ID', width: 220},
+                {label: 'Authorized', width: 100, align: 'center'},
+                {label: 'Unauthorized', width: 120, align: 'center'},
+                {label: 'Status', width: 100, align: 'center'},
             ];
 
         let x = startX;
         doc.font('Helvetica-Bold').fontSize(12);
         for (const col of columns) {
-            doc.text(col.label, x, y, { width: col.width });
+            doc.text(col.label, x, y, {width: col.width});
             x += col.width;
         }
 
@@ -84,16 +96,22 @@ export class ReportFactory {
 
             if (isGateReport) {
                 const record = row as GateTransitsReport;
-                doc.text(record.gateId, x, y, { width: columns[0].width }); x += columns[0].width;
-                doc.text(record.authorized.toString(), x, y, { width: columns[1].width }); x += columns[1].width;
-                doc.text(record.unauthorized.toString(), x, y, { width: columns[2].width }); x += columns[2].width;
-                doc.text(record.dpiViolations.toString(), x, y, { width: columns[3].width });
+                doc.text(record.gateId, x, y, {width: columns[0].width});
+                x += columns[0].width;
+                doc.text(record.authorized.toString(), x, y, {width: columns[1].width});
+                x += columns[1].width;
+                doc.text(record.unauthorized.toString(), x, y, {width: columns[2].width});
+                x += columns[2].width;
+                doc.text(record.dpiViolations.toString(), x, y, {width: columns[3].width});
             } else {
                 const record = row as BadgeTransitsReport;
-                doc.text(record.badgeId, x, y, { width: columns[0].width }); x += columns[0].width;
-                doc.text(record.authorized.toString(), x, y, { width: columns[1].width }); x += columns[1].width;
-                doc.text(record.unauthorized.toString(), x, y, { width: columns[2].width }); x += columns[2].width;
-                doc.text(record.status.toString(), x, y, { width: columns[3].width });
+                doc.text(record.badgeId, x, y, {width: columns[0].width});
+                x += columns[0].width;
+                doc.text(record.authorized.toString(), x, y, {width: columns[1].width});
+                x += columns[1].width;
+                doc.text(record.unauthorized.toString(), x, y, {width: columns[2].width});
+                x += columns[2].width;
+                doc.text(record.status.toString(), x, y, {width: columns[3].width});
             }
 
             y += rowHeight;
