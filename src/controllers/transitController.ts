@@ -1,9 +1,10 @@
-import { Request, Response, NextFunction } from 'express';
-import { TransitService } from '../services/transitService';
-import { StatusCodes } from 'http-status-codes';
-import { Transit, TransitCreationAttributes, TransitUpdateAttributes } from "../models/transit";
-import { ReportFormats } from "../enum/reportFormats";
-import { UserPayload } from "../utils/userPayload";
+import {NextFunction, Request, Response} from 'express';
+import {TransitService} from '../services/transitService';
+import {StatusCodes} from 'http-status-codes';
+import {Transit, TransitCreationAttributes, TransitUpdateAttributes} from "../models/transit";
+import {ReportFormats} from "../enum/reportFormats";
+import {UserPayload} from "../utils/userPayload";
+import {matchedData} from "express-validator";
 
 export class TransitController {
     constructor(private service: TransitService) {
@@ -11,9 +12,12 @@ export class TransitController {
 
     getTransit = async (req: Request, res: Response, next: NextFunction) => {
         try {
+            // const id: string = req.params.id;
+
             const user: UserPayload | undefined = req.user;
-            const transitId: string = req.params.id;
-            const transit: Transit | null = await this.service.getTransit(transitId, user);
+            const {id} = matchedData(req, {locations: ['params']}); // Transit ID from request parameters
+
+            const transit: Transit | null = await this.service.getTransit(id, user);
             return res.status(StatusCodes.OK).json(transit);
         } catch (err) {
             next(err);
@@ -31,18 +35,19 @@ export class TransitController {
 
     createTransit = async (req: Request, res: Response, next: NextFunction) => {
         try {
-            const { gateId, badgeId, status, usedDPIs, DPIviolation } = req.body;
+            // const {gateId, badgeId, status, usedDPIs, DPIviolation} = req.body;
+            //
+            // const data: TransitCreationAttributes = {
+            //     gateId,
+            //     badgeId,
+            //     status,
+            //     usedDPIs,
+            //     DPIviolation
+            // }
 
-            const data: TransitCreationAttributes = {
-                gateId,
-                badgeId,
-                status,
-                usedDPIs,
-                DPIviolation
-            }
-
+            const data = matchedData(req, {locations: ['body']}) as TransitCreationAttributes;
             const transit: Transit = await this.service.createTransit(data);
-            return res.status(StatusCodes.CREATED).json({ message: 'Transit created', transit });
+            return res.status(StatusCodes.CREATED).json({message: 'Transit created', transit});
         } catch (err) {
             next(err);
         }
@@ -50,7 +55,9 @@ export class TransitController {
 
     updateTransit = async (req: Request, res: Response, next: NextFunction) => {
         try {
-            const data: TransitUpdateAttributes = req.body;
+            // const data: TransitUpdateAttributes = req.body;
+            const data = matchedData(req, {locations: ['body']}) as TransitUpdateAttributes;
+
             const transit: Transit | null = await this.service.updateTransit(req.params.id, data);
             return res.status(StatusCodes.OK).json(transit);
         } catch (err) {
@@ -60,7 +67,9 @@ export class TransitController {
 
     deleteTransit = async (req: Request, res: Response, next: NextFunction) => {
         try {
-            const id: string = req.params.id;
+            //const id: string = req.params.id;
+            const {id} = matchedData(req, {locations: ['params']});
+
             await this.service.deleteTransit(id);
             return res.status(StatusCodes.NO_CONTENT).send();
         } catch (err) {
@@ -69,7 +78,7 @@ export class TransitController {
     };
 
     getTransitStats = async (req: Request, res: Response, next: NextFunction) => {
-        const { badgeId } = req.params;
+        const {badgeId} = req.params;
         const query = req.query;
 
         try {
@@ -86,7 +95,7 @@ export class TransitController {
 
     getGateReport = async (req: Request, res: Response, next: NextFunction) => {
         try {
-            const { format = ReportFormats.JSON } = req.query;
+            const {format = ReportFormats.JSON} = req.query;
             const queryParams = req.query;
 
             const startDate: Date | undefined = queryParams.startDate ? new Date(queryParams.startDate as string) : undefined;
@@ -116,7 +125,7 @@ export class TransitController {
 
     getBadgeReport = async (req: Request, res: Response, next: NextFunction) => {
         try {
-            const { format = ReportFormats.JSON } = req.query;
+            const {format = ReportFormats.JSON} = req.query;
             const queryParams = req.query;
 
             const user: UserPayload | undefined = req.user;

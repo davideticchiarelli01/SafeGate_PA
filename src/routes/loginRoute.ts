@@ -1,9 +1,9 @@
-import { Router } from 'express';
-import { UserDao } from "../dao/userDao";
-import { UserRepository } from "../repositories/userRepository";
-import { AuthService } from "../services/authService";
+import {Router} from 'express';
+import {UserDao} from "../dao/userDao";
+import {UserRepository} from "../repositories/userRepository";
+import {AuthService} from "../services/authService";
 import AuthController from '../controllers/authController';
-import { validateLogin } from '../middlewares/loginMiddleware';
+import {validateLogin} from "../middlewares/loginMIddleware";
 
 const userDao: UserDao = new UserDao();
 const userRepository: UserRepository = new UserRepository(userDao);
