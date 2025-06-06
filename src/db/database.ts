@@ -30,7 +30,7 @@ class DatabaseConnection {
                 logging: false,
             });
 
-            initModels(sequelize); // ✅ inizializzazione dei modelli e relazioni
+            initModels(sequelize);
             DatabaseConnection.instance = sequelize;
         }
         return DatabaseConnection.instance;
