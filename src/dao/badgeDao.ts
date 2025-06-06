@@ -1,6 +1,6 @@
-import {Badge, BadgeAttributes, BadgeCreationAttributes} from "../models/badge";
-import {IDao} from "./dao";
-import {WhereOptions} from "sequelize";
+import { Badge, BadgeAttributes, BadgeCreationAttributes, BadgeUpdateAttributes } from "../models/badge";
+import { IDao } from "./dao";
+import { WhereOptions } from "sequelize";
 
 export class BadgeDao implements IDao<Badge, BadgeCreationAttributes, Partial<BadgeAttributes>> {
     async get(id: string): Promise<Badge | null> {
@@ -8,11 +8,11 @@ export class BadgeDao implements IDao<Badge, BadgeCreationAttributes, Partial<Ba
     }
 
     async getByUserId(userId: string): Promise<Badge | null> {
-        return await Badge.findOne({where: {userId}});
+        return await Badge.findOne({ where: { userId } });
     }
 
     async getManyFiltered(filter: WhereOptions<BadgeAttributes>): Promise<Badge[]> {
-        return await Badge.findAll({where: filter});
+        return await Badge.findAll({ where: filter });
     }
 
     async getAll(): Promise<Badge[]> {
@@ -23,14 +23,14 @@ export class BadgeDao implements IDao<Badge, BadgeCreationAttributes, Partial<Ba
         return await Badge.create(data);
     }
 
-    async update(badge: Badge, data: Partial<BadgeAttributes>): Promise<Badge> {
+    async update(badge: Badge, data: BadgeUpdateAttributes): Promise<Badge> {
         return await badge.update(data);
     }
 
-    async updateMany(badges: Badge[], data: Partial<BadgeAttributes>): Promise<Badge[]> {
+    async updateMany(badges: Badge[], data: BadgeUpdateAttributes): Promise<Badge[]> {
         const ids = badges.map(b => b.id);
-        await Badge.update(data, {where: {id: ids}});
-        return await Badge.findAll({where: {id: ids}}); // this solution works with all DB
+        await Badge.update(data, { where: { id: ids } });
+        return await Badge.findAll({ where: { id: ids } }); // this solution works with all DB
     }
 
     async delete(badge: Badge): Promise<void> {

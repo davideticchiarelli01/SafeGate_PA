@@ -1,6 +1,6 @@
-import {Gate, GateAttributes, GateCreationAttributes} from '../models/gate';
-import {GateDao} from '../dao/gateDao';
-import {IRepository} from "./repository";
+import { Gate, GateAttributes, GateCreationAttributes, GateUpdateAttributes } from '../models/gate';
+import { GateDao } from '../dao/gateDao';
+import { IRepository } from "./repository";
 
 export class GateRepository implements IRepository<Gate, GateCreationAttributes, Partial<GateAttributes>> {
     constructor(private dao: GateDao) {
@@ -22,7 +22,7 @@ export class GateRepository implements IRepository<Gate, GateCreationAttributes,
         return this.dao.create(data);
     }
 
-    update(gate: Gate, data: Partial<GateAttributes>): Promise<Gate> {
+    update(gate: Gate, data: GateUpdateAttributes): Promise<Gate> {
         return this.dao.update(gate, data);
     }
 

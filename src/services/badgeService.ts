@@ -1,10 +1,10 @@
-import {Badge, BadgeAttributes, BadgeCreationAttributes} from '../models/badge';
-import {BadgeRepository} from '../repositories/badgeRepository';
-import {BadgeStatus} from "../enum/badgeStatus";
-import {ErrorFactory} from '../factories/errorFactory';
-import {ReasonPhrases} from 'http-status-codes';
-import {User} from "../models/user";
-import {UserRepository} from "../repositories/userRepository";
+import { Badge, BadgeAttributes, BadgeCreationAttributes, BadgeUpdateAttributes } from '../models/badge';
+import { BadgeRepository } from '../repositories/badgeRepository';
+import { BadgeStatus } from "../enum/badgeStatus";
+import { ErrorFactory } from '../factories/errorFactory';
+import { ReasonPhrases } from 'http-status-codes';
+import { User } from "../models/user";
+import { UserRepository } from "../repositories/userRepository";
 
 export class BadgeService {
     constructor(private repo: BadgeRepository, private userRepo: UserRepository) {
@@ -35,7 +35,7 @@ export class BadgeService {
         return this.repo.create(data);
     }
 
-    async updateBadge(id: string, data: Partial<BadgeAttributes>): Promise<Badge> {
+    async updateBadge(id: string, data: BadgeUpdateAttributes): Promise<Badge> {
         const badge: Badge | null = await this.repo.findById(id);
         if (!badge) throw ErrorFactory.createError(ReasonPhrases.NOT_FOUND, 'Badge not found');
 
@@ -55,7 +55,7 @@ export class BadgeService {
         const suspended: Badge[] = await this.repo.findManyByIdAndStatus(ids, BadgeStatus.Suspended);
         if (suspended.length === 0) return [];
 
-        const data: Partial<BadgeAttributes> = {status: BadgeStatus.Active};
+        const data: Partial<BadgeAttributes> = { status: BadgeStatus.Active };
         return await this.repo.updateMany(suspended, data);
     }
 
