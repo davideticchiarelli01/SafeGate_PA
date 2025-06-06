@@ -1,6 +1,8 @@
-import {Dialect, Sequelize} from "sequelize";
-import {ErrorFactory} from "../factories/errorFactory";
-import {ReasonPhrases} from "http-status-codes";
+import { Dialect, Sequelize } from "sequelize";
+import { ErrorFactory } from "../factories/errorFactory";
+import { ReasonPhrases } from "http-status-codes";
+import { initModels } from "../models/initializationModels";
+import sequelize from "sequelize/types/sequelize";
 
 class DatabaseConnection {
     private static instance: Sequelize;
@@ -22,12 +24,14 @@ class DatabaseConnection {
                 throw ErrorFactory.createError(ReasonPhrases.INTERNAL_SERVER_ERROR, msg);
             }
 
-            DatabaseConnection.instance = new Sequelize(DB_NAME, DB_USER, DB_PASS, {
+            const sequelize = new Sequelize(DB_NAME, DB_USER, DB_PASS, {
                 host: DB_HOST,
                 dialect: DB_DIALECT,
                 logging: false,
             });
 
+            initModels(sequelize); // ✅ inizializzazione dei modelli e relazioni
+            DatabaseConnection.instance = sequelize;
         }
         return DatabaseConnection.instance;
     }

@@ -5,7 +5,7 @@ import {
     CreationOptional
 } from 'sequelize';
 import db from '../db/database';
-import {BadgeStatus} from '../enum/badgeStatus';
+import { BadgeStatus } from '../enum/badgeStatus';
 
 const sequelize: Sequelize = db.getInstance();
 
@@ -34,42 +34,45 @@ export class Badge extends Model<BadgeAttributes, BadgeCreationAttributes> imple
     declare firstUnauthorizedAttempt: CreationOptional<Date | null>;
 }
 
-Badge.init(
-    {
-        id: {
-            type: DataTypes.UUID,
-            defaultValue: DataTypes.UUIDV4,
-            primaryKey: true,
-            allowNull: false,
-        },
-        userId: {
-            type: DataTypes.UUID,
-            allowNull: false,
-            references: {
-                model: 'Users',
-                key: 'id',
+export function InitBadgeModel(sequelize: Sequelize) {
+    Badge.init(
+        {
+            id: {
+                type: DataTypes.UUID,
+                defaultValue: DataTypes.UUIDV4,
+                primaryKey: true,
+                allowNull: false,
             },
+            userId: {
+                type: DataTypes.UUID,
+                allowNull: false,
+                references: {
+                    model: 'Users',
+                    key: 'id',
+                },
+            },
+            status: {
+                type: DataTypes.ENUM(...Object.values(BadgeStatus)),
+                allowNull: false,
+                defaultValue: BadgeStatus.Active,
+            },
+            unauthorizedAttempts: {
+                type: DataTypes.INTEGER,
+                allowNull: false,
+                defaultValue: 0,
+            },
+            firstUnauthorizedAttempt: {
+                type: DataTypes.DATE,
+                allowNull: true,
+                defaultValue: null,
+            }
         },
-        status: {
-            type: DataTypes.ENUM(...Object.values(BadgeStatus)),
-            allowNull: false,
-            defaultValue: BadgeStatus.Active,
-        },
-        unauthorizedAttempts: {
-            type: DataTypes.INTEGER,
-            allowNull: false,
-            defaultValue: 0,
-        },
-        firstUnauthorizedAttempt: {
-            type: DataTypes.DATE,
-            allowNull: true,
-            defaultValue: null,
+        {
+            sequelize,
+            modelName: 'Badge',
+            tableName: 'Badges',
+            timestamps: true,
         }
-    },
-    {
-        sequelize,
-        modelName: 'Badge',
-        tableName: 'Badges',
-        timestamps: true,
-    }
-);
+    );
+}
+

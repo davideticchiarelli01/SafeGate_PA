@@ -5,8 +5,8 @@ import {
     ForeignKey,
 } from 'sequelize';
 import Database from '../db/database';
-import {Badge} from './badge';
-import {Gate} from './gate';
+import { Badge } from './badge';
+import { Gate } from './gate';
 
 const sequelize: Sequelize = Database.getInstance();
 
@@ -26,33 +26,36 @@ export class Authorization extends Model<AuthorizationAttributes, AuthorizationC
     declare gateId: ForeignKey<Gate['id']>;
 }
 
-Authorization.init(
-    {
-        badgeId: {
-            type: DataTypes.UUID,
-            allowNull: false,
-            primaryKey: true,
-            references: {
-                model: 'Badges',
-                key: 'id',
+export function InitAuthorizationModel(sequelize: Sequelize) {
+    Authorization.init(
+        {
+            badgeId: {
+                type: DataTypes.UUID,
+                allowNull: false,
+                primaryKey: true,
+                references: {
+                    model: 'Badges',
+                    key: 'id',
+                },
+                onDelete: 'CASCADE',
             },
-            onDelete: 'CASCADE',
-        },
-        gateId: {
-            type: DataTypes.UUID,
-            allowNull: false,
-            primaryKey: true,
-            references: {
-                model: 'Gates',
-                key: 'id',
+            gateId: {
+                type: DataTypes.UUID,
+                allowNull: false,
+                primaryKey: true,
+                references: {
+                    model: 'Gates',
+                    key: 'id',
+                },
+                onDelete: 'CASCADE',
             },
-            onDelete: 'CASCADE',
         },
-    },
-    {
-        sequelize,
-        modelName: 'Authorization',
-        tableName: 'Authorizations',
-        timestamps: true,
-    }
-);
+        {
+            sequelize,
+            modelName: 'Authorization',
+            tableName: 'Authorizations',
+            timestamps: true,
+        }
+    );
+}
+

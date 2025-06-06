@@ -5,7 +5,7 @@ import {
     CreationOptional,
 } from 'sequelize';
 import db from '../db/database';
-import {DPI} from '../enum/dpi';
+import { DPI } from '../enum/dpi';
 
 const sequelize: Sequelize = db.getInstance();
 
@@ -28,28 +28,30 @@ export class Gate extends Model<GateAttributes, GateCreationAttributes> implemen
     declare requiredDPIs: DPI[];
 }
 
-Gate.init(
-    {
-        id: {
-            type: DataTypes.UUID,
-            defaultValue: DataTypes.UUIDV4,
-            primaryKey: true,
+export function InitGateModel(sequelize: Sequelize) {
+    Gate.init(
+        {
+            id: {
+                type: DataTypes.UUID,
+                defaultValue: DataTypes.UUIDV4,
+                primaryKey: true,
+            },
+            name: {
+                type: DataTypes.STRING,
+                allowNull: false,
+                unique: true,
+            },
+            requiredDPIs: {
+                type: DataTypes.ARRAY(DataTypes.ENUM(...Object.values(DPI))),
+                allowNull: false,
+                defaultValue: [],
+            }
         },
-        name: {
-            type: DataTypes.STRING,
-            allowNull: false,
-            unique: true,
-        },
-        requiredDPIs: {
-            type: DataTypes.ARRAY(DataTypes.ENUM(...Object.values(DPI))),
-            allowNull: false,
-            defaultValue: [],
+        {
+            sequelize,
+            modelName: 'Gate',
+            tableName: 'Gates',
+            timestamps: true,
         }
-    },
-    {
-        sequelize,
-        modelName: 'Gate',
-        tableName: 'Gates',
-        timestamps: true,
-    }
-);
+    );
+};
