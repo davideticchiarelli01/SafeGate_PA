@@ -1,8 +1,8 @@
-import { Authorization } from "./authorization";
-import { Badge } from "./badge";
-import { Gate } from "./gate";
-import { Transit } from "./transit";
-import { User } from "./user";
+import {Authorization} from "../authorization";
+import {Badge} from "../badge";
+import {Gate} from "../gate";
+import {Transit} from "../transit";
+import {User} from "../user";
 
 
 export function RelationshipsModels() {
@@ -10,6 +10,7 @@ export function RelationshipsModels() {
         foreignKey: 'badgeId',
         onDelete: 'CASCADE',
     });
+
     Badge.hasMany(Authorization, {
         foreignKey: 'badgeId'
     });
@@ -18,6 +19,7 @@ export function RelationshipsModels() {
         foreignKey: 'gateId',
         onDelete: 'CASCADE',
     });
+
     Gate.hasMany(Authorization, {
         foreignKey: 'gateId'
     });
@@ -34,6 +36,7 @@ export function RelationshipsModels() {
         foreignKey: 'userId',
         onDelete: 'CASCADE'
     });
+
     User.hasOne(Badge, {
         foreignKey: 'userId'
     });
@@ -50,6 +53,7 @@ export function RelationshipsModels() {
         foreignKey: 'badgeId',
         onDelete: 'CASCADE'
     });
+
     Badge.hasMany(Transit, {
         foreignKey: 'badgeId'
     });

@@ -1,7 +1,7 @@
-import { Dialect, Sequelize } from "sequelize";
-import { ErrorFactory } from "../factories/errorFactory";
-import { ReasonPhrases } from "http-status-codes";
-import { initModels } from "../models/initializationModels";
+import {Dialect, Sequelize} from "sequelize";
+import {ErrorFactory} from "../factories/errorFactory";
+import {ReasonPhrases} from "http-status-codes";
+import {initModels} from "../models/initModels/initializationModels";
 import sequelize from "sequelize/types/sequelize";
 
 class DatabaseConnection {
