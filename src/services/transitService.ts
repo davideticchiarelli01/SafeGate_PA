@@ -5,7 +5,7 @@ import {GateRepository} from "../repositories/gateRepository";
 import {UserPayload} from "../utils/userPayload";
 import {ErrorFactory} from "../factories/errorFactory";
 import {ReasonPhrases} from "http-status-codes";
-import {Transit, TransitAttributes, TransitCreationAttributes, TransitUpdateAttributes} from "../models/transit";
+import {Transit, TransitCreationAttributes, TransitUpdateAttributes} from "../models/transit";
 import {UserRole} from "../enum/userRoles";
 import {TransitStatus} from "../enum/transitStatus";
 import {Gate} from "../models/gate";
@@ -28,7 +28,7 @@ export class TransitService {
 
 
     constructor(
-        private repo: TransitRepository,
+        private transitRepo: TransitRepository,
         private badgeRepo: BadgeRepository,
         private gateRepo: GateRepository,
         private authRepo: AuthorizationRepository
@@ -39,7 +39,7 @@ export class TransitService {
 
         if (!user) throw ErrorFactory.createError(ReasonPhrases.UNAUTHORIZED, 'User not authenticated');
 
-        const transit: Transit | null = await this.repo.findById(id);
+        const transit: Transit | null = await this.transitRepo.findById(id);
         if (!transit) throw ErrorFactory.createError(ReasonPhrases.NOT_FOUND, 'Transit not found');
 
         switch (user.role) {
@@ -75,9 +75,8 @@ export class TransitService {
     }
 
     getAllTransits(): Promise<Transit[]> {
-        return this.repo.findAll();
+        return this.transitRepo.findAll();
     }
-
 
     async createTransit(data: TransitCreationAttributes): Promise<Transit> {
         const sequelize: Sequelize = DatabaseConnection.getInstance();
@@ -138,7 +137,7 @@ export class TransitService {
         try {
             await this.badgeRepo.update(badge, badgeUpdate, {transaction});
 
-            const transit: Transit = await this.repo.create(data, {transaction});
+            const transit: Transit = await this.transitRepo.create(data, {transaction});
             await transaction.commit();
 
             if (authorized === TransitStatus.Authorized) {
@@ -156,16 +155,15 @@ export class TransitService {
     }
 
     async updateTransit(id: string, data: TransitUpdateAttributes): Promise<Transit> {
-        const transit: Transit | null = await this.repo.findById(id);
+        const transit: Transit | null = await this.transitRepo.findById(id);
         if (!transit) throw ErrorFactory.createError(ReasonPhrases.NOT_FOUND, 'Transit not found');
-        return this.repo.update(transit, data);
+        return this.transitRepo.update(transit, data);
     }
 
-
     async deleteTransit(id: string): Promise<void> {
-        const transit: Transit | null = await this.repo.findById(id);
+        const transit: Transit | null = await this.transitRepo.findById(id);
         if (!transit) throw ErrorFactory.createError(ReasonPhrases.NOT_FOUND, 'Transit not found');
-        return this.repo.delete(transit);
+        return this.transitRepo.delete(transit);
     }
 
     async getTransitStats(badgeId: string, gateId?: string, startDate?: Date, endDate?: Date): Promise<object> {
@@ -184,7 +182,7 @@ export class TransitService {
             throw ErrorFactory.createError(ReasonPhrases.BAD_REQUEST, 'Start date cannot be after end date');
         }
 
-        const transits: Transit[] = await this.repo.findByBadgeGateAndDate(badgeId, gateId, startDate, endDate);
+        const transits: Transit[] = await this.transitRepo.findByBadgeGateAndDate(badgeId, gateId, startDate, endDate);
 
         const statsMap: Record<string, {
             authorizedAccess: number;
@@ -243,7 +241,7 @@ export class TransitService {
             throw ErrorFactory.createError(ReasonPhrases.BAD_REQUEST, 'Start date cannot be after end date');
         }
 
-        const transits = await this.repo.findAllInRange(startDate, endDate);
+        const transits = await this.transitRepo.findAllInRange(startDate, endDate);
         const grouped: Record<string, GateTransitsReport> = {};
 
         for (const t of transits) {
@@ -284,11 +282,11 @@ export class TransitService {
         const grouped: Record<string, BadgeTransitsReport> = {};
 
         if (user.role === UserRole.Admin) {
-            transits = await this.repo.findAllInRange(startDate, endDate);
+            transits = await this.transitRepo.findAllInRange(startDate, endDate);
         } else {
             const badge: Badge | null = await this.badgeRepo.findByUserId(user.id);
             if (!badge) throw ErrorFactory.createError(ReasonPhrases.NOT_FOUND, 'Badge not found for this user');
-            return await this.repo.findByBadgeGateAndDate(badge.id, undefined, startDate, endDate);
+            return await this.transitRepo.findByBadgeGateAndDate(badge.id, undefined, startDate, endDate);
         }
 
         const badgeIds: string[] = transits.map(t => t.badgeId);
