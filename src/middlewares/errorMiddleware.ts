@@ -33,8 +33,9 @@ function sequelizeErrorMiddleware(err: unknown, _req: Request, res: Response, ne
 }
 
 function genericErrorMiddleware(err: unknown, _req: Request, res: Response, _next: NextFunction) {
-    console.error("Unknown Error:", err);
-    const fallbackError = ErrorFactory.createError(ReasonPhrases.INTERNAL_SERVER_ERROR, "Unknown error");
+    console.error("Unexpected Error:", err);
+    const msg: string = err instanceof Error && err.message ? err.message : "An unexpected error occurred";
+    const fallbackError: HttpError = ErrorFactory.createError(ReasonPhrases.INTERNAL_SERVER_ERROR, msg);
     handleHttpErrorResponse(fallbackError, res);
 }
 
@@ -42,5 +43,5 @@ export const errorMiddlewares = [
     jsonSyntaxErrorMiddleware,
     httpErrorMiddleware,
     sequelizeErrorMiddleware,
-    genericErrorMiddleware // this must be the last middleware to catch any unhandled errors
+    genericErrorMiddleware // this must be the last middleware to catch any unhandled errors (there isn't next for it)
 ];
