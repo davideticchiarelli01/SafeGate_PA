@@ -9,8 +9,8 @@ import {
     Sequelize,
     ForeignKey,
 } from 'sequelize';
-import {Badge} from './badge';
-import {Gate} from './gate';
+import { Badge } from './badge';
+import { Gate } from './gate';
 
 /**
  * Interface defining the attributes of the Authorization model.
@@ -35,7 +35,7 @@ export interface AuthorizationCreationAttributes {
 /**
  * Authorization model class.
  * Represents the relationship between badges and gates.
- * @extends Model<AuthorizationAttributes, AuthorizationCreationAttributes>
+ * @extends Model<AuthorizationAttributes,AuthorizationCreationAttributes>
  * @implements AuthorizationAttributes
  */
 export class Authorization extends Model<AuthorizationAttributes, AuthorizationCreationAttributes>
