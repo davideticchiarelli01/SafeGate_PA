@@ -5,6 +5,11 @@ import {Request, Response, NextFunction} from 'express';
 
 const emailRegex = /^[a-zA-Z0-9._!?%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 
+/**
+ * Validation middleware for the `email` field in the request body.
+ * Ensures the field exists, is a string, and matches the email format.
+ * Also trims whitespace from the input.
+ */
 const emailValidation = body('email')
     .exists().withMessage('Field "email" is required')
     .bail()
@@ -13,6 +18,11 @@ const emailValidation = body('email')
     .trim()
     .matches(emailRegex).withMessage('Email format is invalid');
 
+/**
+ * Validation middleware for the `password` field in the request body.
+ * Ensures the field exists and is a string.
+ * Also trims whitespace from the input.
+ */
 const passwordValidation = body('password')
     .exists().withMessage('Field "password" is required')
     .bail()
@@ -20,6 +30,14 @@ const passwordValidation = body('password')
     .bail()
     .trim();
 
+/**
+ * Middleware to handle validation results.
+ * Checks for validation errors and formats them into a structured response.
+ * If validation fails, creates an `HttpError` and passes it to the next middleware.
+ * @param {Request} req - Express request object.
+ * @param {Response} res - Express response object.
+ * @param {NextFunction} next - Express next middleware function.
+ */
 const handleValidation = (req: Request, res: Response, next: NextFunction) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -43,6 +61,10 @@ const handleValidation = (req: Request, res: Response, next: NextFunction) => {
     next();
 };
 
+/**
+ * Validation middleware for login requests.
+ * Combines the `email` and `password` field validations with the validation handler.
+ */
 export const validateLogin = [
     emailValidation,
     passwordValidation,
