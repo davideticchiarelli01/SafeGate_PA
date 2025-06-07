@@ -1,1 +1,2 @@
 2025-06-05 14:59:27:5927 warn: Creating transit for badge ID: d70c2d10-b56c-4cbb-bb00-6c2f1e1cb723, gate ID: 8a8e1f4d-bb7a-4b6e-bb44-7386228f637c, status: unauthorized, DPI violation: false, message: Unauthorized access attempt
+2025-06-07 09:20:22:2022 warn: Creating transit for badge ID: 79c1f0c5-2cf8-4948-b51d-b4ef0117c68e, gate ID: 8a8e1f4d-bb7a-4b6e-bb44-7386228f637c, status: unauthorized, DPI violation: true, message: DPI violation detected

@@ -132,7 +132,6 @@ export class TransitController {
             const startDate: Date | undefined = queryParams.startDate ? new Date(queryParams.startDate as string) : undefined;
             const endDate: Date | undefined = queryParams.endDate ? new Date(queryParams.endDate as string) : undefined;
 
-            console.log(user);
             const result = await this.service.generateBadgeReport(format as ReportFormats, startDate, endDate, user);
 
             switch (format) {
