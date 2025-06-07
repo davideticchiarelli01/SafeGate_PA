@@ -50,8 +50,11 @@ const requiredDPIsValidation = body('requiredDPIs')
 
 /**
  * Middleware to handle validation results.
- * If there are validation errors, it constructs a formatted HTTP error
- * with all field-specific issues and forwards it to the error handler.
+ * Checks for validation errors and formats them into a structured response.
+ * If validation fails, it creates an `HttpError` and passes it to the next middleware.
+ * @param {Request} req - The Express request object.
+ * @param {Response} res - The Express response object.
+ * @param {NextFunction} next - The Express next middleware function.
  */
 const handleValidation = (req: Request, res: Response, next: NextFunction) => {
     const errors = validationResult(req);
