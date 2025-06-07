@@ -1,10 +1,10 @@
-import { param, body, query, matchedData, validationResult } from 'express-validator';
-import { NextFunction, Request, Response } from 'express';
-import { ErrorFactory, HttpError } from '../factories/errorFactory';
-import { ReasonPhrases } from 'http-status-codes';
-import { DPI } from "../enum/dpi";
-import { TransitStatus } from "../enum/transitStatus";
-import { ReportFormats } from "../enum/reportFormats";
+import {param, body, query, validationResult} from 'express-validator';
+import {NextFunction, Request, Response} from 'express';
+import {ErrorFactory, HttpError} from '../factories/errorFactory';
+import {ReasonPhrases} from 'http-status-codes';
+import {DPI} from "../enum/dpi";
+import {TransitStatus} from "../enum/transitStatus";
+import {ReportFormats} from "../enum/reportFormats";
 
 /**
  * Validates the "id" route parameter.
@@ -89,13 +89,16 @@ const DPIviolationValidation = body('DPIviolation')
 const usedDPIsValidation = body('usedDPIs')
     .optional()
     .isArray().withMessage('Field "usedDPIs" must be an array')
+    .bail();
+
+const usedDPIsElementsValidation = body('usedDPIs.*')
+    .optional()
+    .isString().withMessage('Each item in "usedDPIs" must be a string')
     .bail()
-    .customSanitizer(arr =>
-        Array.isArray(arr) ? arr.map((item) => String(item).trim().toLowerCase()) : [])
-    .custom(arr =>
-        Array.isArray(arr) && arr.every(item => Object.values(DPI).includes(item))
-    )
-    .withMessage(`Field "usedDPIs" must contain only valid DPI values: ${Object.values(DPI).join(', ')}`);
+    .trim()
+    .toLowerCase()
+    .isIn(Object.values(DPI))
+    .withMessage(`Each item in "usedDPIs" must be a valid DPI: ${Object.values(DPI).join(', ')}`);
 
 /**
  * Validates the optional "gateId" query parameter.
@@ -184,6 +187,7 @@ export const validateTransitCreation = [
     badgeIdValidation,
     statusValidation,
     usedDPIsValidation,
+    usedDPIsElementsValidation,
     DPIviolationValidation,
     handleValidation
 ];
@@ -195,6 +199,7 @@ export const validateTransitUpdate = [
     idParamValidation,
     statusValidation,
     usedDPIsValidation,
+    usedDPIsElementsValidation,
     DPIviolationValidation,
     handleValidation,
 ];

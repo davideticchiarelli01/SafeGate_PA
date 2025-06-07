@@ -77,7 +77,7 @@ const firstUnauthorizedAttemptValidation = body('firstUnauthorizedAttempt')
  * Validation middleware for the `badgeIds` field in the request body.
  * Ensures the field is a non-empty array.
  */
-const validateBadgeIds = body('badgeIds')
+const badgeIdsValidation = body('badgeIds')
     .notEmpty().withMessage('Field "badgeIds" is required and cannot be empty')
     .bail()
     .isArray({min: 1}).withMessage('Field "badgeIds" must be a non-empty array')
@@ -88,7 +88,7 @@ const validateBadgeIds = body('badgeIds')
  * Ensures each element is a string and a valid UUIDv4.
  * Also trims the value to remove any leading or trailing whitespace.
  */
-const validateBadgeIdsElement = body('badgeIds.*')
+const badgeIdsElementValidation = body('badgeIds.*')
     .isString().withMessage('Each badge ID in badgeIds must be a string')
     .bail()
     .customSanitizer((value) => typeof value === 'string' ? value.trim() : value)
@@ -165,7 +165,7 @@ export const validateBadgeId = [
  * Combines validations for the `badgeIds` field and its elements, along with the validation handler.
  */
 export const validateReactivateBadges = [
-    validateBadgeIds,
-    validateBadgeIdsElement,
+    badgeIdsValidation,
+    badgeIdsElementValidation,
     handleValidation
 ];

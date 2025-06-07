@@ -1,8 +1,8 @@
-import { DPI } from '../enum/dpi';
-import { param, body, validationResult } from 'express-validator';
-import { NextFunction, Request, Response } from 'express';
-import { ErrorFactory, HttpError } from '../factories/errorFactory';
-import { ReasonPhrases } from 'http-status-codes';
+import {DPI} from '../enum/dpi';
+import {param, body, validationResult} from 'express-validator';
+import {NextFunction, Request, Response} from 'express';
+import {ErrorFactory, HttpError} from '../factories/errorFactory';
+import {ReasonPhrases} from 'http-status-codes';
 
 /**
  * Validation for the `id` route parameter.
@@ -28,35 +28,40 @@ const nameValidation = body('name')
     .bail();
 
 /**
- * Validation for the optional `requiredDPIs` field in the request body.
- * - If present, must be an array of strings.
- * - Each element must be a valid DPI enum value.
- * - Trims and normalizes each string to lowercase before validation.
+ * Validation middleware for the `requiredDPIs` field in the request body.
+ * Ensures the field is optional and, if provided, is an array.
  */
 const requiredDPIsValidation = body('requiredDPIs')
     .optional()
     .isArray().withMessage('Field "requiredDPIs" must be an array')
+    .bail();
+
+/**
+ * Validation middleware for each element in the `requiredDPIs` array.
+ * Ensures each element is optional, a string and matches one of the
+ * valid DPI values defined in the `DPI` enum.
+ *
+ * Each string is trimmed, converted to lowercase, and validated against the enum.
+ */
+const requiredDPIsElementsValidation = body('requiredDPIs.*')
+    .optional()
+    .isString().withMessage('Each item in "requiredDPIs" must be a string')
     .bail()
-    .custom((arr) => arr.every((item: any) => typeof item === 'string'))
-    .withMessage('Each element in "requiredDPIs" must be a string')
-    .bail()
-    .customSanitizer((arr: any[]) =>
-        arr.map(item => typeof item === "string" ? item.trim().toLowerCase() : item)
-    )
-    .custom((arr) =>
-        arr.every((item: any) => Object.values(DPI).includes(item))
-    )
-    .withMessage(`Field "requiredDPIs" must contain only valid DPI values: ${Object.values(DPI).join(', ')}`);
+    .trim()
+    .toLowerCase()
+    .isIn(Object.values(DPI))
+    .withMessage(`Each item in "requiredDPIs" must be a valid DPI: ${Object.values(DPI).join(', ')}`)
+    .bail();
 
 /**
  * Middleware to handle validation results.
  * Checks for validation errors and formats them into a structured response.
  * If validation fails, it creates an `HttpError` and passes it to the next middleware.
  * @param {Request} req - The Express request object.
- * @param {Response} res - The Express response object.
+ * @param {Response} _res - The Express response object.
  * @param {NextFunction} next - The Express next middleware function.
  */
-const handleValidation = (req: Request, res: Response, next: NextFunction) => {
+const handleValidation = (req: Request, _res: Response, next: NextFunction) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
         const formattedDetails = errors.array().map((e) => ({
@@ -80,11 +85,12 @@ const handleValidation = (req: Request, res: Response, next: NextFunction) => {
  * Validation chain used when creating a new Gate.
  * Requires:
  * - name (non-empty string)
- * - optional requiredDPIs (must be array of valid DPI strings)
+ * - optional requiredDPIs (must be an array of valid DPI strings)
  */
 export const validateGateCreation = [
     nameValidation,
     requiredDPIsValidation,
+    requiredDPIsElementsValidation,
     handleValidation,
 ];
 
@@ -97,6 +103,7 @@ export const validateGateCreation = [
 export const validateGateUpdate = [
     idParamValidation,
     requiredDPIsValidation,
+    requiredDPIsElementsValidation,
     handleValidation,
 ];
 
