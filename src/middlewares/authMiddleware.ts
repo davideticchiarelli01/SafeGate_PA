@@ -1,10 +1,19 @@
-import {NextFunction, Request, Response} from 'express';
-import {UserPayload, validateUserPayload} from '../utils/userPayload';
-import {extractAndValidateJwtToken, getPublicJwtKey, jwtVerify} from '../utils/jwt';
-import {ErrorFactory} from "../factories/errorFactory";
-import {ReasonPhrases} from "http-status-codes";
-import {UserRole} from '../enum/userRoles';
+import { NextFunction, Request, Response } from 'express';
+import { UserPayload, validateUserPayload } from '../utils/userPayload';
+import { extractAndValidateJwtToken, getPublicJwtKey, jwtVerify } from '../utils/jwt';
+import { ErrorFactory } from "../factories/errorFactory";
+import { ReasonPhrases } from "http-status-codes";
+import { UserRole } from '../enum/userRoles';
 
+/**
+ * Middleware to authenticate users via JWT.
+ * Extracts the token from the Authorization header, verifies it,
+ * validates the payload, and attaches the user to the request.
+ *
+ * @param {Request} req - Express request object containing the JWT
+ * @param {Response} res - Express response object
+ * @param {NextFunction} next - Express next function
+ */
 export const authMiddleware = async (
     req: Request,
     res: Response,
@@ -22,6 +31,14 @@ export const authMiddleware = async (
     }
 };
 
+/**
+ * Middleware to restrict access to admin users only.
+ * Checks the role of the authenticated user.
+ *
+ * @param {Request} req - Express request object
+ * @param {Response} res - Express response object
+ * @param {NextFunction} next - Express next function
+ */
 export const adminMiddleware = (
     req: Request,
     res: Response,
@@ -36,6 +53,14 @@ export const adminMiddleware = (
     ));
 };
 
+/**
+ * Middleware to allow only gate users or admin users.
+ * Checks if the role of the authenticated user is 'admin' or 'gate'.
+ *
+ * @param {Request} req - Express request object
+ * @param {Response} res - Express response object
+ * @param {NextFunction} next - Express next function
+ */
 export const gateOrAdminMiddleware = (
     req: Request,
     res: Response,
@@ -50,6 +75,14 @@ export const gateOrAdminMiddleware = (
     ));
 }
 
+/**
+ * Middleware to allow only regular users or admin users.
+ * Checks if the role of the authenticated user is 'admin' or 'user'.
+ *
+ * @param {Request} req - Express request object
+ * @param {Response} res - Express response object
+ * @param {NextFunction} next - Express next function
+ */
 export const userOrAdminMiddleware = (
     req: Request,
     res: Response,
@@ -63,4 +96,3 @@ export const userOrAdminMiddleware = (
         'Forbidden, only users or administrators can perform this action'
     ));
 }
-

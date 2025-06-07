@@ -11,7 +11,7 @@ import { handleJsonSyntaxError } from "../utils/errorHandlers/jsonErrorHandler";
  * Otherwise, passes the error to the next middleware.
  *
  * @param {unknown} err - The error object thrown by Express.
- * @param {Request} _req - The Express request object (unused).
+ * @param {Request} _req - The Express request object.
  * @param {Response} res - The Express response object.
  * @param {NextFunction} next - The next middleware function.
  */
@@ -30,7 +30,7 @@ function jsonSyntaxErrorMiddleware(err: unknown, _req: Request, res: Response, n
  * Otherwise, passes the error to the next middleware.
  *
  * @param {unknown} err - The error object thrown by Express.
- * @param {Request} _req - The Express request object (unused).
+ * @param {Request} _req - The Express request object.
  * @param {Response} res - The Express response object.
  * @param {NextFunction} next - The next middleware function.
  */
@@ -43,12 +43,12 @@ function httpErrorMiddleware(err: unknown, _req: Request, res: Response, next: N
 }
 
 /**
- * Middleware to handle Sequelize (ORM) errors.
+ * Middleware to handle Sequelize errors.
  * If a Sequelize error is detected, converts it to an HttpError and returns a formatted error response.
  * Otherwise, passes the error to the next middleware.
  *
  * @param {unknown} err - The error object thrown by Express.
- * @param {Request} _req - The Express request object (unused).
+ * @param {Request} _req - The Express request object.
  * @param {Response} res - The Express response object.
  * @param {NextFunction} next - The next middleware function.
  */
@@ -67,9 +67,9 @@ function sequelizeErrorMiddleware(err: unknown, _req: Request, res: Response, ne
  * This middleware should always be the last error handler in the chain.
  *
  * @param {unknown} err - The error object thrown by Express.
- * @param {Request} _req - The Express request object (unused).
+ * @param {Request} _req - The Express request object.
  * @param {Response} res - The Express response object.
- * @param {NextFunction} _next - The next middleware function (unused).
+ * @param {NextFunction} _next - The next middleware function.
  */
 function genericErrorMiddleware(err: unknown, _req: Request, res: Response, _next: NextFunction) {
     console.error("Unexpected Error:", err);
