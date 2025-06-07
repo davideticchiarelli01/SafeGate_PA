@@ -286,7 +286,7 @@ export class TransitService {
         } else {
             const badge: Badge | null = await this.badgeRepo.findByUserId(user.id);
             if (!badge) throw ErrorFactory.createError(ReasonPhrases.NOT_FOUND, 'Badge not found for this user');
-            return await this.transitRepo.findByBadgeGateAndDate(badge.id, undefined, startDate, endDate);
+            transits = await this.transitRepo.findByBadgeGateAndDate(badge.id, undefined, startDate, endDate);
         }
 
         const badgeIds: string[] = transits.map(t => t.badgeId);
