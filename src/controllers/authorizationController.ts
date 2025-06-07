@@ -11,7 +11,7 @@ export class AuthorizationController {
     getAuthorization = async (req: Request, res: Response, next: NextFunction) => {
         try {
             const {badgeId, gateId} = matchedData(req, {locations: ['params']});
-            const authorization: Authorization | null = await this.service.getAuthorization(badgeId, gateId);
+            const authorization: Authorization = await this.service.getAuthorization(badgeId, gateId);
             return res.status(StatusCodes.OK).json(authorization);
         } catch (err) {
             next(err);

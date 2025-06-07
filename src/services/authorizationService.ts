@@ -16,7 +16,7 @@ export class AuthorizationService {
     ) {
     }
 
-    async getAuthorization(badgeId: string, gateId: string): Promise<Authorization | null> {
+    async getAuthorization(badgeId: string, gateId: string): Promise<Authorization> {
         const gateAuth: Authorization | null = await this.authorizationRepo.findById(badgeId, gateId);
         if (!gateAuth) throw ErrorFactory.createError(ReasonPhrases.NOT_FOUND, 'Gate authorization not found');
         return gateAuth;
