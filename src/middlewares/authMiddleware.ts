@@ -1,9 +1,9 @@
-import { NextFunction, Request, Response } from 'express';
-import { UserPayload, validateUserPayload } from '../utils/userPayload';
-import { extractAndValidateJwtToken, getPublicJwtKey, jwtVerify } from '../utils/jwt';
-import { ErrorFactory } from "../factories/errorFactory";
-import { ReasonPhrases } from "http-status-codes";
-import { UserRole } from '../enum/userRoles';
+import {NextFunction, Request, Response} from 'express';
+import {UserPayload, validateUserPayload} from '../utils/userPayload';
+import {extractAndValidateJwtToken, getPublicJwtKey, jwtVerify} from '../utils/jwt';
+import {ErrorFactory} from "../factories/errorFactory";
+import {ReasonPhrases} from "http-status-codes";
+import {UserRole} from '../enum/userRoles';
 
 export const authMiddleware = async (
     req: Request,
@@ -27,7 +27,6 @@ export const adminMiddleware = (
     res: Response,
     next: NextFunction
 ) => {
-    console.log("req.user:", req.user);
     if (req.user && req.user.role === 'admin') {
         return next();
     }

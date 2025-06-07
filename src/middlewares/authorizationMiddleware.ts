@@ -11,6 +11,7 @@ const badgeIdParamValidation = param('badgeId')
     .exists().withMessage('Param "badgeId" is required')
     .bail()
     .custom((value) => typeof value === 'string').withMessage('Param "badgeId" must be a string')
+    .bail()
     .isUUID(4).withMessage('Param "badgeId" must be a valid UUIDv4');
 
 /**
@@ -21,6 +22,7 @@ const gateIdParamValidation = param('gateId')
     .exists().withMessage('Param "gateId" is required')
     .bail()
     .custom((value) => typeof value === 'string').withMessage('Param "gateId" must be a string')
+    .bail()
     .isUUID(4).withMessage('Param "gateId" must be a valid UUIDv4');
 
 /**
@@ -31,6 +33,7 @@ const badgeIdBodyValidation = body('badgeId')
     .exists().withMessage('Field "badgeId" is required')
     .bail()
     .custom((value) => typeof value === 'string').withMessage('Field "badgeId" must be a string')
+    .bail()
     .isUUID(4).withMessage('Field "badgeId" must be a valid UUIDv4');
 
 /**
@@ -41,6 +44,7 @@ const gateIdBodyValidation = body('gateId')
     .exists().withMessage('Field "gateId" is required')
     .bail()
     .custom((value) => typeof value === 'string').withMessage('Field "gateId" must be a string')
+    .bail()
     .isUUID(4).withMessage('Field "gateId" must be a valid UUIDv4');
 
 /**

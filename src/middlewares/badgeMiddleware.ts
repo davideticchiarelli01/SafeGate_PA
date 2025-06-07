@@ -1,8 +1,8 @@
-import { param, body, matchedData, validationResult } from 'express-validator';
-import { NextFunction, Request, Response } from 'express';
-import { ErrorFactory, HttpError } from '../factories/errorFactory';
-import { ReasonPhrases } from 'http-status-codes';
-import { BadgeStatus } from "../enum/badgeStatus";
+import {param, body, validationResult} from 'express-validator';
+import {NextFunction, Request, Response} from 'express';
+import {ErrorFactory, HttpError} from '../factories/errorFactory';
+import {ReasonPhrases} from 'http-status-codes';
+import {BadgeStatus} from "../enum/badgeStatus";
 
 const idParamValidation = param('id')
     .exists().withMessage('Param "id" is required')
@@ -11,24 +11,36 @@ const idParamValidation = param('id')
 
 const userIdValidation = body('userId')
     .exists().withMessage('Field "userId" is required')
-    .trim()
+    .bail()
+    .custom((value) => typeof value === 'string').withMessage('Field "userId" must be a string')
+    .bail()
     .isUUID(4).withMessage('Field "userId" must be a valid UUIDv4');
 
 const statusValidation = body('status')
     .optional()
-    .isString().withMessage('Field "status" must be a string')
-    .trim()
+    .custom((value) => typeof value === 'string').withMessage('Field "status" must be a string')
+    .bail()
     .customSanitizer(value => value.toLowerCase())
     .isIn(Object.values(BadgeStatus)).withMessage(`Field "status" must be one of: ${Object.values(BadgeStatus).join(', ')}`);
 
 const unauthorizedAttemptsValidation = body('unauthorizedAttempts')
     .optional()
-    .isInt({ min: 0 }).withMessage('Field "unauthorizedAttempts" must be a non-negative integer')
+    .bail()
+    .custom((value) => typeof value === 'number')
+    .withMessage('Field "unauthorizedAttempts" must be a number (also string number not allowed)')
+    .bail()
+    .isInt({min: 0})
+    .withMessage('Field "unauthorizedAttempts" must be a non-negative integer')
+    .bail()
     .toInt();
 
 const firstUnauthorizedAttemptValidation = body('firstUnauthorizedAttempt')
     .optional()
+    .custom((value) => typeof value === 'string')
+    .withMessage('Field "firstUnauthorizedAttempt" must be a string')
+    .bail()
     .isISO8601().withMessage('Must be a valid ISO 8601 date (Es. "2023-10-01T12:00:00Z")')
+    .bail()
     .toDate();
 
 const handleValidation = (req: Request, res: Response, next: NextFunction) => {
@@ -79,7 +91,7 @@ export const validateBadgeId = [
 export const validateReactivateBadges = [
     body('badgeIds')
         .notEmpty().withMessage('Field "badgeIds" is required and cannot be empty')
-        .isArray({ min: 1 }).withMessage('Field "badgeIds" must be a non-empty array'),
+        .isArray({min: 1}).withMessage('Field "badgeIds" must be a non-empty array'),
 
     body('badgeIds.*')
         .isString().withMessage('Each badge ID in badgeIds must be a string')

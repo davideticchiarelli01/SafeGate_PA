@@ -53,7 +53,7 @@ export class BadgeController {
             const {id} = matchedData(req, {locations: ['params']});
             const data = matchedData(req, {locations: ['body']}) as BadgeCreationAttributes;
 
-            const badge: Badge | null = await this.service.updateBadge(id, data);
+            const badge: Badge = await this.service.updateBadge(id, data);
             return res.status(StatusCodes.OK).json(badge);
         } catch (err) {
             next(err);
