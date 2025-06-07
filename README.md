@@ -111,6 +111,19 @@ erDiagram
 
 ### Diagrammi delle sequenze
 # API Routes
+
+| **Verbo HTTP** | **Endpoint**                                      | **Descrizione**                                                                              | **Autenticazione JWT** |
+|----------------|---------------------------------------------------|----------------------------------------------------------------------------------------------|------------------------|
+| **POST**       | `/login`                                          | Autenticazione dell'utente tramite email e password.                                         | ❌                     |
+| **GET**        | `/transits`                                       | Recupera tutti i transiti registrati. (solo admin)                                           | ✅                     |
+| **GET**        | `/transits/:id`                                   | Recupera uno specifico transito. (admin tutte, user solo le sue transizioni)                 | ✅                     |
+| **POST**       | `/transits`                                       | Crea una transito sia con esito positivo che negativo. (admin e gate)                        | ✅                     |
+| **PUT**        | `/transits/:id`                                   | Modifica un transito esistente. (solo admin)                                                 | ✅                     |
+| **DELETE**     | `/transits/:id`                                   | Elimina un transito esistente. (solo admin)                                                  | ✅                     |
+| **GET**        | `/transits_stats/:badgeId`                        | Recupera le statistiche dei transiti di uno specifico badge. (admin tutte, user solo le sue) | ✅                     |
+| **GET**        | `/gate_report`                                    | Esportazione del numero di transiti in un gate in formato JSON, PDF o CSV. (solo admin)      | ✅                     |
+| **GET**        | `/badge_report`                                   | Esportazione del numero di transiti di un badge come JSON, PDF o JSON. (admin tutte, user solo le sue)          | ✅                     |
+
 # Configurazione e uso
 # Strumenti utilizzati
 # Autori
