@@ -9,27 +9,31 @@ import { ReportFormats } from "../enum/reportFormats";
 const idParamValidation = param('id')
     .exists().withMessage('Param "id" is required')
     .trim()
-    .isUUID(4).withMessage('Param "id" must be a valid UUIDv4');
+    .isUUID(4).withMessage('Param "id" must be a valid UUIDv4')
+    .bail();
 
 const gateIdValidation = body('gateId')
     .exists().withMessage('Field "gateId" is required')
     .trim()
-    .isUUID(4).withMessage('Field "gateId" must be a valid UUIDv4');
+    .isUUID(4).withMessage('Field "gateId" must be a valid UUIDv4')
+    .bail();
 
 const badgeIdValidation = body('badgeId')
     .exists().withMessage('Field "badgeId" is required')
     .trim()
-    .isUUID(4).withMessage('Field "badgeId" must be a valid UUIDv4');
+    .isUUID(4).withMessage('Field "badgeId" must be a valid UUIDv4')
+    .bail();
 
 const badgeIdParamValidation = param('badgeId')
     .exists().withMessage('Param "badgeId" is required')
     .trim()
-    .isUUID(4).withMessage('Param "badgeId" must be a valid UUIDv4');
+    .isUUID(4).withMessage('Param "badgeId" must be a valid UUIDv4')
+    .bail();
 
 const statusValidation = body('status')
     .optional()
     .isString().withMessage('Field "status" must be a string')
-    .trim()
+    .bail()
     .customSanitizer(value => value.toLowerCase())
     .isIn(Object.values(TransitStatus))
     .withMessage(`Field "status" must be one of: ${Object.values(TransitStatus).join(', ')}`);
@@ -37,35 +41,40 @@ const statusValidation = body('status')
 const DPIviolationValidation = body('DPIviolation')
     .optional()
     .isBoolean().withMessage('Field "DPIviolation" must be a boolean')
+    .bail()
     .toBoolean();
 
 const usedDPIsValidation = body('usedDPIs')
     .optional()
-    .isArray().withMessage('Field "requiredDPIs" must be an array')
-    .customSanitizer((arr) =>
+    .isArray().withMessage('Field "usedDPIs" must be an array')
+    .bail()
+    .customSanitizer(arr =>
         Array.isArray(arr) ? arr.map((item) => String(item).trim().toLowerCase()) : [])
-    .custom((arr) =>
+    .custom(arr =>
         Array.isArray(arr) && arr.every(item => Object.values(DPI).includes(item))
     )
-    .withMessage(`Field "requiredDPIs" must contain only valid DPI values: ${Object.values(DPI).join(', ')}`);
-
+    .withMessage(`Field "usedDPIs" must contain only valid DPI values: ${Object.values(DPI).join(', ')}`);
 
 const gateIdQueryValidation = query('gateId')
     .optional()
     .trim()
-    .isUUID(4).withMessage('Query param "gateId" must be a valid UUIDv4');
+    .isUUID(4).withMessage('Query param "gateId" must be a valid UUIDv4')
+    .bail();
 
 const startDateQueryValidation = query('startDate')
     .optional()
-    .isISO8601().withMessage('Query param "startDate" must be a valid ISO 8601 date');
+    .isISO8601().withMessage('Query param "startDate" must be a valid ISO 8601 date')
+    .bail();
 
 const endDateQueryValidation = query('endDate')
     .optional()
-    .isISO8601().withMessage('Query param "endDate" must be a valid ISO 8601 date');
+    .isISO8601().withMessage('Query param "endDate" must be a valid ISO 8601 date')
+    .bail();
 
 const formatQueryValidation = query('format')
     .optional()
     .isString().withMessage('Query param "format" must be a string')
+    .bail()
     .trim()
     .toLowerCase()
     .isIn(Object.values(ReportFormats))
@@ -74,7 +83,6 @@ const formatQueryValidation = query('format')
 const handleValidation = (req: Request, res: Response, next: NextFunction) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-
         const formattedDetails = errors.array().map((e) => {
             return {
                 field: e.type === 'field' ? e.path : 'unknown',
@@ -93,7 +101,6 @@ const handleValidation = (req: Request, res: Response, next: NextFunction) => {
     }
     next();
 };
-
 
 export const validateTransitCreation = [
     gateIdValidation,
