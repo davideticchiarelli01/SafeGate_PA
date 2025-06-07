@@ -1,52 +1,65 @@
-import winston from 'winston'
-import path from 'path'
+import winston from 'winston';
+import path from 'path';
 
+// Resolve the path to the log directory
 const logDir = path.resolve(process.cwd(), 'src/logger/logs');
 
-console.log(`Log directory created at: ${logDir}`)
+// Log path to console 
+console.log(`Log directory created at: ${logDir}`);
 
+/**
+ * Custom log levels.
+ */
 const levels = {
-    error: 0,
-    warn: 1,
-    info: 2,
-    http: 3,
-    debug: 4,
-}
+    error: 0, // Critical errors
+    warn: 1,  // Warnings
+    info: 2,  // General information
+    http: 3,  // HTTP requests
+    debug: 4, // Debugging messages
+};
 
-/*const level = () => {
-    const env = process.env.NODE_ENV || 'development'
-    const isDevelopment = env === 'development'    DA VEDERE    
-    return isDevelopment ? 'debug' : 'warn'
-}}*/
-
+/**
+ * Custom color mappings for each log level when printing to the console.
+ */
 const colors = {
     error: 'red',
     warn: 'yellow',
     info: 'green',
     http: 'magenta',
     debug: 'white',
-}
+};
 
-winston.addColors(colors)
+// Register custom colors to winston
+winston.addColors(colors);
 
+/**
+ * File output format: timestamp + log level + message
+ */
 const fileFormat = winston.format.combine(
     winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss:ms' }),
     winston.format.printf(
         (info) => `${info.timestamp} ${info.level}: ${info.message}`
     )
-)
+);
 
-
+/**
+ * Console output format: colored + timestamp + log level + message
+ */
 const consoleFormat = winston.format.combine(
     winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss:ms' }),
     winston.format.colorize({ all: true }),
     winston.format.printf(
         (info) => `${info.timestamp} ${info.level}: ${info.message}`,
     ),
-)
+);
 
+/**
+ * Transport definitions:
+ * - Console: colored, for development
+ * - error.log: logs only error-level messages
+ * - all.log: logs all-level messages
+ */
 const transports = [
-
     new winston.transports.Console({
         format: consoleFormat,
     }),
@@ -63,10 +76,13 @@ const transports = [
     }),
 ];
 
+/**
+ * Winston Logger instance with defined levels and transports.
+ * This logger can be imported and used throughout the application.
+ */
 const Logger = winston.createLogger({
-    //level: level(),
     levels,
     transports,
-})
+});
 
-export default Logger
+export default Logger;
