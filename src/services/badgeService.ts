@@ -5,6 +5,7 @@ import { ErrorFactory } from '../factories/errorFactory';
 import { ReasonPhrases } from 'http-status-codes';
 import { User } from "../models/user";
 import { UserRepository } from "../repositories/userRepository";
+import { UserRole } from '../enum/userRoles';
 
 export class BadgeService {
     constructor(private repo: BadgeRepository, private userRepo: UserRepository) {
@@ -28,9 +29,12 @@ export class BadgeService {
     async createBadge(data: BadgeCreationAttributes): Promise<Badge> {
         const user: User | null = await this.userRepo.findById(data.userId);
         if (!user) throw ErrorFactory.createError(ReasonPhrases.NOT_FOUND, 'User not found');
+        if (user.role === UserRole.Gate) {
+            throw ErrorFactory.createError(ReasonPhrases.FORBIDDEN, 'Users with role Gate cannot be assigned a badge');
+        }
 
         const badge: Badge | null = await this.repo.findByUserId(data.userId);
-        if (badge) throw ErrorFactory.createError(ReasonPhrases.CONFLICT, 'A Badge already exists for this user');
+        if (badge) throw ErrorFactory.createError(ReasonPhrases.CONFLICT, 'User already has a badge');
 
         return this.repo.create(data);
     }
