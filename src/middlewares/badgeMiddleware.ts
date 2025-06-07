@@ -69,7 +69,7 @@ const firstUnauthorizedAttemptValidation = body('firstUnauthorizedAttempt')
     .optional()
     .isString().withMessage('Field "firstUnauthorizedAttempt" must be a string')
     .bail()
-    .isISO8601().withMessage('Must be a valid ISO 8601 date (Es. "2023-10-01T12:00:00Z")')
+    .isISO8601().withMessage('Field "firstUnauthorizedAttempt" must be a valid ISO 8601 date (Es. "2023-10-01T12:00:00Z")')
     .bail()
     .toDate();
 

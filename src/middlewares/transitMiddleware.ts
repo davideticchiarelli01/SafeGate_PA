@@ -14,6 +14,9 @@ import {ReportFormats} from "../enum/reportFormats";
  */
 const idParamValidation = param('id')
     .exists().withMessage('Param "id" is required')
+    .bail()
+    .isString().withMessage('Param "id" must be a string')
+    .bail()
     .trim()
     .isUUID(4).withMessage('Param "id" must be a valid UUIDv4')
     .bail();
@@ -26,6 +29,9 @@ const idParamValidation = param('id')
  */
 const gateIdValidation = body('gateId')
     .exists().withMessage('Field "gateId" is required')
+    .bail()
+    .isString().withMessage('Field "gateId" must be a string')
+    .bail()
     .trim()
     .isUUID(4).withMessage('Field "gateId" must be a valid UUIDv4')
     .bail();
@@ -38,6 +44,9 @@ const gateIdValidation = body('gateId')
  */
 const badgeIdValidation = body('badgeId')
     .exists().withMessage('Field "badgeId" is required')
+    .bail()
+    .isString().withMessage('Field "badgeId" must be a string')
+    .bail()
     .trim()
     .isUUID(4).withMessage('Field "badgeId" must be a valid UUIDv4')
     .bail();
@@ -50,6 +59,9 @@ const badgeIdValidation = body('badgeId')
  */
 const badgeIdParamValidation = param('badgeId')
     .exists().withMessage('Param "badgeId" is required')
+    .bail()
+    .isString().withMessage('Param "badgeId" must be a string')
+    .bail()
     .trim()
     .isUUID(4).withMessage('Param "badgeId" must be a valid UUIDv4')
     .bail();
@@ -98,7 +110,8 @@ const usedDPIsElementsValidation = body('usedDPIs.*')
     .trim()
     .toLowerCase()
     .isIn(Object.values(DPI))
-    .withMessage(`Each item in "usedDPIs" must be a valid DPI: ${Object.values(DPI).join(', ')}`);
+    .withMessage(`Each item in "usedDPIs" must be a valid DPI: ${Object.values(DPI).join(', ')}`)
+    .bail();
 
 /**
  * Validates the optional "gateId" query parameter.
@@ -108,6 +121,8 @@ const usedDPIsElementsValidation = body('usedDPIs.*')
  */
 const gateIdQueryValidation = query('gateId')
     .optional()
+    .isString().withMessage('Query param "gateId" must be a string')
+    .bail()
     .trim()
     .isUUID(4).withMessage('Query param "gateId" must be a valid UUIDv4')
     .bail();
@@ -120,8 +135,11 @@ const gateIdQueryValidation = query('gateId')
  */
 const startDateQueryValidation = query('startDate')
     .optional()
-    .isISO8601().withMessage('Query param "startDate" must be a valid ISO 8601 date')
-    .bail();
+    .isString().withMessage('Query param "startDate" must be a string')
+    .bail()
+    .isISO8601().withMessage('Query param "startDate" must be a valid ISO 8601 date (Es. "2023-10-01T12:00:00Z")')
+    .bail()
+    .toDate();
 
 /**
  * Validates the optional "endDate" query parameter.
@@ -131,8 +149,11 @@ const startDateQueryValidation = query('startDate')
  */
 const endDateQueryValidation = query('endDate')
     .optional()
-    .isISO8601().withMessage('Query param "endDate" must be a valid ISO 8601 date')
-    .bail();
+    .isString().withMessage('Query param "endDate" must be a string')
+    .bail()
+    .isISO8601().withMessage('Query param "endDate" must be a valid ISO 8601 date (Es. "2023-10-01T12:00:00Z")')
+    .bail()
+    .toDate();
 
 /**
  * Validates the optional "format" query parameter.

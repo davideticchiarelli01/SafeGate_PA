@@ -10,6 +10,8 @@ import {ReasonPhrases} from 'http-status-codes';
  */
 const idParamValidation = param('id')
     .exists().withMessage('Param "id" is required')
+    .isString()
+    .bail()
     .trim()
     .isUUID(4).withMessage('Param "id" must be a valid UUIDv4')
     .bail();
