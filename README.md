@@ -1,5 +1,4 @@
-# 🔐 Backend per la Gestione degli Accessi Autorizzati ai Varchi 🦺
-
+# 🔐 Backend per la Gestione degli Accessi ai Varchi 🦺
 
 <img src="https://img.shields.io/badge/Node%20js-339933?style=for-the-badge&logo=nodedotjs&logoColor=white" /> <img src="https://img.shields.io/badge/Express%20js-000000?style=for-the-badge&logo=express&logoColor=white" /> <img src="https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white" /> <img src="https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white" /> <img src="https://img.shields.io/badge/Sequelize-52B0E7?style=for-the-badge&logo=Sequelize&logoColor=white" /> <img src="https://img.shields.io/badge/JWT-000000?style=for-the-badge&logo=JSON%20web%20tokens&logoColor=white" />
  <img src="https://img.shields.io/badge/Jest-C21325?style=for-the-badge&logo=jest&logoColor=white" /> <img src="https://img.shields.io/badge/Postman-FF6C37?style=for-the-badge&logo=Postman&logoColor=white" /> <img src="https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white" />
@@ -45,7 +44,71 @@ Il progetto è stato sviluppato dagli studenti <a href="https://github.com/david
 ## Diagrammi UML
 
 ### Diagramma dei casi d'uso
+
 ### Diagramma E-R
+L’applicazione utilizza PostgreSQL come sistema di gestione di basi di dati relazionali (RDBMS), scelto per la sua affidabilità, le ottime performance e la capacità di gestire strutture dati complesse, supportare transazioni e facilitare l’evoluzione del modello dati nel tempo. Queste caratteristiche lo rendono particolarmente adatto per un'applicazione moderna e scalabile.
+
+Alla base della progettazione è stato sviluppato un diagramma E-R (Entity-Relationship), che rappresenta in modo concettuale le principali entità del sistema e le relazioni tra di esse. Questo schema ha guidato la definizione delle tabelle del database, dei vincoli e delle connessioni logiche necessarie a supportare le funzionalità previste. In particolare, è stato utilizzato per modellare le componenti fondamentali del sistema di gestione degli accessi ai varchi, tra cui: User, Badge, Gate, Authorization e Transit.
+
+```mermaid
+erDiagram
+    GATE |o--o| USER : "references"
+    GATE ||--o{ TRANSIT : "records"
+    GATE ||--o{ AUTHORIZATION : "authorizes"
+    BADGE ||--o{ AUTHORIZATION : "is authorized for"
+    BADGE ||--o{ TRANSIT : "performs"
+    USER |o--|| BADGE : "owns"
+    
+
+    GATE {
+        uuid id PK
+        string name
+        dpi[] requiredDPIs
+        timestamp createdAt
+        timestamp updatedAt
+    }
+
+    USER {
+        uuid id PK
+        string email
+        string password
+        user_role role
+        uuid linkedGateId FK
+        int token
+        timestamp createdAt
+        timestamp updatedAt
+    }
+
+    BADGE {
+        uuid id PK
+        uuid userId FK
+        badge_status status
+        int unauthorizedAttempts
+        timestamp firstUnauthorizedAttempt
+        timestamp createdAt
+        timestamp updatedAt
+    }
+
+    TRANSIT {
+        uuid id PK
+        uuid gateId FK
+        uuid badgeId FK
+        transit_status status
+        dpi[] usedDPIs
+        boolean DPIviolation
+        timestamp createdAt
+        timestamp updatedAt
+    }
+    
+    AUTHORIZATION {
+        uuid badgeId PK, FK
+        uuid gateId PK, FK
+        timestamp createdAt
+        timestamp updatedAt
+    }
+```
+
+
 ### Diagrammi delle sequenze
 # API Routes
 # Configurazione e uso
