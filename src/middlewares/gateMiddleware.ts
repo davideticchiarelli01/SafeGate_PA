@@ -1,8 +1,8 @@
-import { DPI } from '../enum/dpi';
-import { param, body, matchedData, validationResult } from 'express-validator';
-import { NextFunction, Request, Response } from 'express';
-import { ErrorFactory, HttpError } from '../factories/errorFactory';
-import { ReasonPhrases } from 'http-status-codes';
+import {DPI} from '../enum/dpi';
+import {param, body, validationResult} from 'express-validator';
+import {NextFunction, Request, Response} from 'express';
+import {ErrorFactory, HttpError} from '../factories/errorFactory';
+import {ReasonPhrases} from 'http-status-codes';
 
 const idParamValidation = param('id')
     .exists().withMessage('Param "id" is required')
@@ -18,13 +18,16 @@ const nameValidation = body('name')
 const requiredDPIsValidation = body('requiredDPIs')
     .optional()
     .isArray().withMessage('Field "requiredDPIs" must be an array')
-    .customSanitizer((arr) =>
-        Array.isArray(arr) ? arr.map((item) => String(item).trim().toLowerCase()) : [])
+    .custom((arr) => arr.every((item: any) => typeof item === 'string'))
+    .withMessage('Each element in "requiredDPIs" must be a string')
+    .bail()
+    .customSanitizer((arr: any[]) =>
+        arr.map(item => typeof item === "string" ? item.trim().toLowerCase() : item)
+    )
     .custom((arr) =>
-        Array.isArray(arr) && arr.every(item => Object.values(DPI).includes(item))
+        arr.every((item: any) => Object.values(DPI).includes(item))
     )
     .withMessage(`Field "requiredDPIs" must contain only valid DPI values: ${Object.values(DPI).join(', ')}`);
-
 
 const handleValidation = (req: Request, res: Response, next: NextFunction) => {
     const errors = validationResult(req);

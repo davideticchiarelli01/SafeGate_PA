@@ -32,4 +32,4 @@ app.get('/', (req, res) => {
     res.send('Hello from app!');
 });
 
-app.use(errorMiddlewares);
+app.use(...errorMiddlewares);

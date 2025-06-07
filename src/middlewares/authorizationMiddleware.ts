@@ -1,7 +1,7 @@
-import { param, body, matchedData, validationResult } from 'express-validator';
-import { NextFunction, Request, Response } from 'express';
-import { ErrorFactory, HttpError } from '../factories/errorFactory';
-import { ReasonPhrases } from 'http-status-codes';
+import {param, body, matchedData, validationResult} from 'express-validator';
+import {NextFunction, Request, Response} from 'express';
+import {ErrorFactory, HttpError} from '../factories/errorFactory';
+import {ReasonPhrases} from 'http-status-codes';
 
 const badgeIdParamValidation = param('badgeId')
     .exists().withMessage('Param "badgeId" is required')
@@ -47,7 +47,7 @@ const handleValidation = (req: Request, res: Response, next: NextFunction) => {
     next();
 };
 
-export const validateAuthorizationDeletion = [
+export const validateAuthorizationIds = [
     badgeIdParamValidation,
     gateIdParamValidation,
     handleValidation,
