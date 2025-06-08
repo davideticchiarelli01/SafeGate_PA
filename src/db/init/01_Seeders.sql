@@ -30,8 +30,8 @@ INSERT INTO "Authorizations" ("badgeId", "gateId", "createdAt", "updatedAt") VAL
 
 -- === Insert into Transits ===
 INSERT INTO "Transits" ("id", "gateId", "badgeId", "status", "usedDPIs", "DPIviolation", "createdAt", "updatedAt") VALUES
-    ('e799cf8f-3c32-49f1-8377-2f5a9e221e1c', '5e3e4445-3a6e-4b83-9438-8ef7f5a2b9df', '79c1f0c5-2cf8-4948-b51d-b4ef0117c68e', 'authorized', ARRAY['gloves', 'vest']::dpi[], false, now(), now()),
-    ('c4ad95bc-93c6-4f7b-8ab6-b33d084e0e6e', '8a8e1f4d-bb7a-4b6e-bb44-7386228f637c', 'd70c2d10-b56c-4cbb-bb00-6c2f1e1cb723', 'unauthorized', ARRAY['gloves']::dpi[], true, now(), now()),
-    ('f5dc8e61-b62b-4fc6-b9b2-4b46208ef87b', '8a8e1f4d-bb7a-4b6e-bb44-7386228f637c', 'd70c2d10-b56c-4cbb-bb00-6c2f1e1cb723', 'unauthorized', ARRAY['helmet','vest']::dpi[], true, now(), now()),
-    ('29e093e1-6171-46c3-9cef-cda343ff8cbb', '5e3e4445-3a6e-4b83-9438-8ef7f5a2b9df', 'd70c2d10-b56c-4cbb-bb00-6c2f1e1cb723', 'authorized', ARRAY['gloves']::dpi[], true, now(), now());
+    ('e799cf8f-3c32-49f1-8377-2f5a9e221e1c', '5e3e4445-3a6e-4b83-9438-8ef7f5a2b9df', '79c1f0c5-2cf8-4948-b51d-b4ef0117c68e', 'authorized', ARRAY['gloves', 'vest']::dpi[], false, '2025-06-08 14:30:00+02', '2025-06-08 14:30:00+02'),
+    ('c4ad95bc-93c6-4f7b-8ab6-b33d084e0e6e', '8a8e1f4d-bb7a-4b6e-bb44-7386228f637c', 'd70c2d10-b56c-4cbb-bb00-6c2f1e1cb723', 'unauthorized', ARRAY['gloves']::dpi[], true, '2025-06-09 14:30:00+02', '2025-06-09 14:30:00+02'),
+    ('f5dc8e61-b62b-4fc6-b9b2-4b46208ef87b', '8a8e1f4d-bb7a-4b6e-bb44-7386228f637c', 'd70c2d10-b56c-4cbb-bb00-6c2f1e1cb723', 'unauthorized', ARRAY['helmet','vest']::dpi[], true, '2025-06-10 14:30:00+02', '2025-06-10 14:30:00+02'),
+    ('29e093e1-6171-46c3-9cef-cda343ff8cbb', '5e3e4445-3a6e-4b83-9438-8ef7f5a2b9df', 'd70c2d10-b56c-4cbb-bb00-6c2f1e1cb723', 'authorized', ARRAY['gloves']::dpi[], true, '2025-06-10 14:30:00+02', '2025-06-10 14:30:00+02');
 ;

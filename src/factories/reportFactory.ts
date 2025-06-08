@@ -59,6 +59,11 @@ export class ReportFactory {
      */
     private static generateCsv(data: GateTransitsReport[] | BadgeTransitsReport[]): string {
         const parser = new Json2CsvParser();
+        if (!data || data.length === 0) {
+            const empty = { message: 'No data available' };
+            const parser = new Json2CsvParser();
+            return parser.parse(empty);
+        }
         return parser.parse(data);
     }
 
