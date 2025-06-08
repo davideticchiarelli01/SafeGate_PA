@@ -115,6 +115,59 @@ SafeGate_PA/
 ## Architettura dei servizi
 
 ## Pattern utilizzati
+### Model-controller-service
+
+### Repository
+Il **Repository** è uno strato intermedio che si colloca **sopra il DAO (Data Access Object)** e ha il compito di **astrarre e arricchire la logica di accesso ai dati**.
+
+Nel progetto:
+- Ogni Repository è associato a un singolo DAO.
+- Espone metodi più espressivi e orientati al dominio (es. `findByBadgeGateAndDate`, `findManyByIdAndStatus`).
+- Consente al Service Layer di interagire con i dati in modo pulito, senza occuparsi dei dettagli di accesso.
+
+### Dao
+Il **DAO** rappresenta il livello più vicino al database ed è responsabile delle **operazioni CRUD di base** tramite Sequelize.
+
+Nel progetto:
+- Ogni modello Sequelize ha un DAO dedicato.
+- Non include logica di business.
+- Esegue operazioni semplici e testabili come `findByPk`, `create`, `update`, `destroy`.
+
+### Dipendency Injection
+La **Dependency Injection** (DI) è utilizzata per **iniettare le dipendenze** nei componenti anziché istanziarle direttamente.
+
+Esempio:
+```ts
+export class BadgeService {
+    constructor(private repo: BadgeRepository, private userRepo: UserRepository) {}
+    ...
+}
+```
+### Unit of Work
+Il pattern **Unit of Work** consente di **coordinare più operazioni su entità diverse** in un’unica **transazione**, garantendo **coerenza e atomicità**.
+Nel progetto:
+- Consente di gestire **operazioni sequenziali su più entità** (es. aggiornamento di `Badge` seguito dalla creazione di un `Transit`) in modo sicuro e controllato tramite le **Transaction**.
+- Permette di **centralizzare le operazioni di commit e rollback**, mantenendo il codice dei service più pulito e disaccoppiato dalla logica transazionale.
+  
+## Singleton
+Il Singleton è un pattern creazionale che **assicura l’esistenza di una singola istanza di una classe** e fornisce un punto di accesso globale a quell’istanza. Questo approccio è particolarmente utile per la gestione di risorse condivise, come connessioni al database o configurazioni globali.
+
+Nel progetto è stato adottato il **pattern Singleton** per garantire che alcune componenti fondamentali dell’applicazione, come la connessione al database, siano istanziate una sola volta durante l’intero ciclo di vita del server.
+
+### Factory
+### Chain Of Responsability
+Nel nostro progetto di gestione dei transiti nel cantiere, abbiamo applicato il **pattern comportamentale Chain of Responsibility (COR)** sfruttando il sistema di **middleware di Express.js**. Questo ci ha permesso di organizzare il flusso di elaborazione delle richieste HTTP in maniera modulare, estensibile e facilmente manutenibile.
+
+Ogni middleware rappresenta un nodo nella catena che si occupa di una responsabilità specifica. Le richieste vengono elaborate passo dopo passo, e ogni middleware può decidere se continuare il flusso o bloccarlo restituendo una risposta.
+
+Nel nostro caso, i middleware sono stati utilizzati per implementare logiche fondamentali come:
+- **Middleware di autenticazione (`authMiddleware`)**: Verifica che l’utente sia autenticato tramite un token JWT. Se il token è assente o invalido, la richiesta viene interrotta e restituito un errore `401 Unauthorized`.
+
+- **Middleware di autorizzazione (`adminMiddleware`, `userOrAdminMiddleware`, `gateOrAdminMiddleware`)**: Dopo l’autenticazione, questi middleware controllano che l’utente abbia i permessi per accedere alla risorsa richiesta, in base al ruolo (admin, utente standard o dispositivo gate).
+
+- **Middleware di validazione (`express-validator`)**: Controlla che i dati forniti nella richiesta (body, params, query) siano corretti e coerenti con le specifiche previste. In caso contrario, la catena si interrompe e viene restituito un errore dettagliato.
+
+- **Middleware di gestione degli errori**: Intercetta e gestisce centralmente le eccezioni e gli errori sollevati nella catena, restituendo risposte coerenti e formattate tramite la `ErrorFactory`.
 
 ## Diagrammi UML
 
@@ -136,8 +189,7 @@ tali interazioni.
 
 ### Diagramma E-R
 
-L’applicazion
-e utilizza PostgreSQL come sistema di gestione di basi di dati relazionali (RDBMS), scelto per la sua affidabilità, le
+L’applicazione utilizza PostgreSQL come sistema di gestione di basi di dati relazionali (RDBMS), scelto per la sua affidabilità, le
 ottime performance e la capacità di gestire strutture dati complesse, supportare transazioni e facilitare l’evoluzione
 del modello dati nel tempo. Queste caratteristiche lo rendono particolarmente adatto per un'applicazione moderna e
 scalabile.
