@@ -3,7 +3,7 @@ import dotenv from 'dotenv';
 import DatabaseConnection from "./db/database";
 import GateRoute from "./routes/gateRoute";
 import TransitRoute from "./routes/transitRoute";
-import {errorMiddlewares} from './middlewares/errorMiddleware';
+import { errorMiddlewares } from './middlewares/errorMiddleware';
 import BadgeRoute from "./routes/badgeRoute";
 import loginRoute from "./routes/loginRoute";
 import authorizationRoute from "./routes/authorizationRoute";
@@ -13,23 +13,55 @@ const PORT = process.env.APP_PORT || 3000;
 
 // Load environment variables from .env file
 dotenv.config();
-// Middleware to parse JSON bodies
+
+/**
+ * Middleware to parse incoming JSON request bodies.
+ * @middleware express.json - Parses application/json payloads.
+ */
 app.use(express.json());
-// Initialize the database connection
+
+/**
+ * Initializes the database connection (singleton instance).
+ * Ensures that Sequelize is configured and connected.
+ */
 DatabaseConnection.getInstance();
 
+/**
+ * Starts the Express server on the specified port.
+ */
 app.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);
 });
 
+/**
+ * Registers route modules under the `/api` prefix.
+ * Each route module handles a specific domain entity.
+ *
+ * @routes
+ *   - GateRoute
+ *   - BadgeRoute
+ *   - TransitRoute
+ *   - AuthorizationRoute
+ *   - LoginRoute
+ */
 app.use('/api', GateRoute);
 app.use('/api', BadgeRoute);
 app.use('/api', TransitRoute);
 app.use('/api', authorizationRoute);
 app.use('/api', loginRoute);
 
+/**
+ * Root route for verifying API availability.
+ * @route GET /
+ * @returns {string} Simple message response.
+ */
 app.get('/', (req, res) => {
     res.send('Hello from app!');
 });
 
+/**
+ * Registers global error-handling middleware.
+ * Should be loaded after all routes.
+ * @middleware errorMiddlewares - Handles various types of runtime and HTTP errors.
+ */
 app.use(...errorMiddlewares);
