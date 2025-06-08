@@ -12,6 +12,7 @@ import { Transit, TransitCreationAttributes, TransitUpdateAttributes } from "../
 import { ReportFormats } from "../enum/reportFormats";
 import { UserPayload } from "../utils/userPayload";
 import { matchedData } from "express-validator";
+import { normalizeDate } from '../utils/date';
 
 /**
  * Controller for transit-related operations.
@@ -128,10 +129,10 @@ export class TransitController {
 
         try {
             const gateId: string | undefined = typeof query.gateId === 'string' ? query.gateId : undefined;
-            const start: Date | undefined = query.startDate ? new Date(query.startDate as string) : undefined;
-            const end: Date | undefined = query.endDate ? new Date(query.endDate as string) : undefined;
+            const startDate = normalizeDate(req.query.startDate as string);
+            const endDate = normalizeDate(req.query.endDate as string, true);
 
-            const stats: object = await this.service.getTransitStats(badgeId, gateId, start, end);
+            const stats: object = await this.service.getTransitStats(badgeId, gateId, startDate, endDate);
             return res.status(StatusCodes.OK).json(stats);
         } catch (err) {
             next(err);
@@ -149,10 +150,9 @@ export class TransitController {
     getGateReport = async (req: Request, res: Response, next: NextFunction) => {
         try {
             const { format = ReportFormats.JSON } = req.query;
-            const queryParams = req.query;
 
-            const startDate: Date | undefined = queryParams.startDate ? new Date(queryParams.startDate as string) : undefined;
-            const endDate: Date | undefined = queryParams.endDate ? new Date(queryParams.endDate as string) : undefined;
+            const startDate = normalizeDate(req.query.startDate as string);
+            const endDate = normalizeDate(req.query.endDate as string, true);
 
             const result = await this.service.generateGateReport(format as ReportFormats, startDate, endDate);
 
@@ -184,11 +184,10 @@ export class TransitController {
     getBadgeReport = async (req: Request, res: Response, next: NextFunction) => {
         try {
             const { format = ReportFormats.JSON } = req.query;
-            const queryParams = req.query;
 
             const user: UserPayload | undefined = req.user;
-            const startDate: Date | undefined = queryParams.startDate ? new Date(queryParams.startDate as string) : undefined;
-            const endDate: Date | undefined = queryParams.endDate ? new Date(queryParams.endDate as string) : undefined;
+            const startDate = normalizeDate(req.query.startDate as string);
+            const endDate = normalizeDate(req.query.endDate as string, true);
 
             const result = await this.service.generateBadgeReport(format as ReportFormats, startDate, endDate, user);
 
