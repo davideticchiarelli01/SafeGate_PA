@@ -12,8 +12,7 @@ Il sistema realizzato è un **back-end per la gestione dei transiti e degli acce
 **, sviluppato in **TypeScript**, utilizzando **Node.js**, **Express**, **Sequelize**, **PostgreSQL**, **JWT** per
 l’autenticazione.
 
-L’idea alla base del progetto è quella di monitorare e controllare l’accesso di persone dotate di **badge identificativo
-**, in base a specifiche **autorizzazioni** e al **possesso dei Dispositivi di Protezione Individuale (DPI)** richiesti
+L’idea alla base del progetto è quella di monitorare e controllare l’accesso di persone dotate di **badge identificativo**, in base a specifiche **autorizzazioni** e al **possesso dei Dispositivi di Protezione Individuale (DPI)** richiesti
 da ciascun varco. Il sistema consente:
 
 - la **registrazione dei transiti** con data, ora, badge e DPI utilizzati;
@@ -115,7 +114,11 @@ SafeGate_PA/
 ## Architettura dei servizi
 
 ## Pattern utilizzati
-### Model-controller-service
+### Model-Controller-Service
+Il pattern **Model-Controller-Service** è un pattern architetturale molto diffuso per sviluppo di aplicazioni modulari e backend che, a differenza del pattern MVC (Model-View-Controller), non prevede appunto l'implementazione di viste ma si concentra sulla gestione e sulla logica di business dell'applicativo da sviluppare. Questo pattern prevede quindi tre componenti principali:
+- ***Model***: rappresenta la struttura dati dell'applicazione e si occupa dell'interazione di essa con il database. Nel caso di SafeGate i modelli interagiscono con il sistema di storicizzazione dei dati grazie all'ausilio dell'ORM Sequelize.
+- ***Controller***: è il componente responsabile della gestione delle richieste in ingresso ed è quindi, il punto di accesso tra il client e l'applicazione; riceve la richiesta (precedentemente validata) e la inoltra successivamente ad uno specifico Service che si occuperà di gestirla.
+- ***Service***: è il componente
 
 ### Repository
 Il **Repository** è uno strato intermedio che si colloca **sopra il DAO (Data Access Object)** e ha il compito di **astrarre e arricchire la logica di accesso ai dati**.
