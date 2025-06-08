@@ -1,24 +1,25 @@
-import { TransitRepository } from "../repositories/transitRepository";
-import { BadgeRepository } from "../repositories/badgeRepository";
-import { AuthorizationRepository } from "../repositories/authorizationRepository";
-import { GateRepository } from "../repositories/gateRepository";
-import { UserPayload } from "../utils/userPayload";
-import { ErrorFactory } from "../factories/errorFactory";
-import { ReasonPhrases } from "http-status-codes";
-import { Transit, TransitCreationAttributes, TransitUpdateAttributes } from "../models/transit";
-import { UserRole } from "../enum/userRoles";
-import { TransitStatus } from "../enum/transitStatus";
-import { Gate } from "../models/gate";
-import { Badge, BadgeUpdateAttributes } from "../models/badge";
-import { BadgeStatus } from "../enum/badgeStatus";
-import { Authorization } from "../models/authorization";
-import { ReportFactory } from "../factories/reportFactory";
-import { ReportFormats } from "../enum/reportFormats";
-import { BadgeTransitsReport, GateTransitsReport } from "../factories/reportFactory";
+import {TransitRepository} from "../repositories/transitRepository";
+import {BadgeRepository} from "../repositories/badgeRepository";
+import {AuthorizationRepository} from "../repositories/authorizationRepository";
+import {GateRepository} from "../repositories/gateRepository";
+import {UserPayload} from "../utils/userPayload";
+import {ErrorFactory} from "../factories/errorFactory";
+import {ReasonPhrases} from "http-status-codes";
+import {Transit, TransitCreationAttributes, TransitUpdateAttributes} from "../models/transit";
+import {UserRole} from "../enum/userRoles";
+import {TransitStatus} from "../enum/transitStatus";
+import {Gate} from "../models/gate";
+import {Badge, BadgeUpdateAttributes} from "../models/badge";
+import {BadgeStatus} from "../enum/badgeStatus";
+import {Authorization} from "../models/authorization";
+import {ReportFactory} from "../factories/reportFactory";
+import {ReportFormats} from "../enum/reportFormats";
+import {BadgeTransitsReport, GateTransitsReport} from "../factories/reportFactory";
 import Logger from "../logger/logger";
-import { DPI } from "../enum/dpi";
+import {DPI} from "../enum/dpi";
 import DatabaseConnection from "../db/database";
-import { Sequelize, Transaction } from "sequelize";
+import {Sequelize, Transaction} from "sequelize";
+import {unitOfWork} from "../utils/unitOfWork";
 
 
 export class TransitService {
@@ -79,8 +80,8 @@ export class TransitService {
     }
 
     async createTransit(data: TransitCreationAttributes): Promise<Transit> {
-        const sequelize: Sequelize = DatabaseConnection.getInstance();
-        const transaction: Transaction = await sequelize.transaction();
+        // const sequelize: Sequelize = DatabaseConnection.getInstance();
+        // const transaction: Transaction = await sequelize.transaction();
 
         let authorized: TransitStatus = TransitStatus.Unauthorized;
         let dpiViolation: boolean = false;
@@ -101,7 +102,15 @@ export class TransitService {
                 const requiredDPIs: DPI[] = gate.requiredDPIs || [];
                 const usedDPIs: DPI[] = data.usedDPIs || [];
 
-                dpiViolation = requiredDPIs.some(dpi => !usedDPIs.includes(dpi));
+                //dpiViolation = requiredDPIs.some(dpi => !usedDPIs.includes(dpi));
+
+                // this logic handles the case with duplicates required (unauthorized if gloves and required gloves, gloves)
+                dpiViolation = !requiredDPIs.every(dpi => {
+                    const countInRequired: number = requiredDPIs.filter(d => d === dpi).length;
+                    const countInUsed: number = usedDPIs.filter(d => d === dpi).length;
+                    return countInUsed >= countInRequired;
+                });
+
                 if (!dpiViolation) {
                     authorized = TransitStatus.Authorized;
                 } else {
@@ -115,8 +124,31 @@ export class TransitService {
         const badgeUpdate: BadgeUpdateAttributes = {};
 
         if (authorized === TransitStatus.Unauthorized) {
-            badgeUpdate.unauthorizedAttempts = (badge.unauthorizedAttempts || 0) + 1;
-            badgeUpdate.firstUnauthorizedAttempt = badge.firstUnauthorizedAttempt || new Date();
+
+            // if date is older than 20 minutes, reset unauthorized attempts
+
+            // const now = new Date();
+            // const twentyMinutesMs: number = (20 * 60 * 1000) + 1000;
+            //
+            // if (
+            //     badge.firstUnauthorizedAttempt &&
+            //     (now.getTime() - new Date(badge.firstUnauthorizedAttempt).getTime()) > twentyMinutesMs
+            // ) {
+            //     badge.firstUnauthorizedAttempt = null;
+            //     badge.unauthorizedAttempts = 0;
+            // }
+
+            const isFirstAttempt: boolean = (badge.unauthorizedAttempts ?? 0) === 0; // if first attempt, it will be true
+
+            badgeUpdate.unauthorizedAttempts = (badge.unauthorizedAttempts ?? 0) + 1; // increment unauthorized attempts
+
+            // if this is the first unauthorized attempt, set the timestamp
+            if (isFirstAttempt) {
+                badgeUpdate.firstUnauthorizedAttempt = new Date(); // set first unauthorized attempt timestamp
+            } else {
+                badgeUpdate.firstUnauthorizedAttempt = badge.firstUnauthorizedAttempt || new Date(); // keep the first unauthorized attempt timestamp if it exists
+            }
+
 
             const diffMinutes: number = (new Date().getTime() - badgeUpdate.firstUnauthorizedAttempt.getTime()) / (1000 * 60);
             const MAX_ATTEMPTS: number = TransitService.MAX_ATTEMPTS; // class variable
@@ -134,24 +166,38 @@ export class TransitService {
         data.status = authorized;
         data.DPIviolation = dpiViolation;
 
-        try {
-            await this.badgeRepo.update(badge, badgeUpdate, { transaction });
+        // try {
+        //     await this.badgeRepo.update(badge, badgeUpdate, { transaction });
+        //
+        //     const transit: Transit = await this.transitRepo.create(data, { transaction });
+        //     await transaction.commit();
+        //
+        //     if (authorized === TransitStatus.Authorized) {
+        //         Logger.info(`Creating transit for badge ID: ${badgeId}, gate ID: ${gateId}, status: ${authorized}, DPI violation: ${dpiViolation}`);
+        //     } else {
+        //         Logger.warn(`Creating transit for badge ID: ${badgeId}, gate ID: ${gateId}, status: ${authorized}, DPI violation: ${dpiViolation}, message: ${message}`);
+        //     }
+        //
+        //     return transit;
+        //
+        // } catch (error) {
+        //     await transaction.rollback();
+        //     throw error;
+        // }
 
-            const transit: Transit = await this.transitRepo.create(data, { transaction });
-            await transaction.commit();
+        // Using unitOfWork to handle transaction outside service method
+        const transit: Transit = await unitOfWork(async (tx) => {
+            await this.badgeRepo.update(badge, badgeUpdate, {transaction: tx});
+            return await this.transitRepo.create(data, {transaction: tx});
+        });
 
-            if (authorized === TransitStatus.Authorized) {
-                Logger.info(`Creating transit for badge ID: ${badgeId}, gate ID: ${gateId}, status: ${authorized}, DPI violation: ${dpiViolation}`);
-            } else {
-                Logger.warn(`Creating transit for badge ID: ${badgeId}, gate ID: ${gateId}, status: ${authorized}, DPI violation: ${dpiViolation}, message: ${message}`);
-            }
-
-            return transit;
-
-        } catch (error) {
-            await transaction.rollback();
-            throw error;
+        if (authorized === TransitStatus.Authorized) {
+            Logger.info(`Creating transit for badge ID: ${badgeId}, gate ID: ${gateId}, status: ${authorized}, DPI violation: ${dpiViolation}`);
+        } else {
+            Logger.warn(`Creating transit for badge ID: ${badgeId}, gate ID: ${gateId}, status: ${authorized}, DPI violation: ${dpiViolation}, message: ${message}`);
         }
+
+        return transit;
     }
 
     async updateTransit(id: string, data: TransitUpdateAttributes): Promise<Transit> {

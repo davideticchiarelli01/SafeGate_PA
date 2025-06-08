@@ -43,17 +43,15 @@ export class BadgeService {
         const badge: Badge | null = await this.repo.findById(id);
         if (!badge) throw ErrorFactory.createError(ReasonPhrases.NOT_FOUND, 'Badge not found');
 
-        // If the badge is being reactivated, reset unauthorized attempts and firstUnauthorizedAttempt
+        // If the badge is being reactivated, reset attempts and timestamp
         if (data.status === BadgeStatus.Active) {
             data.unauthorizedAttempts = 0;
             data.firstUnauthorizedAttempt = null;
-        }
-
-        // If the unauthorized attempts are set to 0, reset the firstUnauthorizedAttempt to null
-        if (data.unauthorizedAttempts === 0) {
+        } else if (data.unauthorizedAttempts === 0) {
+            // If explicitly reset to 0 in other contexts, also reset the timestamp
             data.firstUnauthorizedAttempt = null;
         }
-        
+
         return this.repo.update(badge, data);
     }
 
@@ -65,7 +63,13 @@ export class BadgeService {
         const suspended: Badge[] = await this.repo.findManyByIdAndStatus(ids, BadgeStatus.Suspended);
         if (suspended.length === 0) return [];
 
-        const data: Partial<BadgeAttributes> = {status: BadgeStatus.Active};
+        // Reactive badges, but also reset unauthorized attempts and firstUnauthorizedAttempt
+        const data: Partial<BadgeAttributes> = {
+            status: BadgeStatus.Active,
+            unauthorizedAttempts: 0,
+            firstUnauthorizedAttempt: null
+        };
+
         return await this.repo.updateMany(suspended, data);
     }
 
