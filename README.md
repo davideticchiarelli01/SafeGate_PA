@@ -58,9 +58,18 @@ Infine, per garantire un corretto sistema di autenticazione e autorizzazione, è
 ## Diagrammi UML
 
 ### Diagramma dei casi d'uso
+Il diagramma dei casi d’uso fornisce una visione d’insieme delle funzionalità offerte dal sistema e delle interazioni che ciascun attore può avere con esso. In particolare, sono stati individuati quattro attori principali:
+- Unauthenticated User;
+- User std (utente standard con badge);
+- Admin (amministratore di sistema);
+- Gate (dispositivo intelligente di controllo accessi);
+Ciascun attore ha accesso a specifici casi d’uso, corrispondenti alle operazioni consentite all’interno del sistema, come l’inserimento di transiti o la generazione di report. Il diagramma riportato di seguito rappresenta graficamente tali interazioni.
+
+![use_case_diagram_PA drawio](https://github.com/user-attachments/assets/d3c78e49-8e5d-48b5-8ac1-e62c5af895a7)
 
 ### Diagramma E-R
-L’applicazione utilizza PostgreSQL come sistema di gestione di basi di dati relazionali (RDBMS), scelto per la sua affidabilità, le ottime performance e la capacità di gestire strutture dati complesse, supportare transazioni e facilitare l’evoluzione del modello dati nel tempo. Queste caratteristiche lo rendono particolarmente adatto per un'applicazione moderna e scalabile.
+L’applicazion
+e utilizza PostgreSQL come sistema di gestione di basi di dati relazionali (RDBMS), scelto per la sua affidabilità, le ottime performance e la capacità di gestire strutture dati complesse, supportare transazioni e facilitare l’evoluzione del modello dati nel tempo. Queste caratteristiche lo rendono particolarmente adatto per un'applicazione moderna e scalabile.
 
 Alla base della progettazione è stato sviluppato un diagramma E-R (Entity-Relationship), che rappresenta in modo concettuale le principali entità del sistema e le relazioni tra di esse. Questo schema ha guidato la definizione delle tabelle del database, dei vincoli e delle connessioni logiche necessarie a supportare le funzionalità previste. In particolare, è stato utilizzato per modellare le componenti fondamentali del sistema di gestione degli accessi ai varchi, tra cui: User, Badge, Gate, Authorization e Transit.
 
