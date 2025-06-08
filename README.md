@@ -147,6 +147,22 @@ erDiagram
 | **GET**        | `/transits_stats/:badgeId`                        | Recupera le statistiche dei transiti di uno specifico badge. (admin tutte, user solo le sue) | ✅                     |
 | **GET**        | `/gate_report`                                    | Esportazione del numero di transiti in un gate in formato JSON, PDF o CSV. (solo admin)      | ✅                     |
 | **GET**        | `/badge_report`                                   | Esportazione del numero di transiti di un badge come JSON, PDF o JSON. (admin tutte, user solo le sue)          | ✅                     |
+| **GET**        | `/authorizations`                                 | Recupera tutte le autorizzazioni registrate. (solo admin)                                    | ✅                     |
+| **GET**        | `/authorizations/:badgeId/:gateId`                | Recupera un autorizzazione specifica. (solo admin)                                           | ✅                     |
+| **POST**       | `/authorizations`                                 | Crea un'autorizzazione che associa un gate e un badge. (solo admin)                          | ✅                     |
+| **DELETE**     | `/authorizations/:badgeId/:gateId`                | Elimina un autorizzazione esistente. (solo admin)                                            | ✅                     |
+| **GET**        | `/gates`                                          | Recupera tutti i gates registrati. (solo admin)                                              | ✅                     |
+| **GET**        | `/gates/:id`                                      | Recupera un autorizzazione specifica. (solo admin)                                           | ✅                     |
+| **POST**       | `/gates`                                          | Crea un nuovo gate. (solo admin)                                                             | ✅                     |
+| **PUT**        | `/gates/:id`                                      | Modifica un gate esistente. (solo admin)                                                     | ✅                     |
+| **DELETE**     | `/gates/:id`                                      | Elimina un gate esistente. (solo admin)                                                      | ✅                     |
+| **GET**        | `/badges`                                         | Recupera tutti i badges registrati. (solo admin)                                             | ✅                     |
+| **GET**        | `/badges/:id`                                     | Recupera un badge specifico. (solo admin)                                                    | ✅                     |
+| **POST**       | `/badges`                                         | Crea un nuovo badge per un utente senza badge. (solo admin)                                  | ✅                     |
+| **PUT**        | `/badges/:id`                                     | Modifica un badge esistente. (solo admin)                                                    | ✅                     |
+| **DELETE**     | `/badges/:id`                                     | Elimina un badge esistente. (solo admin)                                                     | ✅                     |
+| **GET**        | `/badges_suspended`                               | Recupera tutti i badges sospesi. (solo admin)                                                | ✅                     |
+| **GET**        | `/reactivate_badges`                              | Attiva uno o più badge passati in ingresso (solo admin)                                      | ✅                     |
 
 # Configurazione e uso
 # Strumenti utilizzati
