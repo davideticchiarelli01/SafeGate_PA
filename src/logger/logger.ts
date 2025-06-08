@@ -1,11 +1,17 @@
 import winston from 'winston';
 import path from 'path';
+import fs from 'fs';
 
 // Resolve the path to the log directory
 const logDir = path.resolve(process.cwd(), 'src/logger/logs');
 
-// Log path to console 
-console.log(`Log directory created at: ${logDir}`);
+// Create the directory if it doesn't exist
+if (!fs.existsSync(logDir)) {
+    fs.mkdirSync(logDir, { recursive: true });
+    console.log(`Log directory created at: ${logDir}`);
+} else {
+    console.log(`Log directory already exists at: ${logDir}`);
+}
 
 /**
  * Custom log levels.
