@@ -62,7 +62,7 @@ Il diagramma dei casi d’uso fornisce una visione d’insieme delle funzionalit
 - Unauthenticated User;
 - User std (utente standard con badge);
 - Admin (amministratore di sistema);
-- Gate;
+- Gate.
   
 Ciascun attore ha accesso a specifici casi d’uso, corrispondenti alle operazioni consentite all’interno del sistema, come l’inserimento di transiti o la generazione di report. Il diagramma riportato di seguito rappresenta graficamente tali interazioni.
 
