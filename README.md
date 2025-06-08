@@ -116,34 +116,40 @@ SafeGate_PA/
 ## Pattern utilizzati
 ### Model-Controller-Service
 Il pattern **Model-Controller-Service** è un pattern architetturale molto diffuso per sviluppo di aplicazioni modulari e backend che, a differenza del pattern MVC (Model-View-Controller), non prevede appunto l'implementazione di viste ma si concentra sulla gestione e sulla logica di business dell'applicativo da sviluppare. Questo pattern prevede quindi tre componenti principali:
-- ***Model***: rappresenta la struttura dati dell'applicazione e si occupa dell'interazione di essa con il database. Nel caso di SafeGate i modelli interagiscono con il sistema di storicizzazione dei dati grazie all'ausilio dell'ORM Sequelize.
-- ***Controller***: è il componente responsabile della gestione delle richieste in ingresso ed è quindi, il punto di accesso tra il client e l'applicazione; riceve la richiesta (precedentemente validata) e la inoltra successivamente ad uno specifico Service che si occuperà di gestirla.
-- ***Service***: è il componente
+- ***Model***: rappresenta la struttura dati dell'applicazione e si occupa dell'interazione di essa con il database. Nel caso di SafeGate, i modelli interagiscono con il sistema di storicizzazione dei dati grazie all'ausilio dell'ORM Sequelize il quale offre un insieme di funzioni che permette un dialogo intuitivo con il livello sottostante. Questa pratica consente di astrarre la logica SQL sottostante, mantenendo il codice modulare e facilmente manutenibile.
+- ***Controller***: è il componente responsabile della gestione delle richieste in ingresso ed è quindi, il punto di accesso tra il client e l'applicazione; riceve la richiesta (precedentemente validata) e la inoltra successivamente ad uno specifico Service che si occuperà di elaborarla.
+- ***Service***: è il componente in cui risiede la logica di business dell'applicazione. Qui vengono eseguite le operazioni più complesse e avviene l'interazione con il layer dati. Nel caso di SafeGate, il Service layer si interfaccia con le Repositories, permettendo così l'interazione indiretta con il database.
 
 ### Repository
-Il **Repository** è uno strato intermedio che si colloca **sopra il DAO (Data Access Object)** e ha il compito di **astrarre e arricchire la logica di accesso ai dati**.
+Il **Repository** è un pattern architetturale che introduce un ulteriore strato di astrazione logica tra le tecnologie di persistenza dei dati (es. Sequelize) e la logica di business e il dominio applicativo. 
 
-Nel progetto:
+Nel progetto SafeGate **Repository** funge dunque, da strato intermedio collocato tra il **DAO** e il **Service** ed ha il compito di *astrarre e arricchire la logica di accesso ai dati*, nello specifico:
 - Ogni Repository è associato a un singolo DAO.
 - Espone metodi più espressivi e orientati al dominio (es. `findByBadgeGateAndDate`, `findManyByIdAndStatus`).
 - Consente al Service Layer di interagire con i dati in modo pulito, senza occuparsi dei dettagli di accesso.
 
-### Dao
-Il **DAO** rappresenta il livello più vicino al database ed è responsabile delle **operazioni CRUD di base** tramite Sequelize.
+### DAO
+Il **DAO (Data Access Object)** è un pattern strutturale che isola la logica di accesso al database dal resto dell'applicativo e fornisce un'interfaccia per le operazioni sui dati. 
 
-Nel progetto:
-- Ogni modello Sequelize ha un DAO dedicato.
-- Non include logica di business.
-- Esegue operazioni semplici e testabili come `findByPk`, `create`, `update`, `destroy`.
+Nel progetto SafeGate, il pattern DAO funge quindi da intermediario tra il **Repository** layer e i **Sequelize models**, implementando le logiche per le operazioni di CRUD (Create, Read, Update e Destroy) con l'ausilio dei metodi forniti da Sequelize. Nello specifico si osserva che:
+- ogni modello Sequelize ha un DAO dedicato che espone metodi come `findByPk`, `findAll`, `create`, `update`, `destroy`, senza introdurre logica applicativa.
+- Dao è uno strato riutilizzabile e permette quindi alle Repository di costruire su di esso dei metodi più ricchi e maggiormante orientati verso il dominio appicativo.
+- Questo layer fornisce un accesso semplice e diretto alle entità presenti nel database.
+
 
 ### Dipendency Injection
-La **Dependency Injection** (DI) è utilizzata per **iniettare le dipendenze** nei componenti anziché istanziarle direttamente.
+La **Dependency Injection** è un principio di progettazione che prevede **l’iniezione delle dipendenze nei componenti** anziché istanziarle direttamente al loro interno. Questo approccio favorisce una maggiore modularità, testabilità e manutenibilità del codice. 
+
+Nel contesto di SafeGate la DI viene impiegata per la costruzione di oggetti, passandogli le dipendenze necessarie nei *constructor* in modo che sia presente una dichiarazione esplicita delle dipendenze al fine di garantire manutenibilità e testabilità. 
 
 Esempio:
 ```ts
 export class BadgeService {
-    constructor(private repo: BadgeRepository, private userRepo: UserRepository) {}
-    ...
+    constructor(
+      private repo: BadgeRepository, 
+      private userRepo: UserRepository
+    ) {}
+    ...business logic;
 }
 ```
 ### Unit of Work
@@ -152,21 +158,22 @@ Nel progetto:
 - Consente di gestire **operazioni sequenziali su più entità** (es. aggiornamento di `Badge` seguito dalla creazione di un `Transit`) in modo sicuro e controllato tramite le **Transaction**.
 - Permette di **centralizzare le operazioni di commit e rollback**, mantenendo il codice dei service più pulito e disaccoppiato dalla logica transazionale.
   
-## Singleton
-Il Singleton è un pattern creazionale che **assicura l’esistenza di una singola istanza di una classe** e fornisce un punto di accesso globale a quell’istanza. Questo approccio è particolarmente utile per la gestione di risorse condivise, come connessioni al database o configurazioni globali.
+### Singleton
+Il Singleton è un pattern creazionale che assicura l’esistenza di **una singola istanza di una classe** e fornisce un punto di accesso globale ad essa. Questo approccio è particolarmente utile per la gestione di risorse condivise, come connessioni al database o configurazioni globali. 
 
-Nel progetto è stato adottato il **pattern Singleton** per garantire che alcune componenti fondamentali dell’applicazione, come la connessione al database, siano istanziate una sola volta durante l’intero ciclo di vita del server.
+Nel progetto è stato adottato il pattern **Singleton** per garantire che alcune componenti fondamentali dell’applicazione, come la connessione al database, siano istanziate una sola volta durante l’intero ciclo di vita del server. 
 
 ### Factory
+Il **Factory** è un pattern creazionale che permette di delegare un'istanzazione basata su parametri dinamici ad una specifica classe chiamata *Factory*. A differenza di un classico Factory Method che prevede un'effettiva gerarchia tra classi e sottoclassi che implementano dei metodi di creazione specifici, nel caso di SafeGate è stata definita una classe principale, come ad esempio `ErrorFactory` o `ReportFactory`, che centralizza la logica di costruzione di oggetti attraverso metodi statici. Questo pattern è stato implementato al fine di garantire modularità, leggibilità, scalabilità e manutenibilità. 
+
 ### Chain Of Responsability
-Nel nostro progetto di gestione dei transiti nel cantiere, abbiamo applicato il **pattern comportamentale Chain of Responsibility (COR)** sfruttando il sistema di **middleware di Express.js**. Questo ci ha permesso di organizzare il flusso di elaborazione delle richieste HTTP in maniera modulare, estensibile e facilmente manutenibile.
+Il **Chain Of Responsability (COR)** è un pattern comportamentale che consente di inserire una richiesta all'interno di una *catena di handlers* che possono o meno effettuare delle operazioni su di essa prima di passarla al gestore successivo. 
 
-Ogni middleware rappresenta un nodo nella catena che si occupa di una responsabilità specifica. Le richieste vengono elaborate passo dopo passo, e ogni middleware può decidere se continuare il flusso o bloccarlo restituendo una risposta.
-
-Nel nostro caso, i middleware sono stati utilizzati per implementare logiche fondamentali come:
+Nel contesto progettuale di SafeGate, è stato applicato il **Chain of Responsibility** sfruttando il sistema di **middleware di Express.js**. Questo ha permesso di organizzare il flusso di elaborazione delle richieste HTTP in maniera modulare, estensibile e facilmente manutenibile. Ogni middleware rappresenta un nodo nella catena che si occupa di una responsabilità specifica e può decidere se continuare il flusso di elaborazione o bloccarlo restituendo una risposta.
+In SafeGate, i middleware sono stati utilizzati per implementare logiche fondamentali come:
 - **Middleware di autenticazione (`authMiddleware`)**: Verifica che l’utente sia autenticato tramite un token JWT. Se il token è assente o invalido, la richiesta viene interrotta e restituito un errore `401 Unauthorized`.
 
-- **Middleware di autorizzazione (`adminMiddleware`, `userOrAdminMiddleware`, `gateOrAdminMiddleware`)**: Dopo l’autenticazione, questi middleware controllano che l’utente abbia i permessi per accedere alla risorsa richiesta, in base al ruolo (admin, utente standard o dispositivo gate).
+- **Middleware di autorizzazione (`adminMiddleware`, `userOrAdminMiddleware`, `gateOrAdminMiddleware`)**: dopo l’autenticazione, questi middleware controllano che l’utente abbia i permessi per accedere alla risorsa richiesta, in base al ruolo (admin, utente standard o dispositivo gate).
 
 - **Middleware di validazione (`express-validator`)**: Controlla che i dati forniti nella richiesta (body, params, query) siano corretti e coerenti con le specifiche previste. In caso contrario, la catena si interrompe e viene restituito un errore dettagliato.
 
