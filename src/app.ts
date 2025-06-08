@@ -34,7 +34,7 @@ app.listen(PORT, () => {
 });
 
 /**
- * Registers route modules under the `/api` prefix.
+ * Registers route modules.
  * Each route module handles a specific domain entity.
  *
  * @routes
@@ -44,11 +44,11 @@ app.listen(PORT, () => {
  *   - AuthorizationRoute
  *   - LoginRoute
  */
-app.use('/api', GateRoute);
-app.use('/api', BadgeRoute);
-app.use('/api', TransitRoute);
-app.use('/api', authorizationRoute);
-app.use('/api', loginRoute);
+app.use(GateRoute);
+app.use(BadgeRoute);
+app.use(TransitRoute);
+app.use(authorizationRoute);
+app.use(loginRoute);
 
 /**
  * Root route for verifying API availability.
