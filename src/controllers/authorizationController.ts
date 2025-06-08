@@ -1,30 +1,37 @@
-import {NextFunction, Request, Response} from 'express';
-import {AuthorizationService} from '../services/authorizationService';
-import {StatusCodes} from 'http-status-codes';
-import {Authorization, AuthorizationCreationAttributes} from "../models/authorization";
-import {matchedData} from "express-validator";
+/**
+ * AuthorizationController class.
+ * Handles HTTP requests related to authorizations between badges and gates.
+ * Supports creation, retrieval, and deletion of authorizations.
+ */
+
+import { NextFunction, Request, Response } from 'express';
+import { AuthorizationService } from '../services/authorizationService';
+import { StatusCodes } from 'http-status-codes';
+import { Authorization, AuthorizationCreationAttributes } from "../models/authorization";
+import { matchedData } from "express-validator";
 
 /**
- * Controller class for handling `Authorization` related operations.
- * Provides methods for CRUD operations on `Authorization` entities.
+ * Controller for authorization-related operations.
  */
 export class AuthorizationController {
     /**
-     * Constructs an instance of `AuthorizationController`.
-     * @param {AuthorizationService} service - The service layer for `Authorization` operations.
+     * Creates a new instance of AuthorizationController.
+     * @param {AuthorizationService} service - The service responsible for authorization logic.
      */
     constructor(private service: AuthorizationService) {
     }
 
     /**
-     * Retrieves a specific `Authorization` record by `badgeId` and `gateId`.
-     * @param {Request} req - The Express request object.
-     * @param {Response} res - The Express response object.
-     * @param {NextFunction} next - The Express next middleware function.
+     * Retrieves a single authorization by badgeId and gateId.
+     * Expects both fields to be validated and extracted from route parameters.
+     *
+     * @param {Request} req - Express request object containing `badgeId` and `gateId` in params.
+     * @param {Response} res - Express response object.
+     * @param {NextFunction} next - Express next middleware function.
      */
     getAuthorization = async (req: Request, res: Response, next: NextFunction) => {
         try {
-            const {badgeId, gateId} = matchedData(req, {locations: ['params']}); // Extracts badgeId and gateId from request parameters
+            const { badgeId, gateId } = matchedData(req, { locations: ['params'] });
             const authorization: Authorization = await this.service.getAuthorization(badgeId, gateId);
             return res.status(StatusCodes.OK).json(authorization);
         } catch (err) {
@@ -33,10 +40,11 @@ export class AuthorizationController {
     };
 
     /**
-     * Retrieves all `Authorization` records.
-     * @param {Request} _req - The Express request object (unused).
-     * @param {Response} res - The Express response object.
-     * @param {NextFunction} next - The Express next middleware function.
+     * Retrieves all authorizations in the system.
+     *
+     * @param {Request} _req - Express request object (not used).
+     * @param {Response} res - Express response object.
+     * @param {NextFunction} next - Express next middleware function.
      */
     getAllAuthorizations = async (_req: Request, res: Response, next: NextFunction) => {
         try {
@@ -48,30 +56,34 @@ export class AuthorizationController {
     };
 
     /**
-     * Creates a new `Authorization` record.
-     * @param {Request} req - The Express request object.
-     * @param {Response} res - The Express response object.
-     * @param {NextFunction} next - The Express next middleware function.
+     * Creates a new authorization between a badge and a gate.
+     * Expects validated body with `badgeId` and `gateId`.
+     *
+     * @param {Request} req - Express request containing authorization data in body.
+     * @param {Response} res - Express response object.
+     * @param {NextFunction} next - Express next middleware function.
      */
     createAuthorization = async (req: Request, res: Response, next: NextFunction) => {
         try {
-            const data = matchedData(req, {locations: ['body']}) as AuthorizationCreationAttributes; // Extracts validate data from the request body
+            const data = matchedData(req, { locations: ['body'] }) as AuthorizationCreationAttributes;
             const authorization: Authorization = await this.service.createAuthorization(data);
-            return res.status(StatusCodes.CREATED).json({message: 'Authorization created', authorization});
+            return res.status(StatusCodes.CREATED).json({ message: 'Authorization created', authorization });
         } catch (err) {
             next(err);
         }
     };
 
     /**
-     * Deletes a specific `Authorization` record by `badgeId` and `gateId`.
-     * @param {Request} req - The Express request object.
-     * @param {Response} res - The Express response object.
-     * @param {NextFunction} next - The Express next middleware function.
+     * Deletes a specific authorization using badgeId and gateId.
+     * Expects both fields in route parameters.
+     *
+     * @param {Request} req - Express request object with `badgeId` and `gateId` in params.
+     * @param {Response} res - Express response object.
+     * @param {NextFunction} next - Express next middleware function.
      */
     deleteAuthorization = async (req: Request, res: Response, next: NextFunction) => {
         try {
-            const {badgeId, gateId} = matchedData(req, {locations: ['params']}); // Extracts badgeId and gateId from request parameters
+            const { badgeId, gateId } = matchedData(req, { locations: ['params'] });
             await this.service.deleteAuthorization(badgeId, gateId);
             return res.status(StatusCodes.NO_CONTENT).send();
         } catch (err) {
