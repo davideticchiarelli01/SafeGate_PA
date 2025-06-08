@@ -4,20 +4,20 @@
  * Delegates logic to the AuthService.
  */
 
-import { NextFunction, Request, Response } from 'express';
-import { AuthService } from '../services/authService';
-import { StatusCodes } from "http-status-codes";
+import {NextFunction, Request, Response} from 'express';
+import {LoginService} from '../services/loginService';
+import {StatusCodes} from "http-status-codes";
 
 /**
  * Controller for authentication-related operations.
  */
-export class AuthController {
+export class LoginController {
 
     /**
      * Creates a new instance of AuthController.
-     * @param {AuthService} authService - The service handling authentication logic.
+     * @param {LoginService} authService - The service handling authentication logic.
      */
-    constructor(private authService: AuthService) {
+    constructor(private authService: LoginService) {
     }
 
     /**
@@ -30,7 +30,7 @@ export class AuthController {
      * @param {NextFunction} next - Express next middleware function
      */
     login = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-        const { email, password } = req.body;
+        const {email, password} = req.body;
 
         try {
             const result: object = await this.authService.login(email, password);
@@ -42,4 +42,4 @@ export class AuthController {
 
 }
 
-export default AuthController;
+export default LoginController;

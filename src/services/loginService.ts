@@ -1,16 +1,16 @@
-import { User } from '../models/user';
+import {User} from '../models/user';
 import bcrypt from 'bcrypt';
-import { getPrivateJwtKey, jwtSign } from "../utils/jwt";
-import { UserPayload } from "../utils/userPayload";
-import { UserRepository } from "../repositories/userRepository";
-import { ErrorFactory } from "../factories/errorFactory";
-import { ReasonPhrases } from "http-status-codes";
+import {getPrivateJwtKey, jwtSign} from "../utils/jwt";
+import {UserPayload, validateUserPayload} from "../utils/userPayload";
+import {UserRepository} from "../repositories/userRepository";
+import {ErrorFactory} from "../factories/errorFactory";
+import {ReasonPhrases} from "http-status-codes";
 
 /**
  * Service class for handling authentication-related operations.
  * Provides methods for user login and JWT generation.
  */
-export class AuthService {
+export class LoginService {
 
     /**
      * Constructs an instance of `AuthService`.
@@ -41,9 +41,9 @@ export class AuthService {
         }
 
         try {
-            const { id, email, role } = user;
-            const userPayload: UserPayload = { id, email, role };
-            //validateUserPayload(userPayload);
+            const {id, email, role} = user;
+            const userPayload: UserPayload = {id, email, role};
+            validateUserPayload(userPayload);
 
             const privateKey: string = await getPrivateJwtKey();
             const token: string = jwtSign<UserPayload>(userPayload, privateKey);

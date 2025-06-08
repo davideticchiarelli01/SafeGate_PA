@@ -1,9 +1,9 @@
-import { Router } from 'express';
-import { UserDao } from "../dao/userDao";
-import { UserRepository } from "../repositories/userRepository";
-import { AuthService } from "../services/authService";
-import AuthController from '../controllers/authController';
-import { validateLogin } from "../middlewares/loginMiddleware";
+import {Router} from 'express';
+import {UserDao} from "../dao/userDao";
+import {UserRepository} from "../repositories/userRepository";
+import {LoginService} from "../services/loginService";
+import LoginController from '../controllers/loginController';
+import {validateLogin} from "../middlewares/loginMiddleware";
 
 /**
  * Express router for handling authentication routes.
@@ -11,8 +11,8 @@ import { validateLogin } from "../middlewares/loginMiddleware";
  */
 const userDao: UserDao = new UserDao();
 const userRepository: UserRepository = new UserRepository(userDao);
-const authService: AuthService = new AuthService(userRepository);
-const authController: AuthController = new AuthController(authService);
+const authService: LoginService = new LoginService(userRepository);
+const authController: LoginController = new LoginController(authService);
 
 const loginRouter = Router();
 
