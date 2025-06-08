@@ -34,7 +34,21 @@ Il progetto è stato sviluppato dagli studenti <a href="https://github.com/david
 - [Autori](#autori)
 
 # Obiettivi di progetto
-
+L’obiettivo principale del progetto è sviluppare un sistema backend per la gestione dei transiti attraverso i varchi di controllo di un cantiere. Per raggiungere questo obiettivo, è necessario implementare le seguenti funzionalità:
+- CRUD per la gestione dei badge;
+- CRUD per la gestione dei varchi;
+- CRUD per la gestione delle autorizzazioni di accesso;
+- Inserimento dei transiti (con relativo log contenente lo status del transito) di un utente in un gate da parte di un Amministratore o di un Varco:
+  - Nel caso di un numero di tentativi non autorizzati superiore a 3 in un intervallo temporale di 20min è necessario sospendere l’utenza (inserire tali parametri come var di env).
+- Restituire un eleneco di badgeId sospesi;
+- Riattivare uno o più badgeId sospesi;
+- Restituire uno specifico transito a un utente o ad un amministratore;
+- Eliminazione e Update di un transito;
+- Restituire, dato un badgeId e, opzionalmente, un intervallo temporale, il numero di accessi per ogni varco e il numero di tentativi di accesso con violazione;
+- Generare un report in formato PDF, CSV o JSON, con possibilità di filtrare per intervallo temporale, contenente per ogni varco il numero di transiti autorizzati, non autorizzati e le violazioni relative all’utilizzo dei DPI richiesti.
+- Generare un report in formato PDF, CSV o JSON, filtrabile per intervallo temporale, che riporti per ogni badgeId il numero di transiti autorizzati, non autorizzati e lo stato del badge. Gli amministratori possono ottenere report su tutti i badge, mentre gli utenti possono visualizzare esclusivamente il report relativo al proprio badgeId.
+  
+Infine, per garantire un corretto sistema di autenticazione e autorizzazione, è stato implementato un meccanismo di login che consente l’accesso agli utenti in base al proprio ruolo: User, Admin o Gate.
 # Progettazione
 
 ## Architettura dei servizi
@@ -126,4 +140,22 @@ erDiagram
 
 # Configurazione e uso
 # Strumenti utilizzati
+- **Node.js**: Ambiente di esecuzione JavaScript lato server, utilizzato per costruire l’intero backend dell'applicazione.
+- **TypeScript**: Superset di JavaScript che introduce il tipaggio statico, migliorando la manutenibilità e la sicurezza del codice.
+- **Express JS**: Framework minimalista per Node.js, usato per la gestione delle rotte, middleware e logica HTTP.
+- **PostgreSQL**: Database relazionale open-source, scelto per l'affidabilità, la scalabilità e il supporto ai tipi complessi (es. enum, array).
+- **Sequelize**: ORM (Object Relational Mapper) per Node.js, impiegato per gestire le operazioni sul database in modo astratto e tipizzato.
+- **JWT (JSON Web Tokens)**: Tecnologia per la gestione dell'autenticazione e dell'autorizzazione tramite token firmati e sicuri.
+- **Jest**: Framework di testing per JavaScript/TypeScript, utilizzato per testare la logica dei middleware, servizi e controller.
+- **Docker**: Strumento per la creazione di ambienti isolati e portabili tramite container, semplificando il deployment.
+- **docker-compose**: Strumento per la gestione di più container Docker, utile per orchestrare servizi come database e backend in fase di sviluppo.
+- **Postman**: Strumento per il test delle API, usato per verificare il corretto funzionamento delle rotte del backend.
+- **WebStorm** e **VS Code**: Editor e IDE utilizzati per lo sviluppo del codice.
+- **DBeaver**: Interfaccia grafica per l’esplorazione e la gestione del database PostgreSQL durante lo sviluppo e il debugging.
+
 # Autori
+- **Davide Ticchiarelli**  
+  Matricola: S1121687
+
+- **Giampaolo Marino**  
+  Matricola: S1121678
