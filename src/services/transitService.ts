@@ -1,33 +1,50 @@
-import {TransitRepository} from "../repositories/transitRepository";
-import {BadgeRepository} from "../repositories/badgeRepository";
-import {AuthorizationRepository} from "../repositories/authorizationRepository";
-import {GateRepository} from "../repositories/gateRepository";
-import {UserPayload} from "../utils/userPayload";
-import {ErrorFactory} from "../factories/errorFactory";
-import {ReasonPhrases} from "http-status-codes";
-import {Transit, TransitCreationAttributes, TransitUpdateAttributes} from "../models/transit";
-import {UserRole} from "../enum/userRoles";
-import {TransitStatus} from "../enum/transitStatus";
-import {Gate} from "../models/gate";
-import {Badge, BadgeUpdateAttributes} from "../models/badge";
-import {BadgeStatus} from "../enum/badgeStatus";
-import {Authorization} from "../models/authorization";
-import {ReportFactory} from "../factories/reportFactory";
-import {ReportFormats} from "../enum/reportFormats";
-import {BadgeTransitsReport, GateTransitsReport} from "../factories/reportFactory";
+/**
+ * TransitService handles business logic related to transit registration, access control,
+ * DPI checks, unauthorized access handling, badge suspension, and report generation.
+ */
+import { TransitRepository } from "../repositories/transitRepository";
+import { BadgeRepository } from "../repositories/badgeRepository";
+import { AuthorizationRepository } from "../repositories/authorizationRepository";
+import { GateRepository } from "../repositories/gateRepository";
+import { UserPayload } from "../utils/userPayload";
+import { ErrorFactory } from "../factories/errorFactory";
+import { ReasonPhrases } from "http-status-codes";
+import { Transit, TransitCreationAttributes, TransitUpdateAttributes } from "../models/transit";
+import { UserRole } from "../enum/userRoles";
+import { TransitStatus } from "../enum/transitStatus";
+import { Gate } from "../models/gate";
+import { Badge, BadgeUpdateAttributes } from "../models/badge";
+import { BadgeStatus } from "../enum/badgeStatus";
+import { Authorization } from "../models/authorization";
+import { ReportFactory } from "../factories/reportFactory";
+import { ReportFormats } from "../enum/reportFormats";
+import { BadgeTransitsReport, GateTransitsReport } from "../factories/reportFactory";
 import Logger from "../logger/logger";
-import {DPI} from "../enum/dpi";
+import { DPI } from "../enum/dpi";
 import DatabaseConnection from "../db/database";
-import {Sequelize, Transaction} from "sequelize";
-import {unitOfWork} from "../utils/unitOfWork";
+import { Sequelize, Transaction } from "sequelize";
+import { unitOfWork } from "../utils/unitOfWork";
 
-
+/**
+ * Service class for handling `Transit` related operations.
+ * Provides methods for creating, retrieving, updating, deleting transits,
+ * generating reports, and enforcing badge and DPI validation logic.
+ */
 export class TransitService {
 
+    /** Maximum number of unauthorized attempts before suspension. */
     private static readonly MAX_ATTEMPTS: number = parseInt(process.env.MAX_UNAUTHORIZED_ATTEMPTS || '3');
+
+    /** Time window in minutes to consider for unauthorized attempts. */
     private static readonly ATTEMPT_WINDOW: number = parseInt(process.env.UNAUTHORIZED_ATTEMPTS_WINDOW_MINUTES || '20');
 
-
+    /**
+     * Constructs an instance of `TransitService`.
+     * @param {TransitRepository} transitRepo - Repository for `Transit` data access.
+     * @param {BadgeRepository} badgeRepo - Repository for `Badge` data access.
+     * @param {GateRepository} gateRepo - Repository for `Gate` data access.
+     * @param {AuthorizationRepository} authRepo - Repository for `Authorization` data access.
+     */
     constructor(
         private transitRepo: TransitRepository,
         private badgeRepo: BadgeRepository,
@@ -36,6 +53,13 @@ export class TransitService {
     ) {
     }
 
+    /**
+     * Retrieves a specific `Transit` by ID, checking user permissions.
+     * @param {string} id - The ID of the transit record.
+     * @param {UserPayload} [user] - The user requesting the data.
+     * @returns {Promise<Transit | null>} The transit record if authorized.
+     * @throws {HttpError} If not authenticated or not authorized.
+     */
     async getTransit(id: string, user?: UserPayload): Promise<Transit | null> {
 
         if (!user) throw ErrorFactory.createError(ReasonPhrases.UNAUTHORIZED, 'User not authenticated');
@@ -75,10 +99,21 @@ export class TransitService {
         }
     }
 
+    /**
+     * Retrieves all transit records.
+     * @returns {Promise<Transit[]>} A list of all transits.
+     */
     getAllTransits(): Promise<Transit[]> {
         return this.transitRepo.findAll();
     }
 
+    /**
+     * Creates a new `Transit` record, performing validation on badge, gate, and DPI.
+     * Applies automatic suspension logic if unauthorized attempts exceed limits.
+     * @param {TransitCreationAttributes} data - The data for the new transit.
+     * @returns {Promise<Transit>} The created transit record.
+     * @throws {HttpError} If gate or badge is not found.
+     */
     async createTransit(data: TransitCreationAttributes): Promise<Transit> {
         // const sequelize: Sequelize = DatabaseConnection.getInstance();
         // const transaction: Transaction = await sequelize.transaction();
@@ -187,8 +222,8 @@ export class TransitService {
 
         // Using unitOfWork to handle transaction outside service method
         const transit: Transit = await unitOfWork(async (tx) => {
-            await this.badgeRepo.update(badge, badgeUpdate, {transaction: tx});
-            return await this.transitRepo.create(data, {transaction: tx});
+            await this.badgeRepo.update(badge, badgeUpdate, { transaction: tx });
+            return await this.transitRepo.create(data, { transaction: tx });
         });
 
         if (authorized === TransitStatus.Authorized) {
@@ -200,18 +235,41 @@ export class TransitService {
         return transit;
     }
 
+    /**
+     * Updates an existing `Transit` record.
+     * @param {string} id - The ID of the transit to update.
+     * @param {TransitUpdateAttributes} data - The updated fields.
+     * @returns {Promise<Transit>} The updated transit record.
+     * @throws {HttpError} If the transit is not found.
+     */
     async updateTransit(id: string, data: TransitUpdateAttributes): Promise<Transit> {
         const transit: Transit | null = await this.transitRepo.findById(id);
         if (!transit) throw ErrorFactory.createError(ReasonPhrases.NOT_FOUND, 'Transit not found');
         return this.transitRepo.update(transit, data);
     }
 
+    /**
+     * Deletes a `Transit` record by ID.
+     * @param {string} id - The ID of the transit to delete.
+     * @returns {Promise<void>} Resolves when deletion is complete.
+     * @throws {HttpError} If the transit is not found.
+     */
     async deleteTransit(id: string): Promise<void> {
         const transit: Transit | null = await this.transitRepo.findById(id);
         if (!transit) throw ErrorFactory.createError(ReasonPhrases.NOT_FOUND, 'Transit not found');
         return this.transitRepo.delete(transit);
     }
 
+    /**
+     * Retrieves aggregated transit statistics for a specific badge,
+     * optionally filtered by gate and date range.
+     * @param {string} badgeId - The badge ID to retrieve stats for.
+     * @param {string} [gateId] - Optional gate filter.
+     * @param {Date} [startDate] - Optional start date filter.
+     * @param {Date} [endDate] - Optional end date filter.
+     * @returns {Promise<object>} An object with total counts and gate-level stats.
+     * @throws {HttpError} If badge or gate not found, or date range is invalid.
+     */
     async getTransitStats(badgeId: string, gateId?: string, startDate?: Date, endDate?: Date): Promise<object> {
 
         if (!badgeId) throw ErrorFactory.createError(ReasonPhrases.BAD_REQUEST, 'Badge ID is required');
@@ -277,6 +335,14 @@ export class TransitService {
         };
     }
 
+    /**
+     * Generates a report of transits grouped by gate.
+     * @param {ReportFormats} format - The desired report format (e.g., JSON, PDF).
+     * @param {Date} [startDate] - Optional start date filter.
+     * @param {Date} [endDate] - Optional end date filter.
+     * @returns {Promise<Buffer | string | object>} The formatted report data.
+     * @throws {HttpError} If date range is invalid.
+     */
     async generateGateReport(
         format: ReportFormats,
         startDate?: Date,
@@ -311,6 +377,16 @@ export class TransitService {
         return await ReportFactory.format(format, reportData);
     }
 
+    /**
+     * Generates a report of transits grouped by badge.
+     * Only returns user-specific data unless the user is an admin.
+     * @param {ReportFormats} format - The desired report format.
+     * @param {Date} [startDate] - Optional start date filter.
+     * @param {Date} [endDate] - Optional end date filter.
+     * @param {UserPayload} [user] - The requesting user.
+     * @returns {Promise<Buffer | string | object>} The formatted report data.
+     * @throws {HttpError} If unauthorized or badge not found for user.
+     */
     async generateBadgeReport(
         format: ReportFormats,
         startDate?: Date,
