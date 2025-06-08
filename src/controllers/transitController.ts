@@ -5,14 +5,15 @@
  * Delegates business logic to the TransitService.
  */
 
-import { NextFunction, Request, Response } from 'express';
-import { TransitService } from '../services/transitService';
-import { StatusCodes } from 'http-status-codes';
-import { Transit, TransitCreationAttributes, TransitUpdateAttributes } from "../models/transit";
-import { ReportFormats } from "../enum/reportFormats";
-import { UserPayload } from "../utils/userPayload";
-import { matchedData } from "express-validator";
-import { normalizeDate } from '../utils/date';
+import {NextFunction, Request, Response} from 'express';
+import {TransitService} from '../services/transitService';
+import {StatusCodes} from 'http-status-codes';
+import {Transit, TransitCreationAttributes, TransitUpdateAttributes} from "../models/transit";
+import {ReportFormats} from "../enum/reportFormats";
+import {UserPayload} from "../utils/userPayload";
+import {matchedData} from "express-validator";
+import {normalizeDate} from '../utils/date';
+import {setDownloadHeaders} from "../utils/downloadReport";
 
 /**
  * Controller for transit-related operations.
@@ -36,7 +37,7 @@ export class TransitController {
     getTransit = async (req: Request, res: Response, next: NextFunction) => {
         try {
             const user: UserPayload | undefined = req.user;
-            const { id } = matchedData(req, { locations: ['params'] });
+            const {id} = matchedData(req, {locations: ['params']});
 
             const transit: Transit | null = await this.service.getTransit(id, user);
             return res.status(StatusCodes.OK).json(transit);
@@ -71,9 +72,9 @@ export class TransitController {
      */
     createTransit = async (req: Request, res: Response, next: NextFunction) => {
         try {
-            const data = matchedData(req, { locations: ['body'] }) as TransitCreationAttributes;
+            const data = matchedData(req, {locations: ['body']}) as TransitCreationAttributes;
             const transit: Transit = await this.service.createTransit(data);
-            return res.status(StatusCodes.CREATED).json({ message: 'Transit created', transit });
+            return res.status(StatusCodes.CREATED).json({message: 'Transit created', transit});
         } catch (err) {
             next(err);
         }
@@ -89,7 +90,7 @@ export class TransitController {
      */
     updateTransit = async (req: Request, res: Response, next: NextFunction) => {
         try {
-            const data = matchedData(req, { locations: ['body'] }) as TransitUpdateAttributes;
+            const data = matchedData(req, {locations: ['body']}) as TransitUpdateAttributes;
             const transit: Transit | null = await this.service.updateTransit(req.params.id, data);
             return res.status(StatusCodes.OK).json(transit);
         } catch (err) {
@@ -107,7 +108,7 @@ export class TransitController {
      */
     deleteTransit = async (req: Request, res: Response, next: NextFunction) => {
         try {
-            const { id } = matchedData(req, { locations: ['params'] });
+            const {id} = matchedData(req, {locations: ['params']});
             await this.service.deleteTransit(id);
             return res.status(StatusCodes.NO_CONTENT).send();
         } catch (err) {
@@ -124,13 +125,13 @@ export class TransitController {
      * @param {NextFunction} next - Express next middleware function.
      */
     getTransitStats = async (req: Request, res: Response, next: NextFunction) => {
-        const { badgeId } = req.params;
+        const {badgeId} = req.params;
         const query = req.query;
 
         try {
             const gateId: string | undefined = typeof query.gateId === 'string' ? query.gateId : undefined;
-            const startDate = normalizeDate(req.query.startDate as string);
-            const endDate = normalizeDate(req.query.endDate as string, true);
+            const startDate: Date | undefined = normalizeDate(req.query.startDate as string);
+            const endDate: Date | undefined = normalizeDate(req.query.endDate as string, true);
 
             const stats: object = await this.service.getTransitStats(badgeId, gateId, startDate, endDate);
             return res.status(StatusCodes.OK).json(stats);
@@ -149,25 +150,30 @@ export class TransitController {
      */
     getGateReport = async (req: Request, res: Response, next: NextFunction) => {
         try {
-            const { format = ReportFormats.JSON } = req.query;
+            const {format = ReportFormats.JSON} = req.query;
 
-            const startDate = normalizeDate(req.query.startDate as string);
-            const endDate = normalizeDate(req.query.endDate as string, true);
+            const startDate: Date | undefined = normalizeDate(req.query.startDate as string);
+            const endDate: Date | undefined = normalizeDate(req.query.endDate as string, true);
 
             const result = await this.service.generateGateReport(format as ReportFormats, startDate, endDate);
 
-            switch (format) {
-                case 'pdf':
-                    res.setHeader('Content-Type', 'application/pdf');
-                    res.setHeader('Content-Disposition', 'attachment; filename="gate-report.pdf"');
-                    return res.send(result);
-                case 'csv':
-                    res.setHeader('Content-Type', 'text/csv');
-                    res.setHeader('Content-Disposition', 'attachment; filename="gate-report.csv"');
-                    return res.send(result);
-                default:
-                    return res.status(StatusCodes.OK).json(result);
-            }
+            setDownloadHeaders(res, format as ReportFormats, 'gate-report');
+            return res.send(result);
+
+            // switch (format) {
+            //     case 'pdf':
+            //         res.setHeader('Content-Type', 'application/pdf');
+            //         res.setHeader('Content-Disposition', 'attachment; filename="gate-report.pdf"');
+            //         return res.send(result);
+            //     case 'csv':
+            //         res.setHeader('Content-Type', 'text/csv');
+            //         res.setHeader('Content-Disposition', 'attachment; filename="gate-report.csv"');
+            //         return res.send(result);
+            //     default:
+            //         res.setHeader('Content-Type', 'application/json');
+            //         res.setHeader('Content-Disposition', 'attachment; filename="gate-report.json"');
+            //         return res.send(result);
+            // }
         } catch (err) {
             next(err);
         }
@@ -183,26 +189,31 @@ export class TransitController {
      */
     getBadgeReport = async (req: Request, res: Response, next: NextFunction) => {
         try {
-            const { format = ReportFormats.JSON } = req.query;
+            const {format = ReportFormats.JSON} = req.query;
 
             const user: UserPayload | undefined = req.user;
-            const startDate = normalizeDate(req.query.startDate as string);
-            const endDate = normalizeDate(req.query.endDate as string, true);
+            const startDate: Date | undefined = normalizeDate(req.query.startDate as string);
+            const endDate: Date | undefined = normalizeDate(req.query.endDate as string, true);
 
             const result = await this.service.generateBadgeReport(format as ReportFormats, startDate, endDate, user);
 
-            switch (format) {
-                case 'pdf':
-                    res.setHeader('Content-Type', 'application/pdf');
-                    res.setHeader('Content-Disposition', 'attachment; filename="gate-report.pdf"');
-                    return res.send(result);
-                case 'csv':
-                    res.setHeader('Content-Type', 'text/csv');
-                    res.setHeader('Content-Disposition', 'attachment; filename="gate-report.csv"');
-                    return res.send(result);
-                default:
-                    return res.status(StatusCodes.OK).json(result);
-            }
+            setDownloadHeaders(res, format as ReportFormats, 'badge-report');
+            return res.send(result);
+
+            // switch (format) {
+            //     case 'pdf':
+            //         res.setHeader('Content-Type', 'application/pdf');
+            //         res.setHeader('Content-Disposition', 'attachment; filename="gate-report.pdf"');
+            //         return res.send(result);
+            //     case 'csv':
+            //         res.setHeader('Content-Type', 'text/csv');
+            //         res.setHeader('Content-Disposition', 'attachment; filename="gate-report.csv"');
+            //         return res.send(result);
+            //     default:
+            //         res.setHeader('Content-Type', 'application/json');
+            //         res.setHeader('Content-Disposition', 'attachment; filename="gate-report.json"');
+            //         return res.send(result);
+            // }
         } catch (err) {
             next(err);
         }
