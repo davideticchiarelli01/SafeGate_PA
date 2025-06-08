@@ -1,39 +1,43 @@
 services:
+  # Main application service
   app:
-    container_name: safegate_app
-    build: .
+    container_name: safegate_app # Name of the app container
+    build: . # Builds the image using the Dockerfile in the current directory
     ports:
-      - '${APP_PORT}:${APP_PORT}'
-    restart: always # when the docker engine is started this option allow starting the container too
+      - '${APP_PORT}:${APP_PORT}' # Maps the app port from host to container
+    restart: always # Ensures the container restarts automatically (e.g., after reboot)
     env_file:
-      - .env
+      - .env # Loads environment variables from the .env file
     volumes:
-      - ./jwt_keys:/usr/src/app/jwt_keys:ro # Read-only volume for JWT keys
-      - ./src/logger/logs:/usr/src/app/src/logger/logs
+      - ./jwt_keys:/usr/src/app/jwt_keys:ro # Mounts JWT keys as read-only inside the container
+      - ./src/logger/logs:/usr/src/app/src/logger/logs # Mounts the log directory for persistent log files
     depends_on:
       postgres:
-        condition: service_healthy
+        condition: service_healthy # Waits for the PostgreSQL container to become healthy before starting
     command: >
-      sh -c "npm start"
+      sh -c "npm start"             
 
+  # PostgreSQL database service
   postgres:
-    container_name: postgres_db
-    image: postgres:16
-    restart: always
+    container_name: postgres_db # Name of the PostgreSQL container
+    image: postgres:16 # Uses the official PostgreSQL image (version 16)
+    restart: always # Automatically restarts the container on failure or reboot
     environment:
-      POSTGRES_USER: ${DB_USER}
-      POSTGRES_PASSWORD: ${DB_PASS}
-      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER} # DB username from environment variables
+      POSTGRES_PASSWORD: ${DB_PASS} # DB password from environment variables
+      POSTGRES_DB: ${DB_NAME} # DB name to create on startup
     ports:
-      - "${DB_PORT}:${DB_PORT}"
+      - "${DB_PORT}:${DB_PORT}" # Maps the DB port from host to container 
     volumes:
-      - pgdata:/var/lib/postgresql/data
-      - ./src/db/init:/docker-entrypoint-initdb.d:ro # Read-only volume for initialization scripts
+      - pgdata:/var/lib/postgresql/data # Persists DB data using a named volume
+      - ./src/db/init:/docker-entrypoint-initdb.d:ro # Executes SQL scripts on initial setup (read-only)
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U ${DB_USER}" ]
+      test: [ "CMD-SHELL", "pg_isready -U ${DB_USER}" ] # Checks DB readiness
       interval: 10s
       timeout: 5s
       retries: 5
 
 volumes:
   pgdata:
+
+
