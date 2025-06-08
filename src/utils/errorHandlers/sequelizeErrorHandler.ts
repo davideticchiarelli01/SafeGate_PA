@@ -11,16 +11,22 @@ import {
     AccessDeniedError,
     TimeoutError
 } from "sequelize";
-import {ErrorFactory, HttpError} from "../../factories/errorFactory";
-import {ReasonPhrases} from "http-status-codes";
+import { ErrorFactory, HttpError } from "../../factories/errorFactory";
+import { ReasonPhrases } from "http-status-codes";
 
+/**
+ * Handles various Sequelize-related errors and converts them into standardized `HttpError` objects.
+ *
+ * @param {unknown} err - The error object to inspect.
+ * @returns {HttpError | null} A formatted `HttpError` if the error matches a known Sequelize error type, otherwise `null`.
+ */
 export const handleSequelizeError = (err: unknown): HttpError | null => {
     if (err instanceof UniqueConstraintError) {
         return ErrorFactory.createError(
             ReasonPhrases.CONFLICT,
             "Unique constraint error",
             undefined,
-            {errors: err.errors.map(e => e.message)}
+            { errors: err.errors.map(e => e.message) }
         );
     }
 
@@ -29,7 +35,7 @@ export const handleSequelizeError = (err: unknown): HttpError | null => {
             ReasonPhrases.BAD_REQUEST,
             "Validation error",
             undefined,
-            {errors: err.errors.map(e => e.message)}
+            { errors: err.errors.map(e => e.message) }
         );
     }
 
