@@ -23,7 +23,7 @@ export class AuthorizationController {
 
     /**
      * Retrieves a single authorization by badgeId and gateId.
-     * Expects both fields to be validated and extracted from route parameters.
+     * Expects both fields from route parameters.
      *
      * @param {Request} req - Express request object containing `badgeId` and `gateId` in params.
      * @param {Response} res - Express response object.

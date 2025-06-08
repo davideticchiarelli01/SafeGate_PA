@@ -26,7 +26,7 @@ export class TransitController {
 
     /**
      * Retrieves a single transit by its ID.
-     * Expects the `id` param to be validated and extracted.
+     * Expects the `id` param.
      *
      * @param {Request} req - Express request object containing `id` in params.
      * @param {Response} res - Express response object.
@@ -140,7 +140,7 @@ export class TransitController {
 
     /**
      * Generates a report of gate transits in the specified format.
-     * Supports `json`, `csv`, or `pdf` formats.
+     * Supports `json`, `csv`, or `pdf` formats and filtering by date.
      *
      * @param {Request} req - Express request with optional format and date filters in query.
      * @param {Response} res - Express response object.

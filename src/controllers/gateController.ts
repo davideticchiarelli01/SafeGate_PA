@@ -24,7 +24,7 @@ export class GateController {
 
     /**
      * Retrieves a single gate by its ID.
-     * Expects the `id` param to be validated and extracted.
+     * Expects the `id` param.
      *
      * @param {Request} req - Express request object containing `id` in params.
      * @param {Response} res - Express response object.
@@ -58,7 +58,7 @@ export class GateController {
 
     /**
      * Creates a new gate.
-     * Expects validated body fields (name and requiredDPIs).
+     * Expects validated body fields.
      *
      * @param {Request} req - Express request with gate creation data in body.
      * @param {Response} res - Express response object.

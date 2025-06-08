@@ -24,7 +24,7 @@ export class BadgeController {
 
     /**
      * Retrieves a single badge by its ID.
-     * Expects the `id` param to be validated and matched.
+     * Expects the `id` param.
      *
      * @param {Request} req - Express request containing `id` in params.
      * @param {Response} res - Express response.
@@ -129,7 +129,7 @@ export class BadgeController {
 
     /**
      * Deletes a badge by its ID.
-     * Expects the `id` param to be validated.
+     * Expects the `id` param.
      *
      * @param {Request} req - Express request containing badge `id` in params.
      * @param {Response} res - Express response.
