@@ -49,7 +49,43 @@ L’obiettivo principale del progetto è sviluppare un sistema backend per la ge
 - Generare un report in formato PDF, CSV o JSON, filtrabile per intervallo temporale, che riporti per ogni badgeId il numero di transiti autorizzati, non autorizzati e lo stato del badge. Gli amministratori possono ottenere report su tutti i badge, mentre gli utenti possono visualizzare esclusivamente il report relativo al proprio badgeId.
   
 Infine, per garantire un corretto sistema di autenticazione e autorizzazione, è stato implementato un meccanismo di login che consente l’accesso agli utenti in base al proprio ruolo: User, Admin o Gate.
+
 # Progettazione
+Una progettazione software efficace richiede un’organizzazione chiara e coerente delle componenti principali del sistema. Nel nostro caso, l’architettura è stata strutturata per garantire manutenibilità, scalabilità e leggibilità del codice. Ogni modulo è stato progettato con una responsabilità ben definita, contribuendo in modo ordinato e coeso al funzionamento dell’intera applicazione.
+
+Di seguito viene presentata la struttura ad albero delle principali directory del progetto:
+```
+SafeGate_PA/
+├── jwt_keys/
+├── postman/
+├── src/
+│   ├── @types/
+│   ├── controllers/
+│   ├── dao/
+│   ├── db/
+│   ├── enum/
+│   ├── factories/
+│   ├── logger/
+│   ├── middlewares/
+│   ├── models/
+│   ├── repositories/
+│   ├── routes/
+│   ├── services/
+│   ├── tests/
+│   ├── utils/
+│   ├── app.ts
+│   └── dependencies.ts
+├── .dockerignore
+├── .env
+├── .gitignore
+├── docker-compose.yml
+├── Dockerfile
+├── jest.config.js
+├── package.json
+├── package-lock.json
+├── README.md
+└── tsconfig.json
+```
 
 ## Architettura dei servizi
 
@@ -136,33 +172,34 @@ erDiagram
 ### Diagrammi delle sequenze
 # API Routes
 
-| **Verbo HTTP** | **Endpoint**                                      | **Descrizione**                                                                              | **Autenticazione JWT** |
-|----------------|---------------------------------------------------|----------------------------------------------------------------------------------------------|------------------------|
-| **POST**       | `/login`                                          | Autenticazione dell'utente tramite email e password.                                         | ❌                     |
-| **GET**        | `/transits`                                       | Recupera tutti i transiti registrati. (solo admin)                                           | ✅                     |
-| **GET**        | `/transits/:id`                                   | Recupera uno specifico transito. (admin tutte, user solo le sue transizioni)                 | ✅                     |
-| **POST**       | `/transits`                                       | Crea una transito sia con esito positivo che negativo. (admin e gate)                        | ✅                     |
-| **PUT**        | `/transits/:id`                                   | Modifica un transito esistente. (solo admin)                                                 | ✅                     |
-| **DELETE**     | `/transits/:id`                                   | Elimina un transito esistente. (solo admin)                                                  | ✅                     |
-| **GET**        | `/transits_stats/:badgeId`                        | Recupera le statistiche dei transiti di uno specifico badge. (admin tutte, user solo le sue) | ✅                     |
-| **GET**        | `/gate_report`                                    | Esportazione del numero di transiti in un gate in formato JSON, PDF o CSV. (solo admin)      | ✅                     |
-| **GET**        | `/badge_report`                                   | Esportazione del numero di transiti di un badge come JSON, PDF o JSON. (admin tutte, user solo le sue)          | ✅                     |
-| **GET**        | `/authorizations`                                 | Recupera tutte le autorizzazioni registrate. (solo admin)                                    | ✅                     |
-| **GET**        | `/authorizations/:badgeId/:gateId`                | Recupera un autorizzazione specifica. (solo admin)                                           | ✅                     |
-| **POST**       | `/authorizations`                                 | Crea un'autorizzazione che associa un gate e un badge. (solo admin)                          | ✅                     |
-| **DELETE**     | `/authorizations/:badgeId/:gateId`                | Elimina un autorizzazione esistente. (solo admin)                                            | ✅                     |
-| **GET**        | `/gates`                                          | Recupera tutti i gate registrati. (solo admin)                                               | ✅                     |
-| **GET**        | `/gates/:id`                                      | Recupera un autorizzazione specifica. (solo admin)                                           | ✅                     |
-| **POST**       | `/gates`                                          | Crea un nuovo gate. (solo admin)                                                             | ✅                     |
-| **PUT**        | `/gates/:id`                                      | Modifica un gate esistente. (solo admin)                                                     | ✅                     |
-| **DELETE**     | `/gates/:id`                                      | Elimina un gate esistente. (solo admin)                                                      | ✅                     |
-| **GET**        | `/badges`                                         | Recupera tutti i badge registrati. (solo admin)                                              | ✅                     |
-| **GET**        | `/badges/:id`                                     | Recupera un badge specifico. (solo admin)                                                    | ✅                     |
-| **POST**       | `/badges`                                         | Crea un nuovo badge per un utente senza badge. (solo admin)                                  | ✅                     |
-| **PUT**        | `/badges/:id`                                     | Modifica un badge esistente. (solo admin)                                                    | ✅                     |
-| **DELETE**     | `/badges/:id`                                     | Elimina un badge esistente. (solo admin)                                                     | ✅                     |
-| **GET**        | `/badges_suspended`                               | Recupera tutti i badge sospesi. (solo admin)                                                 | ✅                     |
-| **GET**        | `/reactivate_badges`                              | Attiva uno o più badge passati in ingresso (solo admin)                                      | ✅                     |
+| **HTTP**       | **Endpoint**                                      | **Descrizione**                                                                              | **JWT** | **Ruolo**               |
+|----------------|---------------------------------------------------|----------------------------------------------------------------------------------------------|--------|--------------------------|
+| **POST**       | `/login`                                          | Autenticazione dell'utente tramite email e password.                                         | ❌      | Tutti                   |
+| **GET**        | `/transits`                                       | Recupera tutti i transiti registrati.                                                        | ✅      | Admin                   |
+| **GET**        | `/transits/:id`                                   | Recupera uno specifico transito.                                                             | ✅      | Admin, User (solo suoi) |
+| **POST**       | `/transits`                                       | Crea un transito (esito positivo o negativo).                                                | ✅      | Admin, Gate             |
+| **PUT**        | `/transits/:id`                                   | Modifica un transito esistente.                                                              | ✅      | Admin                   |
+| **DELETE**     | `/transits/:id`                                   | Elimina un transito esistente.                                                               | ✅      | Admin                   |
+| **GET**        | `/transits_stats/:badgeId`                        | Recupera statistiche dei transiti di un badge.                                               | ✅      | Admin, User (solo suoi) |
+| **GET**        | `/gate_report`                                    | Esporta il numero di transiti in un gate (JSON, PDF, CSV).                                   | ✅      | Admin                   |
+| **GET**        | `/badge_report`                                   | Esporta i transiti di un badge (JSON, PDF, CSV).                                             | ✅      | Admin, User (solo suoi) |
+| **GET**        | `/authorizations`                                 | Recupera tutte le autorizzazioni.                                                            | ✅      | Admin                   |
+| **GET**        | `/authorizations/:badgeId/:gateId`                | Recupera un'autorizzazione specifica.                                                        | ✅      | Admin                   |
+| **POST**       | `/authorizations`                                 | Crea un'autorizzazione tra gate e badge.                                                     | ✅      | Admin                   |
+| **DELETE**     | `/authorizations/:badgeId/:gateId`                | Elimina un'autorizzazione esistente.                                                         | ✅      | Admin                   |
+| **GET**        | `/gates`                                          | Recupera tutti i gate registrati.                                                            | ✅      | Admin                   |
+| **GET**        | `/gates/:id`                                      | Recupera un gate specifico.                                                                  | ✅      | Admin                   |
+| **POST**       | `/gates`                                          | Crea un nuovo gate.                                                                          | ✅      | Admin                   |
+| **PUT**        | `/gates/:id`                                      | Modifica un gate esistente.                                                                  | ✅      | Admin                   |
+| **DELETE**     | `/gates/:id`                                      | Elimina un gate esistente.                                                                   | ✅      | Admin                   |
+| **GET**        | `/badges`                                         | Recupera tutti i badge.                                                                      | ✅      | Admin                   |
+| **GET**        | `/badges/:id`                                     | Recupera un badge specifico.                                                                 | ✅      | Admin                   |
+| **POST**       | `/badges`                                         | Crea un nuovo badge.                                                                         | ✅      | Admin                   |
+| **PUT**        | `/badges/:id`                                     | Modifica un badge esistente.                                                                 | ✅      | Admin                   |
+| **DELETE**     | `/badges/:id`                                     | Elimina un badge esistente.                                                                  | ✅      | Admin                   |
+| **GET**        | `/badges_suspended`                               | Recupera tutti i badge sospesi.                                                              | ✅      | Admin                   |
+| **GET**        | `/reactivate_badges`                              | Riattiva uno o più badge.                                                                    | ✅      | Admin                   |
+
 
 # Configurazione e uso
 # Strumenti utilizzati
