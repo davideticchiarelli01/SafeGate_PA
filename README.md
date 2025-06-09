@@ -301,6 +301,39 @@ erDiagram
 | **GET**    | `/reactivate_badges`               | Riattiva uno o più badge.                                  | ✅       | Admin                   |
 
 # Configurazione e uso
+Di seguito sono elencati i passaggi necessari per configurare correttamente l'applicazione SafeGate e renderla operativa in un container Docker.
+- Prima di tutto bisogna ssicurarsi di avere *Docker* e *Docker Compose* installati. Nel caso in cui non lo fossero è necessario procedere all'installazione al fine di poter permettere la creazione di un container nel quale verrà eseguito SafeGate.
+
+- In seguito è possibile clonare la repository GitHub del progetto; lanciare quindi il seguente comando: 
+
+  ```
+  git clone https://github.com/davideticchiarelli01/SafeGate_PA
+  ```
+
+- All'interno della directory del progetto bisogna configurare il file `.env` al fine di definire le variabili di ambiente necessarie al corretto funzionamento dell'applicazione. Di seguito si può osservare un esempio di struttura del file:
+
+    ```
+    DB_HOST=
+    DB_PORT=
+    DB_USER=
+    DB_PASS=
+    DB_NAME=
+    DB_DIALECT=
+
+    APP_PORT=
+    ```
+  Bisogna compilare tuti i campi con i valori appropriati per il proprio ambiente di sviluppo.
+
+- A questo punto è possibile avviare l'applicazione su un container Docker eseguendo il comando dalla directory di progetto:
+  ```
+  docker-compose up --build
+  ```
+
+Infine se la build ha avuto successo, SafeGate sarà raggiungibile all'indirizzo `http://localhost:3000/`.
+
+Per testare l'applicazione è possibile utilizzare il client Postman sfruttando i file a disposizione:
+- *Collection*: `Collection_SafeGate_PA_Ticchiarelli_Marino_2025`
+- *Environment*: `Environment_SafeGate_PA_Ticchiarelli_Marino_2025`
 
 # Strumenti utilizzati
 
