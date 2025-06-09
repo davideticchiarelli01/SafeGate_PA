@@ -318,7 +318,7 @@ POST http://localhost:3000/login
 ```
 
 La risposta attesa avrà questa forma:
-```json
+```ts
 200 OK
 
 {
@@ -340,7 +340,7 @@ Authorization: Bearer {{jwt_token}}
 ```
 
 La risposta attesa avrà questa forma:
-```json
+```ts
 200 OK
 
 [
@@ -364,7 +364,6 @@ La risposta attesa avrà questa forma:
       ...
     }
 ]
-  
 ```
 
 ## GET /transits/:id
@@ -381,7 +380,7 @@ Authorization: Bearer {{jwt_token}}
 ```
 
 La risposta attesa avrà questa forma:
-```json
+```ts
 200 OK
 
 {
@@ -412,7 +411,7 @@ La risposta attesa avrà questa forma:
 
 La richiesta può essere svolta in questo modo:
 ```ts
-GET http://localhost:3000/transits/e799cf8f-3c32-49f1-8377-2f5a9e221e1c
+POST http://localhost:3000/transits
 Authorization: Bearer {{jwt_token}}
 
 {
@@ -425,8 +424,8 @@ Authorization: Bearer {{jwt_token}}
 ```
 
 La risposta attesa avrà questa forma:
-```json
-200 OK
+```ts
+201 CREATED
 
 {
   "message": "Transit created",
@@ -467,7 +466,7 @@ Authorization: Bearer {{jwt_token}}
 ```
 
 La risposta attesa avrà questa forma:
-```json
+```ts
 200 OK
 
 {
@@ -498,7 +497,7 @@ Authorization: Bearer {{jwt_token}}
 ```
 
 La risposta attesa avrà questa forma:
-```json
+```ts
 204 NO_CONTENT
 ```
 
@@ -519,7 +518,7 @@ Authorization: Bearer {{jwt_token}}
 ```
 
 La risposta attesa avrà questa forma:
-```json
+```ts
 200 OK
 
 {
@@ -553,7 +552,7 @@ Authorization: Bearer {{jwt_token}}
 ```
 
 La risposta attesa avrà questa forma:
-```json
+```ts
 200 OK
 ```
 <img src="./img/pdf_generation_example.png"/>
@@ -574,7 +573,7 @@ Authorization: Bearer {{jwt_token}}
 ```
 
 La risposta attesa avrà questa forma:
-```json
+```ts
 200 OK
 ```
 <img src="./img/pdf_badge_generation_example.png"/>
@@ -592,7 +591,7 @@ Authorization: Bearer {{jwt_token}}
 ```
 
 La risposta attesa avrà questa forma:
-```json
+```ts
 200 OK
 
 [
@@ -626,7 +625,7 @@ Authorization: Bearer {{jwt_token}}
 ```
 
 La risposta attesa avrà questa forma:
-```json
+```ts
 200 OK
 
 {
@@ -657,8 +656,8 @@ Authorization: Bearer {{jwt_token}}
 ```
 
 La risposta attesa avrà questa forma:
-```json
-200 OK
+```ts
+201 CREATED
 
 {
   "message": "Authorization created",
@@ -690,6 +689,383 @@ La risposta attesa avrà questa forma:
 204 NO_CONTENT
 ```
 
+## GET /gates
+### Parametri
+| **Posizione**   | **Nome**            | **Tipo**               | **Descrizione**                                | **Opzionalità**         |
+|-----------------|---------------------|------------------------|------------------------------------------------|-------------------------|
+| Header          | *Authorization*     | `string`               | JWT token necessario per l'autenticazione      | No                      |
+
+La richiesta può essere svolta in questo modo:
+```ts
+GET http://localhost:3000/gates
+Authorization: Bearer {{jwt_token}}
+```
+
+La risposta attesa avrà questa forma:
+```ts
+200 OK
+
+[
+  {
+    "id": "8a8e1f4d-bb7a-4b6e-bb44-7386228f637c",
+    "name": "Gate A",
+    "requiredDPIs": [
+        "helmet",
+        "vest"
+    ],
+    "createdAt": "2025-06-09T15:37:51.556Z",
+    "updatedAt": "2025-06-09T15:37:51.556Z"
+  },
+  {
+    ...
+  },
+  {
+    ...
+  }
+]
+```
+
+## GET /gates/:id
+### Parametri
+| **Posizione**   | **Nome**            | **Tipo**               | **Descrizione**                                | **Opzionalità**         |
+|-----------------|---------------------|------------------------|------------------------------------------------|-------------------------|
+| Header          | *Authorization*     | `string`               | JWT token necessario per l'autenticazione      | No                      |
+| Params          | *id*                | `string`               | UUID del gate che si vuole visualizzare        | No                      |
+
+La richiesta può essere svolta in questo modo:
+```ts
+GET http://localhost:3000/gates/5e3e4445-3a6e-4b83-9438-8ef7f5a2b9df
+Authorization: Bearer {{jwt_token}}
+```
+
+La risposta attesa avrà questa forma:
+```ts
+200 OK
+
+{
+  "id": "5e3e4445-3a6e-4b83-9438-8ef7f5a2b9df",
+  "name": "Gate B",
+  "requiredDPIs": [
+      "gloves"
+  ],
+  "createdAt": "2025-06-09T15:37:51.556Z",
+  "updatedAt": "2025-06-09T15:37:51.556Z"
+}
+```
+
+## POST /gates
+### Parametri
+| **Posizione**   | **Nome**            | **Tipo**               | **Descrizione**                                | **Opzionalità**         |
+|-----------------|---------------------|------------------------|------------------------------------------------|-------------------------|
+| Header          | *Authorization*     | `string`               | JWT token necessario per l'autenticazione      | No                      |
+| Body            | *nome*              | `string`               | Nome del gate che si vuole creare              | No                      |
+| Body            | *requiredDPIs*      | `dpi[]`                | DPI richiesti per accedere al nuovo gate       | No                      |
+
+La richiesta può essere svolta in questo modo:
+```ts
+POST http://localhost:3000/gates
+Authorization: Bearer {{jwt_token}}
+
+{
+    "name": "Gate C",
+    "requiredDPIs": [
+        "helmet", 
+        "vest"
+    ]
+}
+```
+
+La risposta attesa avrà questa forma:
+```ts
+201 CREATED
+
+{
+  "message": "Gate created",
+  "gate": {
+      "id": "c0459f74-7bb1-4727-86a0-f38fdfdb5475",
+      "name": "Gate C",
+      "requiredDPIs": [
+          "helmet",
+          "vest"
+      ],
+      "updatedAt": "2025-06-09T15:46:53.824Z",
+      "createdAt": "2025-06-09T15:46:53.824Z"
+  }
+}
+```
+
+## PUT /gates/:id
+### Parametri
+| **Posizione**   | **Nome**            | **Tipo**               | **Descrizione**                                | **Opzionalità**         |
+|-----------------|---------------------|------------------------|------------------------------------------------|-------------------------|
+| Header          | *Authorization*     | `string`               | JWT token necessario per l'autenticazione      | No                      |
+| Params          | *nome*              | `string`               | Nome del gate che si vuole modificare          | No                      |
+| Body            | *requiredDPIs*      | `dpi[]`                | DPI richiesti aggiornati per accedere al gate  | No                      |
+
+La richiesta può essere svolta in questo modo:
+```ts
+PUT http://localhost:3000/gates/5e3e4445-3a6e-4b83-9438-8ef7f5a2b9df
+Authorization: Bearer {{jwt_token}}
+
+{
+    "requiredDPIs": [
+        "vest", 
+        "helmet", 
+        "gloves"
+    ]
+}
+```
+
+La risposta attesa avrà questa forma:
+```ts
+200 OK
+
+{
+  "id": "5e3e4445-3a6e-4b83-9438-8ef7f5a2b9df",
+  "name": "Gate B",
+  "requiredDPIs": [
+      "vest",
+      "helmet",
+      "gloves"
+  ],
+  "createdAt": "2025-06-09T15:37:51.556Z",
+  "updatedAt": "2025-06-09T15:51:11.317Z"
+}
+```
+
+## DELETE /gates/:id
+### Parametri
+| **Posizione**   | **Nome**            | **Tipo**               | **Descrizione**                                | **Opzionalità**         |
+|-----------------|---------------------|------------------------|------------------------------------------------|-------------------------|
+| Header          | *Authorization*     | `string`               | JWT token necessario per l'autenticazione      | No                      |
+| Params          | *id*                | `string`               | UUID del gate che si vuole eliminare           | No                      |
+
+La richiesta può essere svolta in questo modo:
+```ts
+DELETE http://localhost:3000/gates/5e3e4445-3a6e-4b83-9438-8ef7f5a2b9df
+Authorization: Bearer {{jwt_token}}
+```
+
+La risposta attesa avrà questa forma:
+```ts
+204 NO_CONTENT
+```
+
+## GET /badges
+### Parametri
+| **Posizione**   | **Nome**            | **Tipo**               | **Descrizione**                                | **Opzionalità**         |
+|-----------------|---------------------|------------------------|------------------------------------------------|-------------------------|
+| Header          | *Authorization*     | `string`               | JWT token necessario per l'autenticazione      | No                      |
+
+La richiesta può essere svolta in questo modo:
+```ts
+GET http://localhost:3000/badges
+Authorization: Bearer {{jwt_token}}
+```
+
+La risposta attesa avrà questa forma:
+```ts
+200 OK
+
+[
+    {
+        "id": "79c1f0c5-2cf8-4948-b51d-b4ef0117c68e",
+        "userId": "b1b19876-bff4-42cd-90ae-0e497ff50c99",
+        "status": "active",
+        "unauthorizedAttempts": 0,
+        "firstUnauthorizedAttempt": null,
+        "createdAt": "2025-06-09T15:37:51.561Z",
+        "updatedAt": "2025-06-09T15:37:51.561Z"
+    },
+    {
+      ...
+    }
+]
+```
+
+## GET /badges/:id
+### Parametri
+| **Posizione**   | **Nome**            | **Tipo**               | **Descrizione**                                | **Opzionalità**         |
+|-----------------|---------------------|------------------------|------------------------------------------------|-------------------------|
+| Header          | *Authorization*     | `string`               | JWT token necessario per l'autenticazione      | No                      |
+| Params          | *id*                | `string`               | UUID del badge che si vuole visualizzare       | No                      |
+
+La richiesta può essere svolta in questo modo:
+```ts
+GET http://localhost:3000/badges/5e3e4445-3a6e-4b83-9438-8ef7f5a2b9df
+Authorization: Bearer {{jwt_token}}
+```
+
+La risposta attesa avrà questa forma:
+```ts
+200 OK
+
+{
+  "id": "d70c2d10-b56c-4cbb-bb00-6c2f1e1cb723",
+  "userId": "fa4d116f-7b3f-4c9d-88d6-8f01b36dc8c6",
+  "status": "suspended",
+  "unauthorizedAttempts": 0,
+  "firstUnauthorizedAttempt": null,
+  "createdAt": "2025-06-09T15:37:51.561Z",
+  "updatedAt": "2025-06-09T15:37:51.561Z"
+}
+```
+
+## POST /badges
+### Parametri
+| **Posizione**   | **Nome**                    | **Tipo**               | **Descrizione**                                      | **Opzionalità**         |
+|-----------------|-----------------------------|------------------------|------------------------------------------------------|-------------------------|
+| Header          | *Authorization*             | `string`               | JWT token necessario per l'autenticazione            | No                      |
+| Body            | *userId*                    | `string`               | UUID dell'utente da associare al nuovo badge         | No                      |
+| Body            | *status*                    | `badge_status`         | Stato del badge da creare                            | Si                      |
+| Body            | *unauthorizedAttempts*      | `integer`              | Numero di tentativi di accesso non autorizzati       | Si                      |
+| Body            | *firstUnauthorizedAttempts* | `timestamp`            | Data del primo tentativo di acecsso non autorizzato  | Si                      |
+
+La richiesta può essere svolta in questo modo:
+```ts
+POST http://localhost:3000/badges
+Authorization: Bearer {{jwt_token}}
+
+{
+    "userId": "6c39f5a9-40e6-4863-a86e-583e1506dfe0"
+}
+```
+
+La risposta attesa avrà questa forma:
+```ts
+201 CREATED
+
+{
+    "message": "Badge created",
+    "badge": {
+        "id": "74807608-ed83-4e1b-b630-3045d3656836",
+        "status": "active",
+        "unauthorizedAttempts": 0,
+        "firstUnauthorizedAttempt": null,
+        "userId": "6c39f5a9-40e6-4863-a86e-583e1506dfe0",
+        "updatedAt": "2025-06-09T16:16:25.981Z",
+        "createdAt": "2025-06-09T16:16:25.981Z"
+    }
+}
+```
+
+## DELETE /badges/:id
+### Parametri
+| **Posizione**   | **Nome**            | **Tipo**               | **Descrizione**                                | **Opzionalità**         |
+|-----------------|---------------------|------------------------|------------------------------------------------|-------------------------|
+| Header          | *Authorization*     | `string`               | JWT token necessario per l'autenticazione      | No                      |
+| Params          | *id*                | `string`               | UUID del badge  che si vuole eliminare         | No                      |
+
+La richiesta può essere svolta in questo modo:
+```ts
+DELETE http://localhost:3000/badges/74807608-ed83-4e1b-b630-3045d3656836
+Authorization: Bearer {{jwt_token}}
+```
+
+La risposta attesa avrà questa forma:
+```ts
+204 NO_CONTENT
+```
+
+## PUT /badges/:id
+### Parametri
+| **Posizione**   | **Nome**                    | **Tipo**               | **Descrizione**                                      | **Opzionalità**         |
+|-----------------|-----------------------------|------------------------|------------------------------------------------------|-------------------------|
+| Header          | *Authorization*             | `string`               | JWT token necessario per l'autenticazione            | No                      |
+| Params          | *id*                        | `string`               | UUID del badge da aggiornare                         | No                      |
+| Body            | *status*                    | `badge_status`         | Nuovo stato del badge da aggiornare                  | Si                      |
+| Body            | *unauthorizedAttempts*      | `integer`              | Numero di tentativi di accesso non autorizzati       | Si                      |
+| Body            | *firstUnauthorizedAttempts* | `timestamp`            | Data del primo tentativo di accesso non autorizzato  | Si                      |
+
+La richiesta può essere svolta in questo modo:
+```ts
+PUT http://localhost:3000/badges/d70c2d10-b56c-4cbb-bb00-6c2f1e1cb723
+Authorization: Bearer {{jwt_token}}
+
+{
+  "status": "suspended",
+  "unauthorizedAttempts": 1,
+  "firstUnauthorizedAttempt": "2025-06-09T16:00:00"
+}
+```
+
+La risposta attesa avrà questa forma:
+```ts
+200 OK
+
+{
+  "id": "d70c2d10-b56c-4cbb-bb00-6c2f1e1cb723",
+  "userId": "fa4d116f-7b3f-4c9d-88d6-8f01b36dc8c6",
+  "status": "suspended",
+  "unauthorizedAttempts": 1,
+  "firstUnauthorizedAttempt": "2025-06-09T16:00:00.000Z",
+  "createdAt": "2025-06-09T16:15:15.207Z",
+  "updatedAt": "2025-06-09T16:47:46.686Z"
+}
+```
+
+## GET /badges_suspended
+### Parametri
+| **Posizione**   | **Nome**            | **Tipo**               | **Descrizione**                                | **Opzionalità**         |
+|-----------------|---------------------|------------------------|------------------------------------------------|-------------------------|
+| Header          | *Authorization*     | `string`               | JWT token necessario per l'autenticazione      | No                      |
+
+La richiesta può essere svolta in questo modo:
+```ts
+GET http://localhost:3000/badges_suspended
+Authorization: Bearer {{jwt_token}}
+```
+
+La risposta attesa avrà questa forma:
+```ts
+200 OK
+
+[
+  {
+    "id": "d70c2d10-b56c-4cbb-bb00-6c2f1e1cb723",
+    "userId": "fa4d116f-7b3f-4c9d-88d6-8f01b36dc8c6",
+    "status": "suspended",
+    "unauthorizedAttempts": 1,
+    "firstUnauthorizedAttempt": "2025-06-09T16:00:00.000Z",
+    "createdAt": "2025-06-09T16:15:15.207Z",
+    "updatedAt": "2025-06-09T16:47:46.686Z"
+  }
+]
+```
+
+## PUT /reactivate_badges
+### Parametri
+| **Posizione**   | **Nome**            | **Tipo**               | **Descrizione**                                | **Opzionalità**         |
+|-----------------|---------------------|------------------------|------------------------------------------------|-------------------------|
+| Header          | *Authorization*     | `string`               | JWT token necessario per l'autenticazione      | No                      |
+| Body            | *badgeIds*          | `string[]`             | Array di UUID dei badge da riattivare          | No                      |
+
+La richiesta può essere svolta in questo modo:
+```ts
+PUT http://localhost:3000/badges_suspended
+Authorization: Bearer {{jwt_token}}
+
+{
+    "badgeIds": ["d70c2d10-b56c-4cbb-bb00-6c2f1e1cb723"]
+}
+```
+
+La risposta attesa avrà questa forma:
+```ts
+200 OK
+
+[
+    {
+        "id": "d70c2d10-b56c-4cbb-bb00-6c2f1e1cb723",
+        "userId": "fa4d116f-7b3f-4c9d-88d6-8f01b36dc8c6",
+        "status": "active",
+        "unauthorizedAttempts": 0,
+        "firstUnauthorizedAttempt": null,
+        "createdAt": "2025-06-09T16:15:15.207Z",
+        "updatedAt": "2025-06-09T16:54:31.159Z"
+    }
+]
+```
 
 # Configurazione e uso
 Di seguito sono elencati i passaggi necessari per configurare correttamente l'applicazione SafeGate e renderla operativa in un container Docker.
