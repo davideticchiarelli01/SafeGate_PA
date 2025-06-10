@@ -1157,7 +1157,7 @@ Per testare l'applicazione è possibile utilizzare il client Postman sfruttando 
 | Middleware autenticazione JWT                                                                    | Davide      |
 | Middleware autorizzazione (utente vs admin)                                                      | Giampaolo   |
 | Validazioni con `express-validator` centralizzate                                                | Insieme     |
-| Migration seeder iniziali (utenti, badge, gate, autorizzazioni)                                  | Giampaolo   |
+| Migration e seeder iniziali (utenti, badge, gate, autorizzazioni)                                  | Giampaolo   |
 | Gestione errori centralizzata (middleware + factory personalizzata)                              | Davide      |
 | Configurazione Docker e ambiente                                                                 | Insieme     |
 | Documentazione JSDoc nei modelli                                                                 | Insieme     |
