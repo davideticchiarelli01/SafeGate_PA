@@ -658,13 +658,400 @@ sequenceDiagram
 ```
 
 #### GET '/badges'
-#### GET '/badges/:id'
-#### POST '/badges'
-#### PUT '/badges/:id'
-#### DELETE 'badges/:id'
-#### GET '/badges_suspended'
-#### PUT '/reactivate_badges'               
+``` mermaid
+sequenceDiagram
+    autonumber
+    actor Client
+    participant Router
+    participant AuthMiddleware
+    participant AdminMiddleware
+    participant Controller
+    participant Service
+    participant Repository
+    participant Dao
+    participant ErrorMiddleware
 
+    Client->>Router: GET /badges
+
+    Router->>AuthMiddleware: Verify JWT
+    alt Missing or invalid token
+        AuthMiddleware->>ErrorMiddleware: throw 401 Unauthorized
+        ErrorMiddleware-->>Client: 401 Unauthorized + JSON error
+    else Valid JWT
+        AuthMiddleware-->>Router: req.user
+
+        Router->>AdminMiddleware: Verify admin role
+        alt Non-admin user
+            AdminMiddleware->>ErrorMiddleware: throw 403 Forbidden
+            ErrorMiddleware-->>Client: 403 Forbidden + JSON error
+        else Valid Admin
+            AdminMiddleware-->>Router: ok
+
+            Router->>Controller: badgeController.getAllBadges()
+            Controller->>Service: service.getAllBadges()
+            Service->>Repository: repo.findAll()
+            Repository->>Dao: dao.getAll()
+
+            Dao-->>Repository: Badge[]
+            Repository-->>Service: Badge[]
+            Service-->>Controller: Badge[]
+            Controller-->>Client: 200 OK + [JSON array]
+        end
+    end
+```
+#### GET '/badges/:id'
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Client
+    participant Router
+    participant AuthMiddleware
+    participant AdminMiddleware
+    participant ValidationMiddleware
+    participant Controller
+    participant Service
+    participant Repository
+    participant Dao
+    participant ErrorMiddleware
+
+    Client->>Router: GET /badges/:id
+
+    Router->>AuthMiddleware: Verify JWT
+    alt Missing or invalid token
+        AuthMiddleware->>ErrorMiddleware: throw 401 Unauthorized
+        ErrorMiddleware-->>Client: 401 Unauthorized + JSON error
+    else Valid token
+        AuthMiddleware-->>Router: req.user
+
+        Router->>AdminMiddleware: Verify admin role
+        alt Non-admin user
+            AdminMiddleware->>ErrorMiddleware: throw 403 Forbidden
+            ErrorMiddleware-->>Client: 403 Forbidden + JSON error
+        else Valid Admin
+            AdminMiddleware-->>Router: ok
+
+            Router->>ValidationMiddleware: Validate id param
+            alt Invalid ID (not UUID)
+                ValidationMiddleware->>ErrorMiddleware: throw 400 Bad Request
+                ErrorMiddleware-->>Client: 400 Bad Request + JSON error
+            else Valid ID
+                ValidationMiddleware-->>Router: ok
+
+                Router->>Controller: badgeController.getBadge
+                Controller->>Service: service.getBadge(id)
+                Service->>Repository: repo.findById(id)
+                Repository->>Dao: dao.get(id)
+                alt Badge found
+                    Dao-->>Repository: Badge
+                    Repository-->>Service: Badge
+                    Service-->>Controller: Badge
+                    Controller-->>Client: 200 OK + Badge (JSON)
+                else Badge not found
+                    Dao-->>Repository: null
+                    Repository-->>Service: null
+                    Service->>ErrorMiddleware: throw 404 Not Found
+                    ErrorMiddleware-->>Client: 404 Not Found + JSON error
+                end
+            end
+        end
+    end
+```
+
+#### POST '/badges'
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Client
+    participant Router
+    participant AuthMiddleware
+    participant AdminMiddleware
+    participant ValidationMiddleware
+    participant Controller
+    participant Service
+    participant UserRepository
+    participant BadgeRepository
+    participant BadgeDao
+    participant ErrorMiddleware
+
+    Client->>Router: POST /badges { userId, status?, unauthorizedAttempts?, firstUnauthorizedAttempt? }
+    Router->>AuthMiddleware: Verify JWT
+    alt Missing or invalid token
+        AuthMiddleware->>ErrorMiddleware: throw 401 Unauthorized
+        ErrorMiddleware-->>Client: 401 Unauthorized + JSON error
+    else Valid token
+        AuthMiddleware-->>Router: req.user
+
+        Router->>AdminMiddleware: Verify admin role
+        alt Non-admin user
+            AdminMiddleware->>ErrorMiddleware: throw 403 Forbidden
+            ErrorMiddleware-->>Client: 403 Forbidden + JSON error
+        else Valid Admin
+            AdminMiddleware-->>Router: ok
+
+            Router->>ValidationMiddleware: Validate body (userId required, others optional)
+            alt Invalid data
+                ValidationMiddleware->>ErrorMiddleware: throw 400 Bad Request
+                ErrorMiddleware-->>Client: 400 Bad Request + JSON error
+            else Valid data
+                ValidationMiddleware-->>Router: ok
+
+                Router->>Controller: badgeController.createBadge
+                Controller->>Service: service.createBadge(data)
+                Service->>UserRepository: findById(userId)
+                alt User not found
+                    UserRepository-->>Service: null
+                    Service->>ErrorMiddleware: throw 404 Not Found (User not found)
+                    ErrorMiddleware-->>Client: 404 Not Found + JSON error
+                else User found
+                    UserRepository-->>Service: User
+                    alt User with Gate role
+                        Service->>ErrorMiddleware: throw 403 Forbidden (Users with role Gate cannot be assigned a badge)
+                        ErrorMiddleware-->>Client: 403 Forbidden + JSON error
+                    else Valid role
+                        Service->>BadgeRepository: findByUserId(userId)
+                        alt Badge already exists for userId
+                            BadgeRepository-->>Service: Badge
+                            Service->>ErrorMiddleware: throw 409 Conflict (User already has a badge)
+                            ErrorMiddleware-->>Client: 409 Conflict + JSON error
+                        else No badge for user
+                            BadgeRepository-->>Service: null
+                            Service->>BadgeRepository: create(data)
+                            BadgeRepository->>BadgeDao: create(data)
+                            BadgeDao-->>BadgeRepository: New Badge
+                            BadgeRepository-->>Service: New Badge
+                            Service-->>Controller: New Badge
+                            Controller-->>Client: 201 Created + New Badge (JSON)
+                        end
+                    end
+                end
+            end
+        end
+    end
+```
+
+#### PUT '/badges/:id'
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Client
+    participant Router
+    participant AuthMiddleware
+    participant AdminMiddleware
+    participant ValidationMiddleware
+    participant Controller
+    participant Service
+    participant Repository
+    participant Dao
+    participant ErrorMiddleware
+
+    Client->>Router: PUT /badges/:id { status?, unauthorizedAttempts?, firstUnauthorizedAttempt? }
+    Router->>AuthMiddleware: Verify JWT
+    alt Missing or invalid token
+        AuthMiddleware->>ErrorMiddleware: throw 401 Unauthorized
+        ErrorMiddleware-->>Client: 401 Unauthorized + JSON error
+    else Valid token
+        AuthMiddleware-->>Router: req.user
+
+        Router->>AdminMiddleware: Verify admin role
+        alt Non-admin user
+            AdminMiddleware->>ErrorMiddleware: throw 403 Forbidden
+            ErrorMiddleware-->>Client: 403 Forbidden + JSON error
+        else Valid Admin
+            AdminMiddleware-->>Router: ok
+
+            Router->>ValidationMiddleware: Validate id param and body (optional fields)
+            alt ID not UUID or invalid body
+                ValidationMiddleware->>ErrorMiddleware: throw 400 Bad Request
+                ErrorMiddleware-->>Client: 400 Bad Request + JSON error
+            else Valid data
+                ValidationMiddleware-->>Router: ok
+
+                Router->>Controller: badgeController.updateBadge
+                Controller->>Service: service.updateBadge(id, data)
+                Service->>Repository: repo.findById(id)
+                Repository->>Dao: dao.get(id)
+                Dao-->>Repository: foundBadge or null
+                alt Badge not found
+                    Service->>ErrorMiddleware: throw 404 Not Found
+                    ErrorMiddleware-->>Client: 404 Not Found + JSON error
+                else Badge found
+                    Repository-->>Service: badge
+                    alt status == Active
+                        Service->>Service: reset unauthorizedAttempts and firstUnauthorizedAttempt
+                    end
+                    Service->>Repository: repo.update(badge, data)
+                    Repository->>Dao: dao.update(badge, data)
+                    Dao-->>Repository: updatedBadge
+                    Repository-->>Service: updatedBadge
+                    Service-->>Controller: updatedBadge
+                    Controller-->>Client: 200 OK + updatedBadge (JSON)
+                end
+            end
+        end
+    end
+```
+#### DELETE 'badges/:id'
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Client
+    participant Router
+    participant AuthMiddleware
+    participant AdminMiddleware
+    participant ValidationMiddleware
+    participant Controller
+    participant Service
+    participant Repository
+    participant Dao
+    participant ErrorMiddleware
+
+    Client->>Router: DELETE /badges/:id
+
+    Router->>AuthMiddleware: Verify JWT
+    alt Missing or invalid token
+        AuthMiddleware->>ErrorMiddleware: throw 401 Unauthorized
+        ErrorMiddleware-->>Client: 401 Unauthorized + JSON error
+    else Valid token
+        AuthMiddleware-->>Router: req.user
+
+        Router->>AdminMiddleware: Verify admin role
+        alt Non-admin user
+            AdminMiddleware->>ErrorMiddleware: throw 403 Forbidden
+            ErrorMiddleware-->>Client: 403 Forbidden + JSON error
+        else Valid Admin
+            AdminMiddleware-->>Router: ok
+
+            Router->>ValidationMiddleware: Validate id param
+            alt Invalid ID (not UUID)
+                ValidationMiddleware->>ErrorMiddleware: throw 400 Bad Request
+                ErrorMiddleware-->>Client: 400 Bad Request + JSON error
+            else Valid ID
+                ValidationMiddleware-->>Router: ok
+
+                Router->>Controller: badgeController.deleteBadge
+                Controller->>Service: service.deleteBadge(id)
+                Service->>Repository: repo.findById(id)
+                Repository->>Dao: dao.get(id)
+                alt Badge found
+                    Dao-->>Repository: Badge
+                    Repository-->>Service: Badge
+                    Service->>Repository: repo.delete(badge)
+                    Repository->>Dao: dao.delete(badge)
+                    Dao-->>Repository: ok
+                    Repository-->>Service: ok
+                    Service-->>Controller: ok
+                    Controller-->>Client: 204 No Content
+                else Badge not found
+                    Dao-->>Repository: null
+                    Repository-->>Service: null
+                    Service->>ErrorMiddleware: throw 404 Not Found
+                    ErrorMiddleware-->>Client: 404 Not Found + JSON error
+                end
+            end
+        end
+    end
+```
+#### GET '/badges_suspended'
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Client
+    participant Router
+    participant AuthMiddleware
+    participant AdminMiddleware
+    participant Controller
+    participant Service
+    participant Repository
+    participant Dao
+    participant ErrorMiddleware
+
+    Client->>Router: GET /badges_suspended
+
+    Router->>AuthMiddleware: Verify JWT
+    alt Missing or invalid token
+        AuthMiddleware->>ErrorMiddleware: throw 401 Unauthorized
+        ErrorMiddleware-->>Client: 401 Unauthorized + JSON error
+    else Valid token
+        AuthMiddleware-->>Router: req.user
+
+        Router->>AdminMiddleware: Verify admin role
+        alt Non-admin user
+            AdminMiddleware->>ErrorMiddleware: throw 403 Forbidden
+            ErrorMiddleware-->>Client: 403 Forbidden + JSON error
+        else Valid Admin
+            AdminMiddleware-->>Router: ok
+
+            Router->>Controller: badgeController.getSuspendedBadges()
+            Controller->>Service: service.getSuspendedBadges()
+            Service->>Repository: repo.findManyFilteredByStatus(Suspended)
+            Repository->>Dao: dao.getManyFiltered({ status: Suspended })
+
+            Dao-->>Repository: Badge[]
+            Repository-->>Service: Badge[]
+            Service-->>Controller: Badge[]
+            Controller-->>Client: 200 OK + [JSON array]
+        end
+    end
+```
+#### PUT '/reactivate_badges'               
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Client
+    participant Router
+    participant AuthMiddleware
+    participant AdminMiddleware
+    participant ValidationMiddleware
+    participant Controller
+    participant Service
+    participant Repository
+    participant Dao
+    participant ErrorMiddleware
+
+    Client->>Router: PUT /reactivate_badges { badgeIds }
+    Router->>AuthMiddleware: Verify JWT
+    alt Missing or invalid token
+        AuthMiddleware->>ErrorMiddleware: throw 401 Unauthorized
+        ErrorMiddleware-->>Client: 401 Unauthorized + JSON error
+    else Valid token
+        AuthMiddleware-->>Router: req.user
+
+        Router->>AdminMiddleware: Verify admin role
+        alt Non-admin user
+            AdminMiddleware->>ErrorMiddleware: throw 403 Forbidden
+            ErrorMiddleware-->>Client: 403 Forbidden + JSON error
+        else Valid Admin
+            AdminMiddleware-->>Router: ok
+
+            Router->>ValidationMiddleware: Validate body (badgeIds)
+            alt Invalid badgeIds
+                ValidationMiddleware->>ErrorMiddleware: throw 400 Bad Request
+                ErrorMiddleware-->>Client: 400 Bad Request + JSON error
+            else Valid badgeIds
+                ValidationMiddleware-->>Router: ok
+
+                Router->>Controller: badgeController.reactivateBadges
+                Controller->>Service: service.reactivateBadges(badgeIds)
+                Service->>Repository: repo.findManyFilteredById(badgeIds)
+                Repository->>Dao: dao.getManyFiltered({ id: badgeIds })
+                Dao-->>Repository: foundBadges[]
+                Repository-->>Service: foundBadges[]
+
+                %% Internal: array calculation
+                Service->>Service: notFoundBadges = ids.filter(id ∉ foundBadges)
+                Service->>Service: suspendedBadges = foundBadges.filter(status == Suspended)
+
+                Service->>Repository: repo.updateMany(suspendedBadges, data)
+                Repository->>Dao: dao.updateMany(suspendedBadges, data)
+                Dao-->>Repository: updatedBadges[]
+                Repository-->>Service: updatedBadges[]
+
+                Service-->>Controller: { updatedBadges, notFoundBadges }
+                Controller-->>Client: 200 OK + { updatedBadges, notFoundBadges }
+            end
+        end
+    end
+```
 
 # API Routes
 
