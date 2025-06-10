@@ -10,8 +10,8 @@ import {
     Sequelize,
     CreationOptional,
 } from 'sequelize';
-import { TransitStatus } from "../enum/transitStatus";
-import { DPI } from "../enum/dpi";
+import {TransitStatus} from "../enum/transitStatus";
+import {DPI} from "../enum/dpi";
 
 /**
  * Interface defining the attributes of the Transit model.
@@ -43,7 +43,6 @@ export interface TransitAttributes {
  * @property {Date} [createdAt] - Optional timestamp override (default: now).
  */
 export interface TransitCreationAttributes {
-    id?: string;
     gateId: string;
     badgeId: string;
     status: TransitStatus;

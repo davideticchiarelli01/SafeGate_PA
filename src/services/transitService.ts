@@ -2,28 +2,26 @@
  * TransitService handles business logic related to transit registration, access control,
  * DPI checks, unauthorized access handling, badge suspension, and report generation.
  */
-import { TransitRepository } from "../repositories/transitRepository";
-import { BadgeRepository } from "../repositories/badgeRepository";
-import { AuthorizationRepository } from "../repositories/authorizationRepository";
-import { GateRepository } from "../repositories/gateRepository";
-import { UserPayload } from "../utils/userPayload";
-import { ErrorFactory } from "../factories/errorFactory";
-import { ReasonPhrases } from "http-status-codes";
-import { Transit, TransitCreationAttributes, TransitUpdateAttributes } from "../models/transit";
-import { UserRole } from "../enum/userRoles";
-import { TransitStatus } from "../enum/transitStatus";
-import { Gate } from "../models/gate";
-import { Badge, BadgeUpdateAttributes } from "../models/badge";
-import { BadgeStatus } from "../enum/badgeStatus";
-import { Authorization } from "../models/authorization";
-import { ReportFactory } from "../factories/reportFactory";
-import { ReportFormats } from "../enum/reportFormats";
-import { BadgeTransitsReport, GateTransitsReport } from "../factories/reportFactory";
+import {TransitRepository} from "../repositories/transitRepository";
+import {BadgeRepository} from "../repositories/badgeRepository";
+import {AuthorizationRepository} from "../repositories/authorizationRepository";
+import {GateRepository} from "../repositories/gateRepository";
+import {UserPayload} from "../utils/userPayload";
+import {ErrorFactory} from "../factories/errorFactory";
+import {ReasonPhrases} from "http-status-codes";
+import {Transit, TransitCreationAttributes, TransitUpdateAttributes} from "../models/transit";
+import {UserRole} from "../enum/userRoles";
+import {TransitStatus} from "../enum/transitStatus";
+import {Gate} from "../models/gate";
+import {Badge, BadgeUpdateAttributes} from "../models/badge";
+import {BadgeStatus} from "../enum/badgeStatus";
+import {Authorization} from "../models/authorization";
+import {ReportFactory} from "../factories/reportFactory";
+import {ReportFormats} from "../enum/reportFormats";
+import {BadgeTransitsReport, GateTransitsReport} from "../factories/reportFactory";
 import Logger from "../logger/logger";
-import { DPI } from "../enum/dpi";
-import DatabaseConnection from "../db/database";
-import { Sequelize, Transaction } from "sequelize";
-import { unitOfWork } from "../utils/unitOfWork";
+import {DPI} from "../enum/dpi";
+import {unitOfWork} from "../utils/unitOfWork";
 
 /**
  * Service class for handling `Transit` related operations.
@@ -115,15 +113,7 @@ export class TransitService {
      * @throws {HttpError} If gate or badge is not found.
      */
     async createTransit(data: TransitCreationAttributes): Promise<Transit> {
-        // const sequelize: Sequelize = DatabaseConnection.getInstance();
-        // const transaction: Transaction = await sequelize.transaction();
-
-        let authorized: TransitStatus = TransitStatus.Unauthorized;
-        let dpiViolation: boolean = false;
-        let message: string = 'Unauthorized access attempt';
-
-        const gateId: string = data.gateId;
-        const badgeId: string = data.badgeId;
+        const {gateId, badgeId, usedDPIs = []} = data;
 
         const gate: Gate | null = await this.gateRepo.findById(gateId);
         if (!gate) throw ErrorFactory.createError(ReasonPhrases.NOT_FOUND, 'Gate not found');
@@ -131,23 +121,43 @@ export class TransitService {
         const badge: Badge | null = await this.badgeRepo.findById(badgeId);
         if (!badge) throw ErrorFactory.createError(ReasonPhrases.NOT_FOUND, 'Badge not found');
 
+        // Sanity check number attempts and date of the first unauthorized attempt
+        const MAX: number = TransitService.MAX_ATTEMPTS;
+        const WINDOW: number = TransitService.ATTEMPT_WINDOW; // in minutes
+        const now: number = Date.now();
+
+        // Check if the badge has unauthorized attempts and if the time window has expired
+        if (badge.firstUnauthorizedAttempt) {
+            const firstAttemptTime: number = new Date(badge.firstUnauthorizedAttempt).getTime();
+            const diffMinutes: number = (now - firstAttemptTime) / (1000 * 60);
+
+            const windowExpired: boolean = diffMinutes > WINDOW || diffMinutes < 0;
+            if (windowExpired) {
+                badge.unauthorizedAttempts = 0;
+                badge.firstUnauthorizedAttempt = null;
+            }
+        }
+
+        // Reset unauthorized attempts if they exceed the maximum allowed
+        if ((badge.unauthorizedAttempts ?? 0) >= MAX) {
+            badge.unauthorizedAttempts = 0;
+            badge.firstUnauthorizedAttempt = null;
+        }
+
+        // Access control logic
+        let status: TransitStatus = TransitStatus.Unauthorized;
+        let dpiViolation: boolean = false;
+        let message: string = 'Unauthorized access attempt';
+
         if (badge.status === BadgeStatus.Active) {
             const gateAuth: Authorization | null = await this.authRepo.findById(badgeId, gateId);
             if (gateAuth) {
                 const requiredDPIs: DPI[] = gate.requiredDPIs || [];
-                const usedDPIs: DPI[] = data.usedDPIs || [];
-
-                //dpiViolation = requiredDPIs.some(dpi => !usedDPIs.includes(dpi));
-
-                // this logic handles the case with duplicates required (unauthorized if gloves and required gloves, gloves)
-                dpiViolation = !requiredDPIs.every(dpi => {
-                    const countInRequired: number = requiredDPIs.filter(d => d === dpi).length;
-                    const countInUsed: number = usedDPIs.filter(d => d === dpi).length;
-                    return countInUsed >= countInRequired;
-                });
-
+                dpiViolation = !requiredDPIs.every(dpi =>
+                    usedDPIs.filter(d => d === dpi).length >= requiredDPIs.filter(d => d === dpi).length
+                );
                 if (!dpiViolation) {
-                    authorized = TransitStatus.Authorized;
+                    status = TransitStatus.Authorized;
                 } else {
                     message = 'DPI violation detected';
                 }
@@ -156,81 +166,37 @@ export class TransitService {
             message = `Badge is not active, current status: ${badge.status}`;
         }
 
+        // Set variables for access insert
         const badgeUpdate: BadgeUpdateAttributes = {};
 
-        if (authorized === TransitStatus.Unauthorized) {
+        if (status === TransitStatus.Unauthorized) {
+            const isFirstAttempt: boolean = (badge.unauthorizedAttempts ?? 0) === 0;
+            badgeUpdate.unauthorizedAttempts = (badge.unauthorizedAttempts ?? 0) + 1;
+            badgeUpdate.firstUnauthorizedAttempt = isFirstAttempt
+                ? new Date()
+                : badge.firstUnauthorizedAttempt ?? new Date();
 
-            // if date is older than 20 minutes, reset unauthorized attempts
-
-            // const now = new Date();
-            // const twentyMinutesMs: number = (20 * 60 * 1000) + 1000;
-            //
-            // if (
-            //     badge.firstUnauthorizedAttempt &&
-            //     (now.getTime() - new Date(badge.firstUnauthorizedAttempt).getTime()) > twentyMinutesMs
-            // ) {
-            //     badge.firstUnauthorizedAttempt = null;
-            //     badge.unauthorizedAttempts = 0;
-            // }
-
-            const isFirstAttempt: boolean = (badge.unauthorizedAttempts ?? 0) === 0; // if first attempt, it will be true
-
-            badgeUpdate.unauthorizedAttempts = (badge.unauthorizedAttempts ?? 0) + 1; // increment unauthorized attempts
-
-            // if this is the first unauthorized attempt, set the timestamp
-            if (isFirstAttempt) {
-                badgeUpdate.firstUnauthorizedAttempt = new Date(); // set first unauthorized attempt timestamp
-            } else {
-                badgeUpdate.firstUnauthorizedAttempt = badge.firstUnauthorizedAttempt || new Date(); // keep the first unauthorized attempt timestamp if it exists
-            }
-
-
-            const diffMinutes: number = (new Date().getTime() - badgeUpdate.firstUnauthorizedAttempt.getTime()) / (1000 * 60);
-            const MAX_ATTEMPTS: number = TransitService.MAX_ATTEMPTS; // class variable
-            const ATTEMPT_WINDOW: number = TransitService.ATTEMPT_WINDOW; // class variable
-
-            if (badgeUpdate.unauthorizedAttempts >= MAX_ATTEMPTS && diffMinutes <= ATTEMPT_WINDOW) {
+            const diffMinutes: number = (Date.now() - new Date(badgeUpdate.firstUnauthorizedAttempt).getTime()) / (1000 * 60);
+            if (badgeUpdate.unauthorizedAttempts >= MAX && diffMinutes <= WINDOW) {
                 badgeUpdate.status = BadgeStatus.Suspended;
             }
-
         } else {
             badgeUpdate.unauthorizedAttempts = 0;
             badgeUpdate.firstUnauthorizedAttempt = null;
         }
 
-        data.status = authorized;
+        // Update badge and create transit (using transaction)
+        data.status = status;
         data.DPIviolation = dpiViolation;
 
-        // try {
-        //     await this.badgeRepo.update(badge, badgeUpdate, { transaction });
-        //
-        //     const transit: Transit = await this.transitRepo.create(data, { transaction });
-        //     await transaction.commit();
-        //
-        //     if (authorized === TransitStatus.Authorized) {
-        //         Logger.info(`Creating transit for badge ID: ${badgeId}, gate ID: ${gateId}, status: ${authorized}, DPI violation: ${dpiViolation}`);
-        //     } else {
-        //         Logger.warn(`Creating transit for badge ID: ${badgeId}, gate ID: ${gateId}, status: ${authorized}, DPI violation: ${dpiViolation}, message: ${message}`);
-        //     }
-        //
-        //     return transit;
-        //
-        // } catch (error) {
-        //     await transaction.rollback();
-        //     throw error;
-        // }
-
-        // Using unitOfWork to handle transaction outside service method
-        const transit: Transit = await unitOfWork(async (tx) => {
-            await this.badgeRepo.update(badge, badgeUpdate, { transaction: tx });
-            return await this.transitRepo.create(data, { transaction: tx });
+        const transit = await unitOfWork(async (tx) => {
+            await this.badgeRepo.update(badge, badgeUpdate, {transaction: tx});
+            return await this.transitRepo.create(data, {transaction: tx});
         });
 
-        if (authorized === TransitStatus.Authorized) {
-            Logger.info(`Creating transit for badge ID: ${badgeId}, gate ID: ${gateId}, status: ${authorized}, DPI violation: ${dpiViolation}`);
-        } else {
-            Logger.warn(`Creating transit for badge ID: ${badgeId}, gate ID: ${gateId}, status: ${authorized}, DPI violation: ${dpiViolation}, message: ${message}`);
-        }
+        // Logging
+        const log = status === TransitStatus.Authorized ? Logger.info : Logger.warn;
+        log(`Transit: badge=${badgeId}, gate=${gateId}, status=${status}, DPI=${dpiViolation}, msg=${message}`);
 
         return transit;
     }
@@ -353,7 +319,7 @@ export class TransitService {
             throw ErrorFactory.createError(ReasonPhrases.BAD_REQUEST, 'Start date cannot be after end date');
         }
 
-        const transits = await this.transitRepo.findAllInRange(startDate, endDate);
+        const transits: Transit[] = await this.transitRepo.findAllInRange(startDate, endDate);
         const grouped: Record<string, GateTransitsReport> = {};
 
         for (const t of transits) {
