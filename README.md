@@ -271,7 +271,116 @@ erDiagram
 #### POST '/authorizations'
 #### DELETE '/authorizations/:badgeId/:gateId'
 #### GET '/gates'
+``` mermaid
+sequenceDiagram
+    autonumber
+    participant Client
+    participant Router
+    participant AuthMiddleware
+    participant AdminMiddleware
+    participant Controller
+    participant Service
+    participant Repository
+    participant Dao
+    participant ErrorMiddleware
+
+    Client->>Router: GET /gates
+
+    %% Autenticazione
+    Router->>AuthMiddleware: Verifica JWT
+    alt Token mancante o malformato
+        AuthMiddleware->>ErrorMiddleware: throw 401 Unauthorized
+        ErrorMiddleware-->>Client: 401 Unauthorized + JSON error
+    else JWT valido
+        AuthMiddleware-->>Router: req.user
+
+        %% Autorizzazione
+        Router->>AdminMiddleware: Verifica ruolo admin
+        alt Utente non admin
+            AdminMiddleware->>ErrorMiddleware: throw 403 Forbidden
+            ErrorMiddleware-->>Client: 403 Forbidden + JSON error
+        else Admin valido
+            AdminMiddleware-->>Router: ok
+
+            %% Chiamata al controller
+            Router->>Controller: gateController.getAllGates()
+            Controller->>Service: service.getAllGates()
+            Service->>Repository: repo.findAll()
+            Repository->>Dao: dao.getAll()
+
+            alt Query eseguita
+                Dao-->>Repository: Gate[]
+                Repository-->>Service: Gate[]
+                Service-->>Controller: Gate[]
+                Controller-->>Client: 200 OK + [JSON array]
+            end
+        end
+    end
+
+```
+
 #### GET '/gates/:id'
+``` mermaid
+sequenceDiagram
+    autonumber
+    participant Client
+    participant Router
+    participant AuthMiddleware
+    participant AdminMiddleware
+    participant ValidationMiddleware
+    participant Controller
+    participant Service
+    participant Repository
+    participant Dao
+    participant ErrorMiddleware
+
+    Client->>Router: GET /gates/:id
+
+    %% Autenticazione
+    Router->>AuthMiddleware: Verifica JWT
+    alt Token mancante o malformato
+        AuthMiddleware->>ErrorMiddleware: throw 401 Unauthorized
+        ErrorMiddleware-->>Client: 401 Unauthorized + JSON error
+    else JWT valido
+        AuthMiddleware-->>Router: req.user
+
+        %% Autorizzazione
+        Router->>AdminMiddleware: Verifica ruolo admin
+        alt Utente non admin
+            AdminMiddleware->>ErrorMiddleware: throw 403 Forbidden
+            ErrorMiddleware-->>Client: 403 Forbidden + JSON error
+        else Admin valido
+            AdminMiddleware-->>Router: ok
+
+            %% Validazione ID
+            Router->>ValidationMiddleware: Valida param id
+            alt ID non UUID o mancante
+                ValidationMiddleware->>ErrorMiddleware: throw 400 Bad Request
+                ErrorMiddleware-->>Client: 400 Bad Request + JSON error
+            else ID valido
+                ValidationMiddleware-->>Router: ok
+
+                %% Chiamata al controller
+                Router->>Controller: gateController.getGate(id)
+                Controller->>Service: service.getGate(id)
+                Service->>Repository: repo.findById(id)
+                Repository->>Dao: dao.get(id)
+
+                alt Gate trovato
+                    Dao-->>Repository: Gate
+                    Repository-->>Service: Gate
+                    Service-->>Controller: Gate
+                    Controller-->>Client: 200 OK + Gate JSON
+                else Gate non trovato
+                    Dao-->>Repository: null
+                    Repository-->>Service: null
+                    Service->>ErrorMiddleware: throw 404 Not Found
+                    ErrorMiddleware-->>Client: 404 Not Found + JSON error
+                end
+            end
+        end
+    end
+```
 #### POST '/gates'
 #### PUT '/gates/:id'
 #### DELETE '/gates/:id'
