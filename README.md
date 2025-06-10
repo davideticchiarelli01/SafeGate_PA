@@ -259,16 +259,814 @@ erDiagram
 
 #### POST '/login'
 #### GET '/transits'
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Client
+    participant Router
+    participant authMiddleware
+    participant adminMiddleware
+    participant Controller
+    participant Service
+    participant Repository
+    participant DAO
+    participant ErrorMiddleware
+
+    Client->>Router: GET /transits
+
+    %% --- AUTHENTICATION ---
+    Router->>authMiddleware: JWT verification
+    alt Missing or invalid token
+        authMiddleware->>ErrorMiddleware: throw 401 Unauthorized
+        ErrorMiddleware-->>Client: 401 Unauthorized + JSON error
+    else Valid token
+        authMiddleware->>Router: req.user
+
+        %% --- AUTHORIZATION ---
+        Router->>adminMiddleware: Admin role verification
+        alt Non-admin user
+            adminMiddleware->>ErrorMiddleware: throw 403 Forbidden
+            ErrorMiddleware-->>Client: 403 Forbidden + JSON error
+        else Admin user
+            adminMiddleware->>Router: OK
+
+            %% --- CONTROLLER + SERVICE ---
+            Router->>Controller: getAllTransits()
+            Controller->>Service: getAllTransits()
+
+            %% --- DATA RETRIEVAL ---
+            Service->>Repository: findAll()
+            Repository->>DAO: getAll()
+            DAO-->>Repository: Transit[]
+            Repository-->>Service: Transit[]
+            Service-->>Controller: Transit[]
+            Controller-->>Client: 200 OK + Transit[] JSON
+        end
+    end
+```
+
 #### GET '/transits/:id'
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Client
+    participant Router
+    participant authMiddleware
+    participant userOrAdminMiddleware
+    participant validateMiddleware
+    participant Controller
+    participant Service
+    participant Repository
+    participant DAO
+    participant ErrorMiddleware
+
+    Client->>Router: GET /transits/:id
+
+    %% --- AUTHENTICATION ---
+    Router->>authMiddleware: JWT verification
+    alt Missing or invalid token
+        authMiddleware->>ErrorMiddleware: throw 401 Unauthorized
+        ErrorMiddleware-->>Client: 401 Unauthorized + JSON error
+    else Valid token
+        authMiddleware->>Router: req.user
+
+        %% --- AUTHORIZATION ---
+        Router->>userOrAdminMiddleware: Role/user check
+        alt Not authorized
+            userOrAdminMiddleware->>ErrorMiddleware: throw 403 Forbidden
+            ErrorMiddleware-->>Client: 403 Forbidden + JSON error
+        else Authorized
+            userOrAdminMiddleware->>Router: OK
+
+            %% --- UUID VALIDATION ---
+            Router->>validateMiddleware: Validate `id` param
+            alt Invalid UUID
+                validateMiddleware->>ErrorMiddleware: throw 400 Bad Request
+                ErrorMiddleware-->>Client: 400 Bad Request + JSON error
+            else Valid UUID
+                validateMiddleware-->>Router: OK
+
+                %% --- CONTROLLER + SERVICE ---
+                Router->>Controller: getTransit(req)
+                Controller->>Service: getTransit(id, user)
+
+                %% --- FIND TRANSIT ---
+                Service->>Repository: transitRepo.findById(id)
+                Repository->>DAO: TransitDao.get(id)
+                DAO-->>Repository: Transit|null
+                Repository-->>Service: Transit|null
+
+                alt Transit not found
+                    Service->>ErrorMiddleware: throw 404 Not Found
+                    ErrorMiddleware-->>Client: 404 Transit not found + JSON error
+                else Transit found
+
+                    alt Admin user
+                        Service-->>Controller: Transit
+                        Controller-->>Client: 200 OK + Transit JSON
+                    else User 
+                        Service->>Repository: badgeRepo.findById(transit.badgeId)
+                        Repository->>DAO: BadgeDao.get(transit.badgeId)
+                        DAO-->>Repository: Badge|null
+                        Repository-->>Service: Badge|null
+
+                        alt Badge not found
+                            Service->>ErrorMiddleware: throw 404 Not Found
+                            ErrorMiddleware-->>Client: 404 Badge not found + JSON error
+                        else Badge found
+                            alt Owner unmatch
+                                Service->>ErrorMiddleware: throw 404 Not Found
+                                ErrorMiddleware-->>Client: 404 Transit not found for this user
+                            else Owner match
+                                Service-->>Controller: Transit
+                                Controller-->>Client: 200 OK + Transit JSON
+                            end
+                        end
+                    else Gate user
+                        Service->>ErrorMiddleware: throw 403 Forbidden
+                        ErrorMiddleware-->>Client: 403 Forbidden + JSON error
+                    end
+                end
+            end
+        end
+    end
+```
+
 #### POST '/transits'
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Client
+    participant Router
+    participant authMiddleware
+    participant gateOrAdminMiddleware
+    participant validateMiddleware
+    participant Controller
+    participant Service
+    participant Repository
+    participant DAO
+    participant ErrorMiddleware
+
+    Client->>Router: POST /transits
+
+    %% --- AUTHENTICATION ---
+    Router->>authMiddleware: JWT verification
+    alt Missing or invalid token
+        authMiddleware->>ErrorMiddleware: throw 401 Unauthorized
+        ErrorMiddleware-->>Client: 401 Unauthorized
+    else Valid token
+        authMiddleware->>Router: req.user
+
+        %% --- AUTHORIZATION ---
+        Router->>gateOrAdminMiddleware: Role check (Gate or Admin)
+        alt Role not allowed
+            gateOrAdminMiddleware->>ErrorMiddleware: throw 403 Forbidden
+            ErrorMiddleware-->>Client: 403 Forbidden
+        else Role allowed
+            gateOrAdminMiddleware->>Router: OK
+
+            %% --- INPUT VALIDATION ---
+            Router->>validateMiddleware: Validate body
+            alt Invalid fields
+                validateMiddleware->>ErrorMiddleware: throw 400 Bad Request
+                ErrorMiddleware-->>Client: 400 Bad Request
+            else Valid body
+                validateMiddleware-->>Router: OK
+
+                %% --- CONTROLLER + SERVICE ---
+                Router->>Controller: createTransit()
+                Controller->>Service: createTransit(data)
+
+                %% --- LOAD GATE ---
+                Service->>Repository: gateRepo.findById()
+                Repository->>DAO: GateDao.get()
+                DAO-->>Repository: Gate|null
+                Repository-->>Service: Gate|null
+                alt Gate not found
+                    Service->>ErrorMiddleware: throw 404 Not Found
+                    ErrorMiddleware-->>Client: 404 Gate not found
+                else Gate found
+
+                    %% --- LOAD BADGE ---
+                    Service->>Repository: badgeRepo.findById()
+                    Repository->>DAO: BadgeDao.get()
+                    DAO-->>Repository: Badge|null
+                    Repository-->>Service: Badge|null
+                    alt Badge not found
+                        Service->>ErrorMiddleware: throw 404 Not Found
+                        ErrorMiddleware-->>Client: 404 Badge not found
+                    else Badge found
+
+                        %% --- LOAD AUTHORIZATION (optional) ---
+                        Service->>Repository: authRepo.findById()
+                        Repository->>DAO: AuthorizationDao.get()
+                        DAO-->>Repository: Authorization|null
+                        Repository-->>Service: Authorization|null
+
+                        %% --- INSERT Transit & Update Badge ---
+                        Service->>Repository: unitOfWork(update badge + create transit)
+                        Repository->>DAO: BadgeDao.update(...) + TransitDao.create(...)
+                        DAO-->>Repository: Transit
+                        Repository-->>Service: Transit
+
+                        Service-->>Controller: Transit
+                        Controller-->>Client: 201 Created + Transit JSON
+                    end
+                end
+            end
+        end
+    end
+```
+
 #### PUT '/transits/:id'
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Client
+    participant Router
+    participant authMiddleware
+    participant adminMiddleware
+    participant validateMiddleware
+    participant Controller
+    participant Service
+    participant Repository
+    participant DAO
+    participant ErrorMiddleware
+
+    Client->>Router: PUT /transits/:id
+
+    %% --- AUTHENTICATION ---
+    Router->>authMiddleware: JWT verification
+    alt Missing or invalid token
+        authMiddleware->>ErrorMiddleware: throw 401 Unauthorized
+        ErrorMiddleware-->>Client: 401 Unauthorized
+    else Valid token
+        authMiddleware->>Router: req.user
+
+        %% --- AUTHORIZATION ---
+        Router->>adminMiddleware: Role check (Admin only)
+        alt Not Admin
+            adminMiddleware->>ErrorMiddleware: throw 403 Forbidden
+            ErrorMiddleware-->>Client: 403 Forbidden
+        else Admin
+            adminMiddleware->>Router: OK
+
+            %% --- VALIDATION ---
+            Router->>validateMiddleware: Validate param `id` and body
+            alt Invalid fields
+                validateMiddleware->>ErrorMiddleware: throw 400 Bad Request
+                ErrorMiddleware-->>Client: 400 Bad Request
+            else Valid data
+                validateMiddleware-->>Router: OK
+
+                %% --- CONTROLLER + SERVICE ---
+                Router->>Controller: updateTransit()
+                Controller->>Service: updateTransit(id, data)
+
+                %% --- LOAD TRANSIT ---
+                Service->>Repository: transitRepo.findById()
+                Repository->>DAO: TransitDao.get()
+                DAO-->>Repository: Transit|null
+                Repository-->>Service: Transit|null
+                alt Transit not found
+                    Service->>ErrorMiddleware: throw 404 Not Found
+                    ErrorMiddleware-->>Client: 404 Transit not found
+                else Transit exists
+                    %% --- UPDATE TRANSIT ---
+                    Service->>Repository: transitRepo.update(transit, data)
+                    Repository->>DAO: TransitDao.update()
+                    DAO-->>Repository: Transit
+                    Repository-->>Service: Transit
+
+                    Service-->>Controller: Updated Transit
+                    Controller-->>Client: 200 OK + Updated Transit JSON
+                end
+            end
+        end
+    end
+```
+
 #### DELETE '/transits/:id'
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Client
+    participant Router
+    participant authMiddleware
+    participant adminMiddleware
+    participant validateMiddleware
+    participant Controller
+    participant Service
+    participant Repository
+    participant DAO
+    participant ErrorMiddleware
+
+    Client->>Router: DELETE /transits/:id
+
+    %% --- AUTHENTICATION ---
+    Router->>authMiddleware: JWT verification
+    alt Missing or invalid token
+        authMiddleware->>ErrorMiddleware: throw 401 Unauthorized
+        ErrorMiddleware-->>Client: 401 Unauthorized
+    else Valid token
+        authMiddleware->>Router: req.user
+
+        %% --- AUTHORIZATION ---
+        Router->>adminMiddleware: Role check (Admin only)
+        alt Not Admin
+            adminMiddleware->>ErrorMiddleware: throw 403 Forbidden
+            ErrorMiddleware-->>Client: 403 Forbidden
+        else Admin
+            adminMiddleware->>Router: OK
+
+            %% --- VALIDATION ---
+            Router->>validateMiddleware: Validate param `id`
+            alt Invalid UUID
+                validateMiddleware->>ErrorMiddleware: throw 400 Bad Request
+                ErrorMiddleware-->>Client: 400 Bad Request
+            else Valid param
+                validateMiddleware-->>Router: OK
+
+                %% --- CONTROLLER + SERVICE ---
+                Router->>Controller: deleteTransit()
+                Controller->>Service: deleteTransit(id)
+
+                %% --- LOAD TRANSIT ---
+                Service->>Repository: transitRepo.findById()
+                Repository->>DAO: TransitDao.get()
+                DAO-->>Repository: Transit|null
+                Repository-->>Service: Transit|null
+                alt Transit not found
+                    Service->>ErrorMiddleware: throw 404 Not Found
+                    ErrorMiddleware-->>Client: 404 Transit not found
+                else Transit found
+                    %% --- DELETE OPERATION ---
+                    Service->>Repository: transitRepo.delete(transit)
+                    Repository->>DAO: TransitDao.delete()
+                    DAO-->>Repository: void
+                    Repository-->>Service: void
+
+                    Service-->>Controller: void
+                    Controller-->>Client: 204 No Content
+                end
+            end
+        end
+    end
+```
+
 #### GET '/transits_stats/:badgeId'
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Client
+    participant Router
+    participant authMiddleware
+    participant validateMiddleware
+    participant Controller
+    participant Service
+    participant Repository
+    participant DAO
+    participant ErrorHandler
+
+    Client->>Router: GET /transits_stats/:badgeId?gateId&startDate&endDate
+
+    %% --- AUTHENTICATION ---
+    Router->>authMiddleware: JWT verification
+    alt Missing or invalid token
+        authMiddleware->>ErrorHandler: 401 Unauthorized
+        ErrorHandler-->>Client: 401 Unauthorized
+    else Token valid
+        authMiddleware->>Router: req.user
+
+        %% --- VALIDATION ---
+        Router->>validateMiddleware: validate badgeId, gateId?, startDate?, endDate?
+        alt Validation fails
+            validateMiddleware->>ErrorHandler: 400 Bad Request
+            ErrorHandler-->>Client: 400 Validation Error
+        else Valid input
+            validateMiddleware->>Router: OK
+
+            %% --- CONTROLLER + SERVICE ---
+            Router->>Controller: getTransitStats(req)
+            Controller->>Service: getTransitStats(badgeId, gateId?, startDate?, endDate?, user)
+
+            %% --- AUTHORIZATION & DATA FETCH ---
+            alt user.role == Gate
+                Service->>ErrorHandler: 403 Forbidden
+                ErrorHandler-->>Client: 403 Forbidden
+            else user.role == User
+                Service->>Repository: badgeRepo.findById(badgeId)
+                Repository->>DAO: BadgeDao.get(badgeId)
+                DAO-->>Repository: Badge|null
+                Repository-->>Service: Badge|null
+                alt Badge not found
+                    Service->>ErrorHandler: 404 Not Found
+                    ErrorHandler-->>Client: 404 Badge not found
+                else Badge found
+                    alt badge.userId != user.id
+                        Service->>ErrorHandler: 403 Forbidden
+                        ErrorHandler-->>Client: 403 Forbidden
+                    else Owner match
+                        Service->>Service: validate date range
+                        alt startDate > endDate
+                            Service->>ErrorHandler: 400 Bad Request
+                            ErrorHandler-->>Client: 400 Invalid date range
+                        else Valid date range
+                            Service->>Repository: transitRepo.findByBadgeGateAndDate(badgeId, gateId?, startDate?, endDate?)
+                        end
+                    end
+                end
+            else user.role == Admin
+                Service->>Service: validate date range
+                alt startDate > endDate
+                    Service->>ErrorHandler: 400 Bad Request
+                    ErrorHandler-->>Client: 400 Invalid date range
+                else Valid date range
+                    Service->>Repository: transitRepo.findByBadgeGateAndDate(badgeId, gateId?, startDate?, endDate?)
+                end
+            end
+
+            %% --- FETCH TRANSITS ---
+            Repository->>DAO: TransitDao.getManyFiltered()
+            DAO-->>Repository: Transit[]
+            Repository-->>Service: Transit[]
+
+            %% --- BUILD & RESPONSE ---
+            Service-->>Controller: stats object
+            Controller-->>Client: 200 OK + stats JSON
+        end
+    end
+
+```
+
 #### GET '/gate_report'
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Client
+    participant Router
+    participant authMiddleware
+    participant adminMiddleware
+    participant validateMiddleware
+    participant Controller
+    participant Service
+    participant Repository
+    participant DAO
+    participant ErrorHandler
+
+    Client->>Router: GET /gate_report
+
+    %% --- AUTHENTICATION ---
+    Router->>authMiddleware: JWT verification
+    alt Missing or invalid token
+        authMiddleware->>ErrorHandler: 401 Unauthorized
+        ErrorHandler-->>Client: 401 Unauthorized + JSON error
+    else Valid token
+        authMiddleware->>Router: req.user
+
+        %% --- AUTHORIZATION ---
+        Router->>adminMiddleware: Admin role check
+        alt User is not admin
+            adminMiddleware->>ErrorHandler: 403 Forbidden
+            ErrorHandler-->>Client: 403 Forbidden + JSON error
+        else User is admin
+            adminMiddleware->>Router: OK
+
+            %% --- VALIDATION ---
+            Router->>validateMiddleware: validate format?, startDate?, endDate?
+            alt Validation fails
+                validateMiddleware->>ErrorHandler: 400 Bad Request
+                ErrorHandler-->>Client: 400 Validation Error + JSON error
+            else Valid input
+                validateMiddleware->>Router: OK
+
+                %% --- CONTROLLER + SERVICE ---
+                Router->>Controller: getGateReport(req)
+                Controller->>Service: generateGateReport(format, startDate, endDate)
+
+                %% --- DATE RANGE CHECK (in Service) ---
+                alt startDate > endDate
+                    Service->>ErrorHandler: 400 Bad Request
+                    ErrorHandler-->>Client: 400 Invalid date range + JSON error
+                else Valid date range
+
+                    %% --- FETCH TRANSITS ---
+                    Service->>Repository: transitRepo.findAllInRange(startDate, endDate)
+                    Repository->>DAO: TransitDao.getManyFiltered()
+                    DAO-->>Repository: Transit[]
+                    Repository-->>Service: Transit[]
+
+                    %% --- FORMAT REPORT ---
+                    Service->>DAO: ReportFactory.format(format, reportData)
+                    DAO-->>Service: Buffer|string|object
+
+                    %% --- RESPONSE SETUP ---
+                    Service-->>Controller: reportData
+                    Controller->>Controller: setDownloadHeaders(res, format, 'gate-report')
+                    Controller-->>Client: 200 OK + report payload
+                end
+            end
+        end
+    end
+```
+
 #### GET '/badge_report'
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Client
+    participant Router
+    participant authMiddleware
+    participant userOrAdminMiddleware
+    participant validateMiddleware
+    participant Controller
+    participant Service
+    participant Repository
+    participant DAO
+    participant ErrorHandler
+
+    Client->>Router: GET /badge_report?format&startDate&endDate
+
+    %% --- AUTHENTICATION ---
+    Router->>authMiddleware: JWT verification
+    alt Invalid or missing token
+        authMiddleware->>ErrorHandler: 401 Unauthorized
+        ErrorHandler-->>Client: 401 Unauthorized + JSON error
+    else Token valid
+        authMiddleware->>Router: req.user
+
+        %% --- AUTHORIZATION ---
+        Router->>userOrAdminMiddleware: User or Admin check
+        alt Not authorized
+            userOrAdminMiddleware->>ErrorHandler: 403 Forbidden
+            ErrorHandler-->>Client: 403 Forbidden + JSON error
+        else Authorized
+            userOrAdminMiddleware->>Router: OK
+
+            %% --- VALIDATION ---
+            Router->>validateMiddleware: validate format?, startDate?, endDate?
+            alt Validation fails
+                validateMiddleware->>ErrorHandler: 400 Bad Request
+                ErrorHandler-->>Client: 400 Validation Error + JSON error
+            else Valid input
+                validateMiddleware->>Router: OK
+
+                %% --- CONTROLLER + SERVICE ---
+                Router->>Controller: getBadgeReport(req)
+                Controller->>Service: generateBadgeReport(format, startDate, endDate, user)
+
+                %% --- DATA FETCH ---
+                alt Admin user
+                    Service->>Repository: transitRepo.findAllInRange(startDate, endDate)
+                    Repository->>DAO: TransitDao.getManyFiltered()
+                else
+                    Service->>Repository: badgeRepo.findByUserId(user.id)
+                    Repository->>DAO: BadgeDao.getByUserId()
+                    DAO-->>Repository: Badge|null
+                    alt Badge not found
+                        Repository->>Service: null
+                        Service->>ErrorHandler: 404 Not Found
+                        ErrorHandler-->>Client: 404 Badge not found + JSON error
+                    else Badge found
+                        Service->>Repository: transitRepo.findByBadgeGateAndDate(badge.id, undefined, startDate, endDate)
+                        Repository->>DAO: TransitDao.getManyFiltered()
+                    end
+                end
+                DAO-->>Repository: Transit[]
+                Repository-->>Service: Transit[]
+
+                %% --- RESPONSE ---
+                Service-->>Controller: reportData
+                Controller->>Controller: setDownloadHeaders(res, format, 'badge-report')
+                Controller-->>Client: 200 OK + report payload
+            end
+        end
+    end
+```
+
 #### GET '/authorizations'
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Client
+    participant Router
+    participant authMiddleware
+    participant adminMiddleware
+    participant Controller
+    participant Service
+    participant Repository
+    participant DAO
+    participant ErrorMiddleware
+
+    Client->>Router: GET /authorizations
+
+    %% --- AUTHENTICATION ---
+    Router->>authMiddleware: JWT verification
+    alt Missing or invalid token
+        authMiddleware->>ErrorMiddleware: throw 401 Unauthorized
+        ErrorMiddleware-->>Client: 401 Unauthorized + JSON error
+    else Valid token
+        authMiddleware->>Router: req.user
+
+        %% --- AUTHORIZATION ---
+        Router->>adminMiddleware: Admin role verification
+        alt Non-admin user
+            adminMiddleware->>ErrorMiddleware: throw 403 Forbidden
+            ErrorMiddleware-->>Client: 403 Forbidden + JSON error
+        else Admin user
+            adminMiddleware->>Router: OK
+
+            %% --- CONTROLLER + SERVICE ---
+            Router->>Controller: getAllAuthorizations(req)
+            Controller->>Service: getAllAuthorizations()
+
+            %% --- DATA RETRIEVAL ---
+            Service->>Repository: findAll()
+            Repository->>DAO: getAll()
+            DAO-->>Repository: Authorization[]
+            Repository-->>Service: Authorization[]
+            Service-->>Controller: Authorization[]
+            Controller-->>Client: 200 OK + Authorization[] JSON
+        end
+    end
+```
+
 #### GET '/authorizations/:badgeId/:gateId'
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Client
+    participant Router
+    participant authMiddleware
+    participant adminMiddleware
+    participant validateMiddleware
+    participant Controller
+    participant Service
+    participant Repository
+    participant DAO
+    participant ErrorMiddleware
+
+    Client->>Router: GET /authorizations/:badgeId/:gateId
+
+    %% --- AUTHENTICATION ---
+    Router->>authMiddleware: JWT verification
+    alt Missing or invalid token
+        authMiddleware->>ErrorMiddleware: throw 401 Unauthorized
+        ErrorMiddleware-->>Client: 401 Unauthorized + JSON error
+    else Valid token
+        authMiddleware->>Router: req.user
+
+        %% --- AUTHORIZATION ---
+        Router->>adminMiddleware: Admin role verification
+        alt Non-admin user
+            adminMiddleware->>ErrorMiddleware: throw 403 Forbidden
+            ErrorMiddleware-->>Client: 403 Forbidden + JSON error
+        else Admin user
+            adminMiddleware->>Router: OK
+
+            %% --- UUID VALIDATION ---
+            Router->>validateMiddleware: badgeId/gateId validation
+            alt Missing or invalid UUID
+                validateMiddleware->>ErrorMiddleware: throw 400 Bad Request
+                ErrorMiddleware-->>Client: 400 Bad Request + JSON error
+            else Valid UUID
+                validateMiddleware-->>Router: OK
+
+                %% --- CONTROLLER + SERVICE ---
+                Router->>Controller: getAuthorization(req)
+                Controller->>Service: getAuthorization(badgeId, gateId)
+
+                %% --- BADGE VERIFICATION ---
+                Service->>Repository: badgeRepo.findById(badgeId)
+                Repository->>DAO: get(badgeId)
+                DAO-->>Repository: Badge|null
+                alt Badge not found
+                    Repository-->>Service: null
+                    Service->>ErrorMiddleware: throw 404 Not Found
+                    ErrorMiddleware-->>Client: 404 Not Found + JSON error
+                else Badge found
+
+                    %% --- GATE VERIFICATION ---
+                    Service->>Repository: gateRepo.findById(gateId)
+                    Repository->>DAO: get(gateId)
+                    DAO-->>Repository: Gate|null
+                    alt Gate not found
+                        Repository-->>Service: null
+                        Service->>ErrorMiddleware: throw 404 Not Found
+                        ErrorMiddleware-->>Client: 404 Not Found + JSON error
+                    else Gate found
+
+                        %% --- AUTHORIZATION VERIFICATION ---
+                        Service->>Repository: authorizationRepo.findById(badgeId, gateId)
+                        Repository->>DAO: get(badgeId, gateId)
+                        DAO-->>Repository: Authorization|null
+                        alt Authorization not found
+                            Repository-->>Service: null
+                            Service->>ErrorMiddleware: throw 404 Not Found
+                            ErrorMiddleware-->>Client: 404 Not Found + JSON error
+                        else Authorization found
+
+                            %% --- SUCCESS RESPONSE ---
+                            Repository-->>Service: Authorization
+                            Service-->>Controller: Authorization
+                            Controller-->>Client: 200 OK + Authorization JSON
+                        end
+                    end
+                end
+            end
+        end
+    end
+```
+
 #### POST '/authorizations'
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Client
+    participant Router
+    participant authMiddleware
+    participant adminMiddleware
+    participant validateMiddleware
+    participant Controller
+    participant Service
+    participant Repository
+    participant DAO
+    participant ErrorMiddleware
+
+    Client->>Router: POST /authorizations
+
+    %% --- AUTHENTICATION ---
+    Router->>authMiddleware: JWT verification
+    alt Missing or invalid token
+        authMiddleware->>ErrorMiddleware: throw 401 Unauthorized
+        ErrorMiddleware-->>Client: 401 Unauthorized + JSON error
+    else Valid token
+        authMiddleware->>Router: req.user
+
+        %% --- AUTHORIZATION ---
+        Router->>adminMiddleware: Admin role verification
+        alt Non-admin user
+            adminMiddleware->>ErrorMiddleware: throw 403 Forbidden
+            ErrorMiddleware-->>Client: 403 Forbidden + JSON error
+        else Admin user
+            adminMiddleware->>Router: OK
+
+            %% --- UUID VALIDATION ---
+            Router->>validateMiddleware: badgeId/gateId validation
+            alt Missing or invalid UUID
+                validateMiddleware->>ErrorMiddleware: throw 400 Bad Request
+                ErrorMiddleware-->>Client: 400 Bad Request + JSON error
+            else Valid UUID
+                validateMiddleware-->>Router: OK
+
+                %% --- CONTROLLER + SERVICE ---
+                Router->>Controller: createAuthorization(req)
+                Controller->>Service: createAuthorization(data)
+
+                %% --- BADGE VERIFICATION ---
+                Service->>Repository: badgeRepo.findById(badgeId)
+                Repository->>DAO: get(badgeId)
+                DAO-->>Repository: Badge|null
+                alt Badge not found
+                    Repository-->>Service: null
+                    Service->>ErrorMiddleware: throw 404 Not Found
+                    ErrorMiddleware-->>Client: 404 Badge not found + JSON error
+                else Badge found
+
+                    %% --- GATE VERIFICATION ---
+                    Service->>Repository: gateRepo.findById(gateId)
+                    Repository->>DAO: get(gateId)
+                    DAO-->>Repository: Gate|null
+                    alt Gate not found
+                        Repository-->>Service: null
+                        Service->>ErrorMiddleware: throw 404 Not Found
+                        ErrorMiddleware-->>Client: 404 Gate not found + JSON error
+                    else Gate found
+
+                        %% --- AUTHORIZATION DUPLICATE CHECK ---
+                        Service->>Repository: authorizationRepo.findById(badgeId, gateId)
+                        Repository->>DAO: get(badgeId, gateId)
+                        DAO-->>Repository: Authorization|null
+                        alt Authorization already exists
+                            Repository-->>Service: Authorization
+                            Service->>ErrorMiddleware: throw 409 Conflict
+                            ErrorMiddleware-->>Client: 409 Conflict + JSON error
+                        else No existing authorization
+
+                            %% --- AUTHORIZATION CREATION ---
+                            Service->>Repository: authorizationRepo.create(data)
+                            Repository->>DAO: create(data)
+                            DAO-->>Repository: new Authorization
+                            Repository-->>Service: Authorization
+                            Service-->>Controller: Authorization
+                            Controller-->>Client: 201 Created + Authorization JSON
+                        end
+                    end
+                end
+            end
+        end
+    end
+```
 #### DELETE '/authorizations/:badgeId/:gateId'
 ```mermaid
 sequenceDiagram
