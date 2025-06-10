@@ -469,7 +469,127 @@ sequenceDiagram
     end
 ```
 #### POST '/gates'
+``` mermaid
+sequenceDiagram
+    autonumber
+    actor Client
+    participant Router
+    participant AuthMiddleware
+    participant AdminMiddleware
+    participant ValidationMiddleware
+    participant Controller
+    participant Service
+    participant Repository
+    participant Dao
+    participant ErrorMiddleware
+
+    Client->>Router: POST /gates { name, requiredDPIs }
+    Router->>AuthMiddleware: Verify JWT
+    alt Missing or invalid token
+        AuthMiddleware->>ErrorMiddleware: throw 401 Unauthorized
+        ErrorMiddleware-->>Client: 401 Unauthorized + JSON error
+    else Valid JWT
+        AuthMiddleware-->>Router: req.user
+
+        Router->>AdminMiddleware: Verify admin role
+        alt Non-admin user
+            AdminMiddleware->>ErrorMiddleware: throw 403 Forbidden
+            ErrorMiddleware-->>Client: 403 Forbidden + JSON error
+        else Valid Admin
+            AdminMiddleware-->>Router: ok
+
+            Router->>ValidationMiddleware: Validate body (name, requiredDPIs)
+            alt Invalid data
+                ValidationMiddleware->>ErrorMiddleware: throw 400 Bad Request
+                ErrorMiddleware-->>Client: 400 Bad Request + JSON error
+            else Valid data
+                ValidationMiddleware-->>Router: ok
+
+                Router->>Controller: gateController.createGate
+                Controller->>Service: service.createGate(data)
+                Service->>Repository: repo.findByName(name)
+                Repository->>Dao: dao.getByName(name)
+                alt Name already exists
+                    Dao-->>Repository: Gate
+                    Repository-->>Service: Gate
+                    Service->>ErrorMiddleware: throw 409 Conflict
+                    ErrorMiddleware-->>Client: 409 Conflict + JSON error
+                else New name
+                    Dao-->>Repository: null
+                    Repository-->>Service: null
+                    Service->>Repository: repo.create(data)
+                    Repository->>Dao: dao.create(data)
+                    Dao-->>Repository: New Gate
+                    Repository-->>Service: New Gate
+                    Service-->>Controller: New Gate
+                    Controller-->>Client: 201 Created + New Gate (JSON)
+                end
+            end
+        end
+    end
+```
+
 #### PUT '/gates/:id'
+``` mermaid
+sequenceDiagram
+    autonumber
+    actor Client
+    participant Router
+    participant AuthMiddleware
+    participant AdminMiddleware
+    participant ValidationMiddleware
+    participant Controller
+    participant Service
+    participant Repository
+    participant Dao
+    participant ErrorMiddleware
+
+    Client->>Router: PUT /gates/:id { requiredDPIs }
+    Router->>AuthMiddleware: Verify JWT
+    alt Missing or invalid token
+        AuthMiddleware->>ErrorMiddleware: throw 401 Unauthorized
+        ErrorMiddleware-->>Client: 401 Unauthorized + JSON error
+    else Valid JWT
+        AuthMiddleware-->>Router: req.user
+
+        Router->>AdminMiddleware: Verify admin role
+        alt Non-admin user
+            AdminMiddleware->>ErrorMiddleware: throw 403 Forbidden
+            ErrorMiddleware-->>Client: 403 Forbidden + JSON error
+        else Valid Admin
+            AdminMiddleware-->>Router: ok
+
+            Router->>ValidationMiddleware: Validate id param and body (requiredDPIs)
+            alt Invalid ID or incorrect requiredDPIs
+                ValidationMiddleware->>ErrorMiddleware: throw 400 Bad Request
+                ErrorMiddleware-->>Client: 400 Bad Request + JSON error
+            else Valid Data
+                ValidationMiddleware-->>Router: ok
+
+                Router->>Controller: gateController.updateGate
+                Controller->>Service: service.updateGate(id, data)
+                Service->>Repository: repo.findById(id)
+                Repository->>Dao: dao.get(id)
+                alt Gate found
+                    Dao-->>Repository: Gate
+                    Repository-->>Service: Gate
+                    Service->>Repository: repo.update(gate, data)
+                    Repository->>Dao: dao.update(gate, data)
+                    Dao-->>Repository: Updated Gate
+                    Repository-->>Service: Updated Gate
+                    Service-->>Controller: Updated Gate
+                    Controller-->>Client: 200 OK + Updated Gate (JSON)
+                else Gate not found
+                    Dao-->>Repository: null
+                    Repository-->>Service: null
+                    Service->>ErrorMiddleware: throw 404 Not Found
+                    ErrorMiddleware-->>Client: 404 Not Found + JSON error
+                end
+            end
+        end
+    end
+```
+
 #### DELETE '/gates/:id'
 ``` mermaid
 sequenceDiagram
