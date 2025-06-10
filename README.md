@@ -257,6 +257,33 @@ erDiagram
 
 ### Diagrammi delle sequenze
 
+#### POST '/login'
+#### GET '/transits'
+#### GET '/transits/:id'
+#### POST '/transits'
+#### PUT '/transits/:id'
+#### DELETE '/transits/:id'
+#### GET '/transits_stats/:badgeId'
+#### GET '/gate_report'
+#### GET '/badge_report'
+#### GET '/authorizations'
+#### GET '/authorizations/:badgeId/:gateId'
+#### POST '/authorizations'
+#### DELETE '/authorizations/:badgeId/:gateId'
+#### GET '/gates'
+#### GET '/gates/:id'
+#### POST '/gates'
+#### PUT '/gates/:id'
+#### DELETE '/gates/:id'
+#### GET '/badges'
+#### GET '/badges/:id'
+#### POST '/badges'
+#### PUT '/badges/:id'
+#### DELETE 'badges/:id'
+#### GET '/badges_suspended'
+#### PUT '/reactivate_badges'               
+
+
 # API Routes
 
 | **HTTP**   | **Endpoint**                       | **Descrizione**                                            | **JWT**  | **Ruolo**               |
