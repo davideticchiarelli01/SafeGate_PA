@@ -120,7 +120,7 @@ export class BadgeController {
     reactivateBadges = async (req: Request, res: Response, next: NextFunction) => {
         try {
             const { badgeIds } = matchedData(req, { locations: ['body'] });
-            const updatedBadges: Badge[] = await this.service.reactivateBadges(badgeIds);
+            const updatedBadges = await this.service.reactivateBadges(badgeIds);
             return res.status(StatusCodes.OK).json(updatedBadges);
         } catch (err) {
             next(err);
