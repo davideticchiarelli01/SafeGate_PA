@@ -5,8 +5,7 @@
 
 <hr />
 
-Il seguente progetto è stato sviluppato come parte dell’esame di **Programmazione Avanzata (A.A. 2024/2025)** presso l'*
-*Università Politecnica delle Marche**, all’interno del **Corso di Laurea Magistrale in Ingegneria Informatica e
+Il seguente progetto è stato sviluppato come parte dell’esame di **Programmazione Avanzata (A.A. 2024/2025)** presso l'**Università Politecnica delle Marche**, all’interno del **Corso di Laurea Magistrale in Ingegneria Informatica e
 dell’Automazione (LM-32)**.  
 Il sistema realizzato è un **back-end per la gestione dei transiti e degli accessi autorizzati nei varchi di un cantiere
 **, sviluppato in **TypeScript**, utilizzando **Node.js**, **Express**, **Sequelize**, **PostgreSQL**, **JWT** per
@@ -68,15 +67,10 @@ controllo di un cantiere. Per raggiungere questo obiettivo, è necessario implem
 Infine, per garantire un corretto sistema di autenticazione e autorizzazione, è stato implementato un meccanismo di
 login che consente l’accesso agli utenti in base al proprio ruolo: User, Admin o Gate.
 
-# Progettazione
+# Struttura del progetto
+Il progetto SafeGate è organizzato secondo una struttura modulare e scalabile, che segue le best practice per applicazioni express.js sviluppate in TypeScript. Ogni cartella è responsabile di una specifica area funzionale del sistema, favorendo la separazione delle responsabilità, la manutenibilità del codice e la facilità nei test.
 
-Una progettazione software efficace richiede un’organizzazione chiara e coerente delle componenti principali del
-sistema. Nel nostro caso, l’architettura è stata strutturata per garantire manutenibilità, scalabilità e leggibilità del
-codice. Ogni modulo è stato progettato con una responsabilità ben definita, contribuendo in modo ordinato e coeso al
-funzionamento dell’intera applicazione.
-
-Di seguito viene presentata la struttura ad albero delle principali directory del progetto:
-
+Di seguito è riportata la struttura principale del progetto:
 ```
 SafeGate_PA/
 ├── img/
@@ -111,8 +105,6 @@ SafeGate_PA/
 └── tsconfig.json
 ```
 
-## Architettura dei servizi
-
 ## Pattern utilizzati
 ### Model-Controller-Service
 Il pattern **Model-Controller-Service** è un pattern architetturale molto diffuso per sviluppo di aplicazioni modulari e backend che, a differenza del pattern MVC (Model-View-Controller), non prevede appunto l'implementazione di viste ma si concentra sulla gestione e sulla logica di business dell'applicativo da sviluppare. Questo pattern prevede quindi tre componenti principali:
@@ -131,9 +123,9 @@ Nel progetto SafeGate **Repository** funge dunque, da strato intermedio collocat
 ### DAO
 Il **DAO (Data Access Object)** è un pattern strutturale che isola la logica di accesso al database dal resto dell'applicativo e fornisce un'interfaccia per le operazioni sui dati. 
 
-Nel progetto SafeGate, il pattern DAO funge quindi da intermediario tra il **Repository** layer e i **Sequelize models**, implementando le logiche per le operazioni di CRUD (Create, Read, Update e Destroy) con l'ausilio dei metodi forniti da Sequelize. Nello specifico si osserva che:
+Nel progetto SafeGate, il pattern DAO funge quindi da intermediario tra il **Repository** layer e i **Sequelize models**, implementando le logiche per le operazioni CRUD (Create, Read, Update e Destroy) di base, sfruttando i metodi forniti da Sequelize. Nello specifico si osserva che:
 - ogni modello Sequelize ha un DAO dedicato che espone metodi come `findByPk`, `findAll`, `create`, `update`, `destroy`, senza introdurre logica applicativa.
-- Dao è uno strato riutilizzabile e permette quindi alle Repository di costruire su di esso dei metodi più ricchi e maggiormante orientati verso il dominio appicativo.
+- Dao è uno strato riutilizzabile e permette, quindi, alle Repository di costruire su di esso dei metodi più ricchi e maggiormente orientati verso il dominio applicativo.
 - Questo layer fornisce un accesso semplice e diretto alle entità presenti nel database.
 
 
@@ -159,7 +151,7 @@ Nel progetto:
 - Permette di **centralizzare le operazioni di commit e rollback**, mantenendo il codice dei service più pulito e disaccoppiato dalla logica transazionale.
   
 ### Singleton
-Il Singleton è un pattern creazionale che assicura l’esistenza di **una singola istanza di una classe** e fornisce un punto di accesso globale ad essa. Questo approccio è particolarmente utile per la gestione di risorse condivise, come connessioni al database o configurazioni globali. 
+Il **Singleton** è un pattern creazionale che assicura l’esistenza di **una singola istanza di una classe** e fornisce un punto di accesso globale ad essa. Questo approccio è particolarmente utile per la gestione di risorse condivise, come connessioni al database o configurazioni globali. 
 
 Nel progetto è stato adottato il pattern **Singleton** per garantire che alcune componenti fondamentali dell’applicazione, come la connessione al database, siano istanziate una sola volta durante l’intero ciclo di vita del server. 
 
@@ -198,14 +190,7 @@ tali interazioni.
 <img src="./img/use_case_diagram_PA.png"/>
 
 ### Diagramma E-R
-
-L’applicazione utilizza PostgreSQL come sistema di gestione di basi di dati relazionali (RDBMS), scelto per la sua affidabilità, le
-ottime performance e la capacità di gestire strutture dati complesse, supportare transazioni e facilitare l’evoluzione
-del modello dati nel tempo. Queste caratteristiche lo rendono particolarmente adatto per un'applicazione moderna e
-scalabile.
-
-Alla base della progettazione è stato sviluppato un diagramma E-R (Entity-Relationship), che rappresenta in modo
-concettuale le principali entità del sistema e le relazioni tra di esse. Questo schema ha guidato la definizione delle
+Alla base della progettazione è stato sviluppato un diagramma E-R (Entity-Relationship), che rappresenta concettualmente le principali entità del sistema e le relazioni tra di esse. Questo schema ha guidato la definizione delle
 tabelle del database, dei vincoli e delle connessioni logiche necessarie a supportare le funzionalità previste. In
 particolare, è stato utilizzato per modellare le componenti fondamentali del sistema di gestione degli accessi ai
 varchi, tra cui: User, Badge, Gate, Authorization e Transit.
@@ -272,17 +257,17 @@ erDiagram
 
 # API Routes
 
-| **HTTP**   | **Endpoint**                       | **Descrizione**                                            | **JWT** | **Ruolo**               |
-|------------|------------------------------------|------------------------------------------------------------|---------|-------------------------|
+| **HTTP**   | **Endpoint**                       | **Descrizione**                                            | **JWT**  | **Ruolo**               |
+|------------|------------------------------------|------------------------------------------------------------|----------|-------------------------|
 | **POST**   | `/login`                           | Autenticazione dell'utente tramite email e password.       | ❌       | Tutti                   |
 | **GET**    | `/transits`                        | Recupera tutti i transiti registrati.                      | ✅       | Admin                   |
 | **GET**    | `/transits/:id`                    | Recupera uno specifico transito.                           | ✅       | Admin, User (solo suoi) |
 | **POST**   | `/transits`                        | Crea un transito (esito positivo o negativo).              | ✅       | Admin, Gate             |
 | **PUT**    | `/transits/:id`                    | Modifica un transito esistente.                            | ✅       | Admin                   |
 | **DELETE** | `/transits/:id`                    | Elimina un transito esistente.                             | ✅       | Admin                   |
-| **GET**    | `/transits_stats/:badgeId`         | Recupera statistiche dei transiti di un badge.             | ✅       | Admin, User (solo suoi) |
-| **GET**    | `/gate_report`                     | Esporta il numero di transiti in un gate (JSON, PDF, CSV). | ✅       | Admin                   |
-| **GET**    | `/badge_report`                    | Esporta i transiti di un badge (JSON, PDF, CSV).           | ✅       | Admin, User (solo suoi) |
+| **GET**    | `/transits_stats/:badgeId`         | Recupera le statistiche dei transiti di un badge.          | ✅       | Admin, User (solo suoi) |
+| **GET**    | `/gate_report`                     | Esporta il numero di transiti in un gate (JSON, PDF e CSV).| ✅       | Admin                   |
+| **GET**    | `/badge_report`                    | Esporta le statistiche per i transiti di un badge (JSON, PDF e CSV).           | ✅       | Admin, User (solo le sue) |
 | **GET**    | `/authorizations`                  | Recupera tutte le autorizzazioni.                          | ✅       | Admin                   |
 | **GET**    | `/authorizations/:badgeId/:gateId` | Recupera un'autorizzazione specifica.                      | ✅       | Admin                   |
 | **POST**   | `/authorizations`                  | Crea un'autorizzazione tra gate e badge.                   | ✅       | Admin                   |
@@ -298,7 +283,7 @@ erDiagram
 | **PUT**    | `/badges/:id`                      | Modifica un badge esistente.                               | ✅       | Admin                   |
 | **DELETE** | `/badges/:id`                      | Elimina un badge esistente.                                | ✅       | Admin                   |
 | **GET**    | `/badges_suspended`                | Recupera tutti i badge sospesi.                            | ✅       | Admin                   |
-| **GET**    | `/reactivate_badges`               | Riattiva uno o più badge.                                  | ✅       | Admin                   |
+| **PUT**    | `/reactivate_badges`               | Riattiva uno o più badge.                                  | ✅       | Admin                   |
 
 ## POST /login
 ### Parametri
@@ -1069,9 +1054,9 @@ La risposta attesa avrà questa forma:
 
 # Configurazione e uso
 Di seguito sono elencati i passaggi necessari per configurare correttamente l'applicazione SafeGate e renderla operativa in un container Docker.
-- Prima di tutto bisogna ssicurarsi di avere *Docker* e *Docker Compose* installati. Nel caso in cui non lo fossero è necessario procedere all'installazione al fine di poter permettere la creazione di un container nel quale verrà eseguito SafeGate.
+- Prima di tutto bisogna assicurarsi di avere *Docker* e *Docker Compose* installati. Nel caso in cui non lo fossero è necessario procedere all'installazione al fine di poter permettere la creazione di un container nel quale verrà eseguito SafeGate.
 
-- In seguito è possibile clonare la repository GitHub del progetto; lanciare quindi il seguente comando: 
+- In seguito, è possibile clonare la repository GitHub del progetto, lanciando da terminale il seguente comando:
 
   ```
   git clone https://github.com/davideticchiarelli01/SafeGate_PA
@@ -1088,9 +1073,29 @@ Di seguito sono elencati i passaggi necessari per configurare correttamente l'ap
     DB_DIALECT=
 
     APP_PORT=
+    MAX_UNAUTHORIZED_ATTEMPTS=3
+    UNAUTHORIZED_ATTEMPTS_WINDOW_MINUTES=20
     ```
   Bisogna compilare tuti i campi con i valori appropriati per il proprio ambiente di sviluppo.
 
+- L’applicazione utilizza una coppia di chiavi RSA per la gestione dei token JWT. Sono già presenti **chiavi di esempio funzionanti** all’interno del progetto, nella directory `jwt_keys`, che si trova **allo stesso livello della cartella `src`**.
+  Tuttavia, se si desidera rigenerare le chiavi, è possibile farlo eseguendo i seguenti comandi all’interno della directory `jwt_keys` presente nella root di progetto:
+
+  - Generazione della chiave privata:
+    
+    ```
+    ssh-keygen -t rsa -b 4096 -m PEM -f jwtRS256.key
+    ```
+    > **Nota**
+    >
+    > Non aggiungere alcuna passphrase
+    >  
+  - Generazione della chiave pubblica:
+
+    ```
+    openssl rsa -in jwtRS256.key -pubout -outform PEM -out jwtRS256.key.pub
+    ```
+  
 - A questo punto è possibile avviare l'applicazione su un container Docker eseguendo il comando dalla directory di progetto:
   ```
   docker-compose up --build
@@ -1104,7 +1109,7 @@ Per testare l'applicazione è possibile utilizzare il client Postman sfruttando 
 
 > **Nota**
 >
-> Per testare l'applicazione sono dispinibili le credenziali di accesso per ciascun utente nel file `01_Seeders.sql`.
+> Per testare l'applicazione sono disponibili le credenziali di accesso (email e password) per ciascun utente nel file `01_Seeders.sql`.
 >  
 
 # Strumenti utilizzati
