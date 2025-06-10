@@ -258,6 +258,53 @@ erDiagram
 ### Diagrammi delle sequenze
 
 #### POST '/login'
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Client
+    participant Router
+    participant validateLogin
+    participant Controller
+    participant Service
+    participant Repository
+    participant DAO
+    participant ErrorHandler
+
+    Client->>Router: POST /login
+    Router->>validateLogin: validate email & password
+    alt Validation fails
+        validateLogin->>ErrorHandler: 400 Bad Request
+        ErrorHandler-->>Client: 400 Validation Error + JSON error
+    else Validation passes
+        validateLogin->>Router: OK
+
+        Router->>Controller: login(req)
+        Controller->>Service: login(email, password)
+
+        Service->>Repository: findByEmail(email)
+        Repository->>DAO: UserDao.getByEmail(email)
+        DAO-->>Repository: User|null
+        Repository-->>Service: User|null
+
+        alt User not found
+            Service->>ErrorHandler: 401 Unauthorized
+            ErrorHandler-->>Client: 401 Invalid credentials + JSON error
+        else User found
+            Service->>Service: bcrypt.compare(password, user.password)
+            alt Password mismatch
+                Service->>ErrorHandler: 401 Unauthorized
+                ErrorHandler-->>Client: 401 Invalid credentials + JSON error
+            else Password match
+                Service->>Service: getPrivateJwtKey()
+                Service-->>Service: privateKey
+                Service->>Service: jwtSign(payload, privateKey)
+                Service-->>Controller: { message, token }
+                Controller-->>Client: 200 OK + { message, token }
+            end
+        end
+    end
+```
+
 #### GET '/transits'
 ```mermaid
 sequenceDiagram
