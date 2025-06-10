@@ -10,7 +10,7 @@ import {
     Sequelize,
     CreationOptional,
 } from 'sequelize';
-import { DPI } from '../enum/dpi';
+import {DPI} from '../enum/dpi';
 
 /**
  * Interface defining the attributes of the Gate model.
@@ -93,4 +93,4 @@ export function InitGateModel(sequelize: Sequelize) {
             timestamps: true,
         }
     );
-};
+}

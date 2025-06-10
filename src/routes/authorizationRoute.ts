@@ -10,7 +10,7 @@ import {adminMiddleware, authMiddleware} from "../middlewares/authMiddleware";
  * Express router for handling `Authorization` related routes.
  * Provides endpoints for CRUD operations on `Authorization` entities.
  */
-const authorizationRouter = Router();
+const authorizationRouter: Router = Router();
 const {authorizationController} = controllers;
 
 /**

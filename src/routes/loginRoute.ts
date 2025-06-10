@@ -14,7 +14,7 @@ const userRepository: UserRepository = new UserRepository(userDao);
 const authService: LoginService = new LoginService(userRepository);
 const authController: LoginController = new LoginController(authService);
 
-const loginRouter = Router();
+const loginRouter: Router = Router();
 
 /**
  * Route to authenticate a user and generate a JWT.

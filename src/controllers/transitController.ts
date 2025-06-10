@@ -125,8 +125,8 @@ export class TransitController {
      * @param {NextFunction} next - Express next middleware function.
      */
     getTransitStats = async (req: Request, res: Response, next: NextFunction) => {
-        const {badgeId} = req.params;
-        const query = req.query;
+        const {badgeId} = matchedData(req, {locations: ['params']});
+        const query = matchedData(req, {locations: ['query']});
 
         try {
             const gateId: string | undefined = typeof query.gateId === 'string' ? query.gateId : undefined;
@@ -151,29 +151,13 @@ export class TransitController {
     getGateReport = async (req: Request, res: Response, next: NextFunction) => {
         try {
             const {format = ReportFormats.JSON} = req.query;
-
             const startDate: Date | undefined = normalizeDate(req.query.startDate as string);
             const endDate: Date | undefined = normalizeDate(req.query.endDate as string, true);
 
             const result = await this.service.generateGateReport(format as ReportFormats, startDate, endDate);
-
             setDownloadHeaders(res, format as ReportFormats, 'gate-report');
-            return res.send(result);
 
-            // switch (format) {
-            //     case 'pdf':
-            //         res.setHeader('Content-Type', 'application/pdf');
-            //         res.setHeader('Content-Disposition', 'attachment; filename="gate-report.pdf"');
-            //         return res.send(result);
-            //     case 'csv':
-            //         res.setHeader('Content-Type', 'text/csv');
-            //         res.setHeader('Content-Disposition', 'attachment; filename="gate-report.csv"');
-            //         return res.send(result);
-            //     default:
-            //         res.setHeader('Content-Type', 'application/json');
-            //         res.setHeader('Content-Disposition', 'attachment; filename="gate-report.json"');
-            //         return res.send(result);
-            // }
+            return res.send(result);
         } catch (err) {
             next(err);
         }
@@ -190,30 +174,14 @@ export class TransitController {
     getBadgeReport = async (req: Request, res: Response, next: NextFunction) => {
         try {
             const {format = ReportFormats.JSON} = req.query;
-
             const user: UserPayload | undefined = req.user;
             const startDate: Date | undefined = normalizeDate(req.query.startDate as string);
             const endDate: Date | undefined = normalizeDate(req.query.endDate as string, true);
 
             const result = await this.service.generateBadgeReport(format as ReportFormats, startDate, endDate, user);
-
             setDownloadHeaders(res, format as ReportFormats, 'badge-report');
-            return res.send(result);
 
-            // switch (format) {
-            //     case 'pdf':
-            //         res.setHeader('Content-Type', 'application/pdf');
-            //         res.setHeader('Content-Disposition', 'attachment; filename="gate-report.pdf"');
-            //         return res.send(result);
-            //     case 'csv':
-            //         res.setHeader('Content-Type', 'text/csv');
-            //         res.setHeader('Content-Disposition', 'attachment; filename="gate-report.csv"');
-            //         return res.send(result);
-            //     default:
-            //         res.setHeader('Content-Type', 'application/json');
-            //         res.setHeader('Content-Disposition', 'attachment; filename="gate-report.json"');
-            //         return res.send(result);
-            // }
+            return res.send(result);
         } catch (err) {
             next(err);
         }

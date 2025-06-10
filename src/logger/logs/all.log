@@ -1,2 +1,9 @@
 2025-06-05 14:59:27:5927 warn: Creating transit for badge ID: d70c2d10-b56c-4cbb-bb00-6c2f1e1cb723, gate ID: 8a8e1f4d-bb7a-4b6e-bb44-7386228f637c, status: unauthorized, DPI violation: false, message: Unauthorized access attempt
 2025-06-07 09:20:22:2022 warn: Creating transit for badge ID: 79c1f0c5-2cf8-4948-b51d-b4ef0117c68e, gate ID: 8a8e1f4d-bb7a-4b6e-bb44-7386228f637c, status: unauthorized, DPI violation: true, message: DPI violation detected
+2025-06-09 09:47:36:4736 info: Creating transit for badge ID: d70c2d10-b56c-4cbb-bb00-6c2f1e1cb723, gate ID: 5e3e4445-3a6e-4b83-9438-8ef7f5a2b9df, status: authorized, DPI violation: false
+2025-06-09 09:47:51:4751 info: Creating transit for badge ID: d70c2d10-b56c-4cbb-bb00-6c2f1e1cb723, gate ID: 5e3e4445-3a6e-4b83-9438-8ef7f5a2b9df, status: authorized, DPI violation: false
+2025-06-09 13:08:01:81 info: Creating transit for badge ID: d70c2d10-b56c-4cbb-bb00-6c2f1e1cb723, gate ID: 5e3e4445-3a6e-4b83-9438-8ef7f5a2b9df, status: authorized, DPI violation: false
+2025-06-09 14:05:42:542 info: Creating transit for badge ID: d70c2d10-b56c-4cbb-bb00-6c2f1e1cb723, gate ID: 5e3e4445-3a6e-4b83-9438-8ef7f5a2b9df, status: authorized, DPI violation: false
+2025-06-09 14:06:13:613 info: Creating transit for badge ID: d70c2d10-b56c-4cbb-bb00-6c2f1e1cb723, gate ID: 5e3e4445-3a6e-4b83-9438-8ef7f5a2b9df, status: authorized, DPI violation: false
+2025-06-09 15:56:12:5612 info: Creating transit for badge ID: d70c2d10-b56c-4cbb-bb00-6c2f1e1cb723, gate ID: 5e3e4445-3a6e-4b83-9438-8ef7f5a2b9df, status: authorized, DPI violation: false
+2025-06-09 15:56:22:5622 info: Creating transit for badge ID: d70c2d10-b56c-4cbb-bb00-6c2f1e1cb723, gate ID: 5e3e4445-3a6e-4b83-9438-8ef7f5a2b9df, status: authorized, DPI violation: false

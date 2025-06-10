@@ -1,11 +1,11 @@
-import { Router } from "express";
+import {Router} from "express";
 import {
     authMiddleware,
     adminMiddleware,
     gateOrAdminMiddleware,
     userOrAdminMiddleware
 } from "../middlewares/authMiddleware";
-import { controllers } from "../dependencies";
+import {controllers} from "../dependencies";
 import {
     validateBadgeReport,
     validateGateReport,
@@ -19,8 +19,8 @@ import {
  * Express router for handling `Transit` related routes.
  * Provides endpoints for managing transit records and generating reports.
  */
-const transitRouter = Router();
-const { transitController } = controllers;
+const transitRouter: Router = Router();
+const {transitController} = controllers;
 
 /**
  * Route to retrieve all `Transit` records.

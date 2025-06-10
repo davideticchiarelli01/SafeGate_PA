@@ -1,4 +1,4 @@
-import { getStatusCode, ReasonPhrases } from 'http-status-codes';
+import {getStatusCode, ReasonPhrases} from 'http-status-codes';
 
 /**
  * Custom error class representing an HTTP error.
@@ -16,10 +16,10 @@ export class HttpError extends Error {
      * @param {object} [details] - Optional additional error details.
      */
     constructor(statusCode: number, message: string, cause?: Error, details?: object) {
-        super(message, { cause });
+        super(message, {cause});
         this.name = 'HttpError';
         this.statusCode = statusCode;
-        this.details = details
+        this.details = details;
         Object.setPrototypeOf(this, new.target.prototype);
         Error.captureStackTrace(this, this.constructor);
     }

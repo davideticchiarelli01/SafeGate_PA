@@ -1,6 +1,6 @@
-import { Router } from "express";
-import { controllers } from "../dependencies";
-import { adminMiddleware, authMiddleware } from "../middlewares/authMiddleware";
+import {Router} from "express";
+import {controllers} from "../dependencies";
+import {adminMiddleware, authMiddleware} from "../middlewares/authMiddleware";
 import {
     validateBadgeCreation,
     validateBadgeId,
@@ -12,8 +12,8 @@ import {
  * Express router for handling `Badge` related routes.
  * Provides endpoints for CRUD operations and management of badges.
  */
-const badgeRouter = Router();
-const { badgeController } = controllers;
+const badgeRouter: Router = Router();
+const {badgeController} = controllers;
 
 /**
  * Route to retrieve all `Badge` records.

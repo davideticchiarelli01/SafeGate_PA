@@ -1,14 +1,14 @@
-import { Router } from "express";
-import { authMiddleware, adminMiddleware } from "../middlewares/authMiddleware";
-import { controllers } from "../dependencies";
-import { validateGateCreation, validateGateId, validateGateUpdate } from "../middlewares/gateMiddleware";
+import {Router} from "express";
+import {authMiddleware, adminMiddleware} from "../middlewares/authMiddleware";
+import {controllers} from "../dependencies";
+import {validateGateCreation, validateGateId, validateGateUpdate} from "../middlewares/gateMiddleware";
 
 /**
  * Express router for handling `Gate` related routes.
  * Provides endpoints for CRUD operations on `Gate` entities.
  */
 const gateRouter: Router = Router();
-const { gateController } = controllers;
+const {gateController} = controllers;
 
 /**
  * Route to retrieve all `Gate` records.
@@ -29,7 +29,7 @@ gateRouter.get("/gates", authMiddleware, adminMiddleware, gateController.getAllG
  * @middleware validateGateId - Validates the `id` parameter.
  * @controller gateController.getGate - Handles the request.
  */
-gateRouter.get("/gates/:id", authMiddleware, adminMiddleware, ...validateGateId, gateController.getGate);
+gateRouter.get("/gates/:id", authMiddleware, adminMiddleware, validateGateId, gateController.getGate);
 
 /**
  * Route to create a new `Gate`.
@@ -40,7 +40,7 @@ gateRouter.get("/gates/:id", authMiddleware, adminMiddleware, ...validateGateId,
  * @middleware validateGateCreation - Validates the request body.
  * @controller gateController.createGate - Handles the request.
  */
-gateRouter.post("/gates", authMiddleware, adminMiddleware, ...validateGateCreation, gateController.createGate);
+gateRouter.post("/gates", authMiddleware, adminMiddleware, validateGateCreation, gateController.createGate);
 
 /**
  * Route to update an existing `Gate`.
@@ -51,7 +51,7 @@ gateRouter.post("/gates", authMiddleware, adminMiddleware, ...validateGateCreati
  * @middleware validateGateUpdate - Validates the request body.
  * @controller gateController.updateGate - Handles the request.
  */
-gateRouter.put("/gates/:id", authMiddleware, adminMiddleware, ...validateGateUpdate, gateController.updateGate);
+gateRouter.put("/gates/:id", authMiddleware, adminMiddleware, validateGateUpdate, gateController.updateGate);
 
 /**
  * Route to delete a specific `Gate` by ID.
@@ -62,6 +62,6 @@ gateRouter.put("/gates/:id", authMiddleware, adminMiddleware, ...validateGateUpd
  * @middleware validateGateId - Validates the `id` parameter.
  * @controller gateController.deleteGate - Handles the request.
  */
-gateRouter.delete("/gates/:id", authMiddleware, adminMiddleware, ...validateGateId, gateController.deleteGate);
+gateRouter.delete("/gates/:id", authMiddleware, adminMiddleware, validateGateId, gateController.deleteGate);
 
 export default gateRouter;

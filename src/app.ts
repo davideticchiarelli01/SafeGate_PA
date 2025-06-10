@@ -3,13 +3,13 @@ import dotenv from 'dotenv';
 import DatabaseConnection from "./db/database";
 import GateRoute from "./routes/gateRoute";
 import TransitRoute from "./routes/transitRoute";
-import { errorMiddlewares } from './middlewares/errorMiddleware';
+import {errorMiddlewares} from './middlewares/errorMiddleware';
 import BadgeRoute from "./routes/badgeRoute";
 import loginRoute from "./routes/loginRoute";
 import authorizationRoute from "./routes/authorizationRoute";
 
 const app = express();
-const PORT = process.env.APP_PORT || 3000;
+const PORT: string = process.env.APP_PORT || '3000';
 
 // Load environment variables from .env file
 dotenv.config();
@@ -34,7 +34,7 @@ app.listen(PORT, () => {
 });
 
 /**
- * Registers route modules.
+ * Register route modules.
  * Each route module handles a specific domain entity.
  *
  * @routes
@@ -64,4 +64,4 @@ app.get('/', (req, res) => {
  * Should be loaded after all routes.
  * @middleware errorMiddlewares - Handles various types of runtime and HTTP errors.
  */
-app.use(...errorMiddlewares);
+app.use(errorMiddlewares);
