@@ -29,7 +29,7 @@ Prof. Adriano Mancini.<br>
 
 - [Obiettivi di progetto](#obiettivi-di-progetto)
 - [Progettazione](#progettazione)
-    - [Architettura dei servizi](#architettura-dei-servizi)
+    - [Struttura del progetto](#struttura-del-progetto)
     - [Pattern utilizzati](#pattern-utilizzati)
     - [Diagrammi UML](#diagrammi-uml)
         - [Diagramma dei casi d'uso](#diagramma-dei-casi-duso)
@@ -38,9 +38,11 @@ Prof. Adriano Mancini.<br>
 - [API Routes](#api-routes)
 - [Configurazione e uso](#configurazione-e-uso)
 - [Strumenti utilizzati](#strumenti-utilizzati)
+- [Divisione dei Compiti](#divisione-dei-compiti)
 - [Autori](#autori)
 
-# Obiettivi di progetto
+# Progettazione
+## Obiettivi di progetto
 
 L’obiettivo principale del progetto è sviluppare un sistema backend per la gestione dei transiti attraverso i varchi di
 controllo di un cantiere. Per raggiungere questo obiettivo, è necessario implementare le seguenti funzionalità:
@@ -67,7 +69,7 @@ controllo di un cantiere. Per raggiungere questo obiettivo, è necessario implem
 Infine, per garantire un corretto sistema di autenticazione e autorizzazione, è stato implementato un meccanismo di
 login che consente l’accesso agli utenti in base al proprio ruolo: User, Admin o Gate.
 
-# Struttura del progetto
+## Struttura del progetto
 Il progetto SafeGate è organizzato secondo una struttura modulare e scalabile, che segue le best practice per applicazioni express.js sviluppate in TypeScript. Ogni cartella è responsabile di una specifica area funzionale del sistema, favorendo la separazione delle responsabilità, la manutenibilità del codice e la facilità nei test.
 
 Di seguito è riportata la struttura principale del progetto:
@@ -1027,11 +1029,11 @@ La risposta attesa avrà questa forma:
 
 La richiesta può essere svolta in questo modo:
 ```ts
-PUT http://localhost:3000/badges_suspended
+PUT http://localhost:3000/reactivate_badges
 Authorization: Bearer {{jwt_token}}
 
 {
-    "badgeIds": ["d70c2d10-b56c-4cbb-bb00-6c2f1e1cb723"]
+    "badgeIds": ["a30c2d10-b56c-4cbb-bb00-6c2f1e1cb555", "d70c2d10-b56c-4cbb-bb00-6c2f1e1cb723", "b77c2d10-b56c-4cbb-bb00-6c2f1e1cb555"]
 }
 ```
 
@@ -1039,17 +1041,23 @@ La risposta attesa avrà questa forma:
 ```ts
 200 OK
 
-[
-    {
+{
+  "updatedBadges": [
+      {
         "id": "d70c2d10-b56c-4cbb-bb00-6c2f1e1cb723",
         "userId": "fa4d116f-7b3f-4c9d-88d6-8f01b36dc8c6",
         "status": "active",
         "unauthorizedAttempts": 0,
         "firstUnauthorizedAttempt": null,
-        "createdAt": "2025-06-09T16:15:15.207Z",
-        "updatedAt": "2025-06-09T16:54:31.159Z"
-    }
-]
+        "createdAt": "2025-06-10T10:23:56.793Z",
+        "updatedAt": "2025-06-10T10:24:11.595Z"
+      }
+  ],
+  "notFoundBadges": [
+      "a30c2d10-b56c-4cbb-bb00-6c2f1e1cb555",
+      "b77c2d10-b56c-4cbb-bb00-6c2f1e1cb555"
+  ]
+}
 ```
 
 # Configurazione e uso
@@ -1134,6 +1142,33 @@ Per testare l'applicazione è possibile utilizzare il client Postman sfruttando 
 - **WebStorm** e **VS Code**: Editor e IDE utilizzati per lo sviluppo del codice.
 - **DBeaver**: Interfaccia grafica per l’esplorazione e la gestione del database PostgreSQL durante lo sviluppo e il
   debugging.
+  
+# Divisione dei Compiti
+| Funzionalità                                                                                     | Autore      |
+|--------------------------------------------------------------------------------------------------|-------------|
+| Progettazione iniziale e strutturazione del progetto                                             | Insieme     |
+| Modellazione entità principali (`Badge`, `Gate`, `Authorization`, `Transit`, `User`)             | Insieme     |
+| CRUD `Badge` (con validazione)                                                                   | Davide      |
+| CRUD `Gate` (con validazione)                                                                    | Insieme     |
+| CRUD `Authorization` (con validazione)                                                           | Davide      |
+| Inserimento `Transit` con gestione DPI e autorizzazioni                                          | Davide      |
+| Log automatico dei transiti (autorizzati e non)                                                  | Giampaolo   |
+| Rotta per visualizzare badge sospesi                                                             | Davide      |
+| Rotta per riattivare badge sospesi                                                               | Davide      |
+| Rotta `GET` per visualizzare transiti (utente o admin)                                           | Giampaolo   |
+| Rotte `DELETE` e `UPDATE` dei transiti                                                           | Giampaolo   |
+| Report per varchi (PDF, CSV, JSON)                                                               | Giampaolo   |
+| Report per badge (PDF, CSV, JSON)                                                                | Giampaolo   |
+| Rotta statistiche transiti                                                                       | Davide      |
+| Middleware autenticazione JWT                                                                    | Davide      |
+| Middleware autorizzazione (utente vs admin)                                                      | Giampaolo   |
+| Validazioni con `express-validator` centralizzate                                                | Insieme     |
+| Migration e seeder iniziali (utenti, badge, gate, autorizzazioni)                                  | Giampaolo   |
+| Gestione errori centralizzata (middleware + factory personalizzata)                              | Davide      |
+| Configurazione Docker e ambiente                                                                 | Insieme     |
+| Documentazione JSDoc nei modelli                                                                 | Insieme     |
+| Testing di alcuni middleware con Jest                                                            | Insieme     |
+| Testing delle rotte con Postman                                                                  | Insieme     |
 
 # Autori
 

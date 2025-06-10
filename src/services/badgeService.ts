@@ -100,22 +100,35 @@ export class BadgeService {
      * @returns {Promise<Badge[]>} The list of reactivated badges.
      * @throws {HttpError} If the provided ID list is empty.
      */
-    async reactivateBadges(ids: string[]): Promise<Badge[]> {
+    async reactivateBadges(ids: string[]) {
         if (!Array.isArray(ids) || ids.length === 0) {
             throw ErrorFactory.createError(ReasonPhrases.BAD_REQUEST, 'The list of badge IDs cannot be empty');
         }
 
-        const suspended: Badge[] = await this.repo.findManyByIdAndStatus(ids, BadgeStatus.Suspended);
-        if (suspended.length === 0) return [];
+        const foundBadges = await this.repo.findManyFilteredById(ids);
+        const badgeMappedSet = new Set(foundBadges.map(b => b.id));
+        const notFoundBadges = ids.filter(id => !badgeMappedSet.has(id));
+        const suspended = foundBadges.filter(b => b.status === BadgeStatus.Suspended);
 
-        // Reactive badges, but also reset unauthorized attempts and firstUnauthorizedAttempt
+        if (suspended.length === 0) {
+            return {
+                updatedBadges: [],
+                notFoundBadges
+            };
+        }
+
         const data: Partial<BadgeAttributes> = {
             status: BadgeStatus.Active,
             unauthorizedAttempts: 0,
             firstUnauthorizedAttempt: null
         };
 
-        return await this.repo.updateMany(suspended, data);
+        const updatedBadges = await this.repo.updateMany(suspended, data);
+
+        return {
+            updatedBadges,
+            notFoundBadges
+        };
     }
 
     /**
