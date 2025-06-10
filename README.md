@@ -257,17 +257,17 @@ erDiagram
 
 # API Routes
 
-| **HTTP**   | **Endpoint**                       | **Descrizione**                                            | **JWT** | **Ruolo**               |
-|------------|------------------------------------|------------------------------------------------------------|---------|-------------------------|
+| **HTTP**   | **Endpoint**                       | **Descrizione**                                            | **JWT**  | **Ruolo**               |
+|------------|------------------------------------|------------------------------------------------------------|----------|-------------------------|
 | **POST**   | `/login`                           | Autenticazione dell'utente tramite email e password.       | ❌       | Tutti                   |
 | **GET**    | `/transits`                        | Recupera tutti i transiti registrati.                      | ✅       | Admin                   |
 | **GET**    | `/transits/:id`                    | Recupera uno specifico transito.                           | ✅       | Admin, User (solo suoi) |
 | **POST**   | `/transits`                        | Crea un transito (esito positivo o negativo).              | ✅       | Admin, Gate             |
 | **PUT**    | `/transits/:id`                    | Modifica un transito esistente.                            | ✅       | Admin                   |
 | **DELETE** | `/transits/:id`                    | Elimina un transito esistente.                             | ✅       | Admin                   |
-| **GET**    | `/transits_stats/:badgeId`         | Recupera statistiche dei transiti di un badge.             | ✅       | Admin, User (solo suoi) |
-| **GET**    | `/gate_report`                     | Esporta il numero di transiti in un gate (JSON, PDF, CSV). | ✅       | Admin                   |
-| **GET**    | `/badge_report`                    | Esporta i transiti di un badge (JSON, PDF, CSV).           | ✅       | Admin, User (solo suoi) |
+| **GET**    | `/transits_stats/:badgeId`         | Recupera le statistiche dei transiti di un badge.          | ✅       | Admin, User (solo suoi) |
+| **GET**    | `/gate_report`                     | Esporta il numero di transiti in un gate (JSON, PDF e CSV).| ✅       | Admin                   |
+| **GET**    | `/badge_report`                    | Esporta le statistiche per i transiti di un badge (JSON, PDF e CSV).           | ✅       | Admin, User (solo le sue) |
 | **GET**    | `/authorizations`                  | Recupera tutte le autorizzazioni.                          | ✅       | Admin                   |
 | **GET**    | `/authorizations/:badgeId/:gateId` | Recupera un'autorizzazione specifica.                      | ✅       | Admin                   |
 | **POST**   | `/authorizations`                  | Crea un'autorizzazione tra gate e badge.                   | ✅       | Admin                   |
@@ -283,7 +283,7 @@ erDiagram
 | **PUT**    | `/badges/:id`                      | Modifica un badge esistente.                               | ✅       | Admin                   |
 | **DELETE** | `/badges/:id`                      | Elimina un badge esistente.                                | ✅       | Admin                   |
 | **GET**    | `/badges_suspended`                | Recupera tutti i badge sospesi.                            | ✅       | Admin                   |
-| **GET**    | `/reactivate_badges`               | Riattiva uno o più badge.                                  | ✅       | Admin                   |
+| **PUT**    | `/reactivate_badges`               | Riattiva uno o più badge.                                  | ✅       | Admin                   |
 
 ## POST /login
 ### Parametri
@@ -1056,7 +1056,7 @@ La risposta attesa avrà questa forma:
 Di seguito sono elencati i passaggi necessari per configurare correttamente l'applicazione SafeGate e renderla operativa in un container Docker.
 - Prima di tutto bisogna assicurarsi di avere *Docker* e *Docker Compose* installati. Nel caso in cui non lo fossero è necessario procedere all'installazione al fine di poter permettere la creazione di un container nel quale verrà eseguito SafeGate.
 
-- In seguito è possibile clonare la repository GitHub del progetto; lanciare quindi il seguente comando: 
+- In seguito, è possibile clonare la repository GitHub del progetto, lanciando da terminale il seguente comando:
 
   ```
   git clone https://github.com/davideticchiarelli01/SafeGate_PA
