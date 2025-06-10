@@ -270,6 +270,95 @@ erDiagram
 #### GET '/authorizations/:badgeId/:gateId'
 #### POST '/authorizations'
 #### DELETE '/authorizations/:badgeId/:gateId'
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Client
+    participant Router
+    participant authMiddleware
+    participant adminMiddleware
+    participant validateMiddleware
+    participant Controller
+    participant Service
+    participant Repository
+    participant DAO
+    participant ErrorMiddleware
+
+    Client->>Router: DELETE /authorizations/:badgeId/:gateId
+
+    %% --- AUTHENTICATION ---
+    Router->>authMiddleware: JWT verification
+    alt Missing or invalid token
+        authMiddleware->>ErrorMiddleware: throw 401 Unauthorized
+        ErrorMiddleware-->>Client: 401 Unauthorized + JSON error
+    else Valid token
+        authMiddleware->>Router: req.user
+
+        %% --- AUTHORIZATION ---
+        Router->>adminMiddleware: Admin role verification
+        alt Non-admin user
+            adminMiddleware->>ErrorMiddleware: throw 403 Forbidden
+            ErrorMiddleware-->>Client: 403 Forbidden + JSON error
+        else Admin user
+            adminMiddleware->>Router: OK
+
+            %% ---  UUID VALIDATION  ---
+            Router->>validateMiddleware: badgeId/gateId validation
+            alt Missing or invalid UUID
+                validateMiddleware->>ErrorMiddleware: throw 400 Bad Request
+                ErrorMiddleware-->>Client: 400 Bad Request + JSON error
+            else Valid UUID
+                validateMiddleware-->>Router: OK
+
+                %% --- CONTROLLER + SERVICE ---
+                Router->>Controller: deleteAuthorization(req)
+                Controller->>Service: deleteAuthorization(badgeId, gateId)
+
+                %% --- BADGE VERIFICATION ---
+                Service->>Repository: badgeRepo.findById(badgeId)
+                Repository->>DAO: get(badgeId)
+                DAO-->>Repository: Badge|null
+                alt Badge not found
+                    Repository->>Service: Badge|null
+                    Service->>ErrorMiddleware: throw 404 Not Found
+                    ErrorMiddleware-->>Client: 404 Not Found + JSON error
+                else Badge found
+
+                    %% --- GATE VERIFICATION ---
+                    Service->>Repository: gateRepo.findById(gateId)
+                    Repository->>DAO: get(gateId)
+                    DAO-->>Repository: Gate|null
+                    alt Gate not found
+                        Repository-->>Service: Gate|null
+                        Service->>ErrorMiddleware: throw 404 Not Found
+                        ErrorMiddleware-->>Client: 404 Not Found + JSON error
+                    else Gate found
+
+                        %% --- AUTHORIZATION VERIFICATION ---
+                        Service->>Repository: authorizationRepo.findById(badgeId, gateId)
+                        Repository->>DAO: get(badgeId, gateId)
+                        DAO-->>Repository: Authorization|null
+                        alt Authorization not found
+                            Repository-->>Service: Authorization|null
+                            Service->>ErrorMiddleware: throw 404 Not Found
+                            ErrorMiddleware-->>Client: 404 Not Found + JSON error
+                        else Authorization found
+
+                            %% --- DELETION ---
+                            Service->>Repository: delete(authorization)
+                            Repository->>DAO: destroy()
+                            DAO-->>Repository: OK
+                            Repository-->>Service: void
+                            Service-->>Controller: void
+                            Controller-->>Client: 204 No Content
+                        end
+                    end
+                end
+            end
+        end
+    end
+```
+
 #### GET '/gates'
 ``` mermaid
 sequenceDiagram
