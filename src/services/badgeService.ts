@@ -1,11 +1,11 @@
-import { Badge, BadgeAttributes, BadgeCreationAttributes, BadgeUpdateAttributes } from '../models/badge';
-import { BadgeRepository } from '../repositories/badgeRepository';
-import { BadgeStatus } from "../enum/badgeStatus";
-import { ErrorFactory } from '../factories/errorFactory';
-import { ReasonPhrases } from 'http-status-codes';
-import { User } from "../models/user";
-import { UserRepository } from "../repositories/userRepository";
-import { UserRole } from '../enum/userRoles';
+import {Badge, BadgeAttributes, BadgeCreationAttributes, BadgeUpdateAttributes} from '../models/badge';
+import {BadgeRepository} from '../repositories/badgeRepository';
+import {BadgeStatus} from "../enum/badgeStatus";
+import {ErrorFactory} from '../factories/errorFactory';
+import {ReasonPhrases} from 'http-status-codes';
+import {User} from "../models/user";
+import {UserRepository} from "../repositories/userRepository";
+import {UserRole} from '../enum/userRoles';
 
 /**
  * Service class for handling `Badge` related operations.
@@ -97,7 +97,6 @@ export class BadgeService {
      * Reactivates multiple suspended badges by ID.
      * Resets unauthorized attempts and timestamp upon reactivation.
      * @param {string[]} ids - A list of badge IDs to reactivate.
-     * @returns {Promise<Badge[]>} The list of reactivated badges.
      * @throws {HttpError} If the provided ID list is empty.
      */
     async reactivateBadges(ids: string[]) {
@@ -105,10 +104,10 @@ export class BadgeService {
             throw ErrorFactory.createError(ReasonPhrases.BAD_REQUEST, 'The list of badge IDs cannot be empty');
         }
 
-        const foundBadges = await this.repo.findManyFilteredById(ids);
+        const foundBadges: Badge[] = await this.repo.findManyFilteredById(ids);
         const badgeMappedSet = new Set(foundBadges.map(b => b.id));
-        const notFoundBadges = ids.filter(id => !badgeMappedSet.has(id));
-        const suspended = foundBadges.filter(b => b.status === BadgeStatus.Suspended);
+        const notFoundBadges: string[] = ids.filter(id => !badgeMappedSet.has(id));
+        const suspended: Badge[] = foundBadges.filter(b => b.status === BadgeStatus.Suspended);
 
         if (suspended.length === 0) {
             return {
@@ -123,7 +122,7 @@ export class BadgeService {
             firstUnauthorizedAttempt: null
         };
 
-        const updatedBadges = await this.repo.updateMany(suspended, data);
+        const updatedBadges: Badge[] = await this.repo.updateMany(suspended, data);
 
         return {
             updatedBadges,
