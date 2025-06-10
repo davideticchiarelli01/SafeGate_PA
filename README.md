@@ -54,7 +54,7 @@ controllo di un cantiere. Per raggiungere questo obiettivo, è necessario implem
   Amministratore o di un Varco:
     - Nel caso di un numero di tentativi non autorizzati superiore a 3 in un intervallo temporale di 20min è necessario
       sospendere l’utenza (inserire tali parametri come var di env).
-- Restituire un eleneco di badgeId sospesi;
+- Restituire un elenco di badgeId sospesi;
 - Riattivare uno o più badgeId sospesi;
 - Restituire uno specifico transito a un utente o ad un amministratore;
 - Eliminazione e Update di un transito;
@@ -256,6 +256,802 @@ erDiagram
 ```
 
 ### Diagrammi delle sequenze
+
+#### POST '/login'
+#### GET '/transits'
+#### GET '/transits/:id'
+#### POST '/transits'
+#### PUT '/transits/:id'
+#### DELETE '/transits/:id'
+#### GET '/transits_stats/:badgeId'
+#### GET '/gate_report'
+#### GET '/badge_report'
+#### GET '/authorizations'
+#### GET '/authorizations/:badgeId/:gateId'
+#### POST '/authorizations'
+#### DELETE '/authorizations/:badgeId/:gateId'
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Client
+    participant Router
+    participant authMiddleware
+    participant adminMiddleware
+    participant validateMiddleware
+    participant Controller
+    participant Service
+    participant Repository
+    participant DAO
+    participant ErrorMiddleware
+
+    Client->>Router: DELETE /authorizations/:badgeId/:gateId
+
+    %% --- AUTHENTICATION ---
+    Router->>authMiddleware: JWT verification
+    alt Missing or invalid token
+        authMiddleware->>ErrorMiddleware: throw 401 Unauthorized
+        ErrorMiddleware-->>Client: 401 Unauthorized + JSON error
+    else Valid token
+        authMiddleware->>Router: req.user
+
+        %% --- AUTHORIZATION ---
+        Router->>adminMiddleware: Admin role verification
+        alt Non-admin user
+            adminMiddleware->>ErrorMiddleware: throw 403 Forbidden
+            ErrorMiddleware-->>Client: 403 Forbidden + JSON error
+        else Admin user
+            adminMiddleware->>Router: OK
+
+            %% ---  UUID VALIDATION  ---
+            Router->>validateMiddleware: badgeId/gateId validation
+            alt Missing or invalid UUID
+                validateMiddleware->>ErrorMiddleware: throw 400 Bad Request
+                ErrorMiddleware-->>Client: 400 Bad Request + JSON error
+            else Valid UUID
+                validateMiddleware-->>Router: OK
+
+                %% --- CONTROLLER + SERVICE ---
+                Router->>Controller: deleteAuthorization(req)
+                Controller->>Service: deleteAuthorization(badgeId, gateId)
+
+                %% --- BADGE VERIFICATION ---
+                Service->>Repository: badgeRepo.findById(badgeId)
+                Repository->>DAO: get(badgeId)
+                DAO-->>Repository: Badge|null
+                alt Badge not found
+                    Repository->>Service: Badge|null
+                    Service->>ErrorMiddleware: throw 404 Not Found
+                    ErrorMiddleware-->>Client: 404 Not Found + JSON error
+                else Badge found
+
+                    %% --- GATE VERIFICATION ---
+                    Service->>Repository: gateRepo.findById(gateId)
+                    Repository->>DAO: get(gateId)
+                    DAO-->>Repository: Gate|null
+                    alt Gate not found
+                        Repository-->>Service: Gate|null
+                        Service->>ErrorMiddleware: throw 404 Not Found
+                        ErrorMiddleware-->>Client: 404 Not Found + JSON error
+                    else Gate found
+
+                        %% --- AUTHORIZATION VERIFICATION ---
+                        Service->>Repository: authorizationRepo.findById(badgeId, gateId)
+                        Repository->>DAO: get(badgeId, gateId)
+                        DAO-->>Repository: Authorization|null
+                        alt Authorization not found
+                            Repository-->>Service: Authorization|null
+                            Service->>ErrorMiddleware: throw 404 Not Found
+                            ErrorMiddleware-->>Client: 404 Not Found + JSON error
+                        else Authorization found
+
+                            %% --- DELETION ---
+                            Service->>Repository: delete(authorization)
+                            Repository->>DAO: destroy()
+                            DAO-->>Repository: OK
+                            Repository-->>Service: void
+                            Service-->>Controller: void
+                            Controller-->>Client: 204 No Content
+                        end
+                    end
+                end
+            end
+        end
+    end
+```
+
+#### GET '/gates'
+``` mermaid
+sequenceDiagram
+    autonumber
+    participant Client
+    participant Router
+    participant AuthMiddleware
+    participant AdminMiddleware
+    participant Controller
+    participant Service
+    participant Repository
+    participant Dao
+    participant ErrorMiddleware
+
+    Client->>Router: GET /gates
+
+    %% Authentication
+    Router->>AuthMiddleware: Verify JWT
+    alt Missing or malformed token
+        AuthMiddleware->>ErrorMiddleware: throw 401 Unauthorized
+        ErrorMiddleware-->>Client: 401 Unauthorized + JSON error
+    else Valid token
+        AuthMiddleware-->>Router: req.user
+
+        %% Authorization
+        Router->>AdminMiddleware: Verify admin role
+        alt Non-admin user
+            AdminMiddleware->>ErrorMiddleware: throw 403 Forbidden
+            ErrorMiddleware-->>Client: 403 Forbidden + JSON error
+        else Valid Admin
+            AdminMiddleware-->>Router: ok
+
+            %% Controller call
+            Router->>Controller: gateController.getAllGates()
+            Controller->>Service: service.getAllGates()
+            Service->>Repository: repo.findAll()
+            Repository->>Dao: dao.getAll()
+            Dao-->>Repository: Gate[]
+            Repository-->>Service: Gate[]
+            Service-->>Controller: Gate[]
+            Controller-->>Client: 200 OK + [JSON array]
+        
+        end
+    end
+
+```
+
+#### GET '/gates/:id'
+``` mermaid
+sequenceDiagram
+    autonumber
+    participant Client
+    participant Router
+    participant AuthMiddleware
+    participant AdminMiddleware
+    participant ValidationMiddleware
+    participant Controller
+    participant Service
+    participant Repository
+    participant Dao
+    participant ErrorMiddleware
+
+    Client->>Router: GET /gates/:id
+
+    %% Authentication
+    Router->>AuthMiddleware: JWT verification
+    alt Missing or invalid token 
+        AuthMiddleware->>ErrorMiddleware: throw 401 Unauthorized
+        ErrorMiddleware-->>Client: 401 Unauthorized + JSON error
+    else Valid token
+        AuthMiddleware-->>Router: req.user
+
+        %% Authorization
+        Router->>AdminMiddleware: Verify admin role
+        alt Non-admin user
+            AdminMiddleware->>ErrorMiddleware: throw 403 Forbidden
+            ErrorMiddleware-->>Client: 403 Forbidden + JSON error
+        else Admin user
+            AdminMiddleware-->>Router: ok
+
+            %% ID validation
+            Router->>ValidationMiddleware: Validate id param
+            alt ID not UUID or missing
+                ValidationMiddleware->>ErrorMiddleware: throw 400 Bad Request
+                ErrorMiddleware-->>Client: 400 Bad Request + JSON error
+            else Valid ID
+                ValidationMiddleware-->>Router: ok
+
+                %% Controller call
+                Router->>Controller: gateController.getGate(id)
+                Controller->>Service: service.getGate(id)
+                Service->>Repository: repo.findById(id)
+                Repository->>Dao: dao.get(id)
+
+                alt Gate found
+                    Dao-->>Repository: Gate
+                    Repository-->>Service: Gate
+                    Service-->>Controller: Gate
+                    Controller-->>Client: 200 OK + Gate JSON
+                else Gate not found
+                    Dao-->>Repository: null
+                    Repository-->>Service: null
+                    Service->>ErrorMiddleware: throw 404 Not Found
+                    ErrorMiddleware-->>Client: 404 Not Found + JSON error
+                end
+            end
+        end
+    end
+```
+#### POST '/gates'
+``` mermaid
+sequenceDiagram
+    autonumber
+    actor Client
+    participant Router
+    participant AuthMiddleware
+    participant AdminMiddleware
+    participant ValidationMiddleware
+    participant Controller
+    participant Service
+    participant Repository
+    participant Dao
+    participant ErrorMiddleware
+
+    Client->>Router: POST /gates { name, requiredDPIs }
+    Router->>AuthMiddleware: Verify JWT
+    alt Missing or invalid token
+        AuthMiddleware->>ErrorMiddleware: throw 401 Unauthorized
+        ErrorMiddleware-->>Client: 401 Unauthorized + JSON error
+    else Valid JWT
+        AuthMiddleware-->>Router: req.user
+
+        Router->>AdminMiddleware: Verify admin role
+        alt Non-admin user
+            AdminMiddleware->>ErrorMiddleware: throw 403 Forbidden
+            ErrorMiddleware-->>Client: 403 Forbidden + JSON error
+        else Valid Admin
+            AdminMiddleware-->>Router: ok
+
+            Router->>ValidationMiddleware: Validate body (name, requiredDPIs)
+            alt Invalid data
+                ValidationMiddleware->>ErrorMiddleware: throw 400 Bad Request
+                ErrorMiddleware-->>Client: 400 Bad Request + JSON error
+            else Valid data
+                ValidationMiddleware-->>Router: ok
+
+                Router->>Controller: gateController.createGate
+                Controller->>Service: service.createGate(data)
+                Service->>Repository: repo.findByName(name)
+                Repository->>Dao: dao.getByName(name)
+                alt Name already exists
+                    Dao-->>Repository: Gate
+                    Repository-->>Service: Gate
+                    Service->>ErrorMiddleware: throw 409 Conflict
+                    ErrorMiddleware-->>Client: 409 Conflict + JSON error
+                else New name
+                    Dao-->>Repository: null
+                    Repository-->>Service: null
+                    Service->>Repository: repo.create(data)
+                    Repository->>Dao: dao.create(data)
+                    Dao-->>Repository: New Gate
+                    Repository-->>Service: New Gate
+                    Service-->>Controller: New Gate
+                    Controller-->>Client: 201 Created + New Gate (JSON)
+                end
+            end
+        end
+    end
+```
+
+#### PUT '/gates/:id'
+``` mermaid
+sequenceDiagram
+    autonumber
+    actor Client
+    participant Router
+    participant AuthMiddleware
+    participant AdminMiddleware
+    participant ValidationMiddleware
+    participant Controller
+    participant Service
+    participant Repository
+    participant Dao
+    participant ErrorMiddleware
+
+    Client->>Router: PUT /gates/:id { requiredDPIs }
+    Router->>AuthMiddleware: Verify JWT
+    alt Missing or invalid token
+        AuthMiddleware->>ErrorMiddleware: throw 401 Unauthorized
+        ErrorMiddleware-->>Client: 401 Unauthorized + JSON error
+    else Valid JWT
+        AuthMiddleware-->>Router: req.user
+
+        Router->>AdminMiddleware: Verify admin role
+        alt Non-admin user
+            AdminMiddleware->>ErrorMiddleware: throw 403 Forbidden
+            ErrorMiddleware-->>Client: 403 Forbidden + JSON error
+        else Valid Admin
+            AdminMiddleware-->>Router: ok
+
+            Router->>ValidationMiddleware: Validate id param and body (requiredDPIs)
+            alt Invalid ID or incorrect requiredDPIs
+                ValidationMiddleware->>ErrorMiddleware: throw 400 Bad Request
+                ErrorMiddleware-->>Client: 400 Bad Request + JSON error
+            else Valid Data
+                ValidationMiddleware-->>Router: ok
+
+                Router->>Controller: gateController.updateGate
+                Controller->>Service: service.updateGate(id, data)
+                Service->>Repository: repo.findById(id)
+                Repository->>Dao: dao.get(id)
+                alt Gate found
+                    Dao-->>Repository: Gate
+                    Repository-->>Service: Gate
+                    Service->>Repository: repo.update(gate, data)
+                    Repository->>Dao: dao.update(gate, data)
+                    Dao-->>Repository: Updated Gate
+                    Repository-->>Service: Updated Gate
+                    Service-->>Controller: Updated Gate
+                    Controller-->>Client: 200 OK + Updated Gate (JSON)
+                else Gate not found
+                    Dao-->>Repository: null
+                    Repository-->>Service: null
+                    Service->>ErrorMiddleware: throw 404 Not Found
+                    ErrorMiddleware-->>Client: 404 Not Found + JSON error
+                end
+            end
+        end
+    end
+```
+
+#### DELETE '/gates/:id'
+``` mermaid
+sequenceDiagram
+    autonumber
+    participant Client
+    participant Router
+    participant AuthMiddleware
+    participant AdminMiddleware
+    participant ValidationMiddleware
+    participant Controller
+    participant Service
+    participant Repository
+    participant Dao
+    participant ErrorMiddleware
+
+    Client->>Router: DELETE /gates/:id
+
+    %% Authentication
+    Router->>AuthMiddleware: Verify JWT
+    alt Missing or invalid token
+        AuthMiddleware->>ErrorMiddleware: throw 401 Unauthorized
+        ErrorMiddleware-->>Client: 401 Unauthorized + JSON error
+    else Valid token
+        AuthMiddleware-->>Router: req.user
+
+        %% Authorization
+        Router->>AdminMiddleware: Check for admin role
+        alt Non-admin user
+            AdminMiddleware->>ErrorMiddleware: throw 403 Forbidden
+            ErrorMiddleware-->>Client: 403 Forbidden + JSON error
+        else Admin user
+            AdminMiddleware-->>Router: ok
+
+            %% ID validation
+            Router->>ValidationMiddleware: Validate ID parameter
+            alt ID is not a UUID or is missing
+                ValidationMiddleware->>ErrorMiddleware: throw 400 Bad Request
+                ErrorMiddleware-->>Client: 400 Bad Request + JSON error
+            else Valid ID
+                ValidationMiddleware-->>Router: ok
+
+                %% Controller call
+                Router->>Controller: gateController.deleteGate(id)
+                Controller->>Service: service.deleteGate(id)
+                Service->>Repository: repo.findById(id)
+                Repository->>Dao: dao.get(id)
+
+                alt Gate not found
+                    Dao-->>Repository: null
+                    Repository-->>Service: null
+                    Service->>ErrorMiddleware: throw 404 Not Found
+                    ErrorMiddleware-->>Client: 404 Not Found + JSON error
+                else Gate found
+                    Dao-->>Repository: Gate
+                    Repository-->>Service: Gate
+                    Service->>Repository: repo.delete(gate)
+                    Repository->>Dao: dao.delete(gate)
+                    Dao-->>Repository: void
+                    Repository-->>Service: void
+                    Service-->>Controller: void
+                    Controller-->>Client: 204 No Content
+                end
+            end
+        end
+    end
+```
+
+#### GET '/badges'
+``` mermaid
+sequenceDiagram
+    autonumber
+    actor Client
+    participant Router
+    participant AuthMiddleware
+    participant AdminMiddleware
+    participant Controller
+    participant Service
+    participant Repository
+    participant Dao
+    participant ErrorMiddleware
+
+    Client->>Router: GET /badges
+
+    Router->>AuthMiddleware: Verify JWT
+    alt Missing or invalid token
+        AuthMiddleware->>ErrorMiddleware: throw 401 Unauthorized
+        ErrorMiddleware-->>Client: 401 Unauthorized + JSON error
+    else Valid JWT
+        AuthMiddleware-->>Router: req.user
+
+        Router->>AdminMiddleware: Verify admin role
+        alt Non-admin user
+            AdminMiddleware->>ErrorMiddleware: throw 403 Forbidden
+            ErrorMiddleware-->>Client: 403 Forbidden + JSON error
+        else Valid Admin
+            AdminMiddleware-->>Router: ok
+
+            Router->>Controller: badgeController.getAllBadges()
+            Controller->>Service: service.getAllBadges()
+            Service->>Repository: repo.findAll()
+            Repository->>Dao: dao.getAll()
+
+            Dao-->>Repository: Badge[]
+            Repository-->>Service: Badge[]
+            Service-->>Controller: Badge[]
+            Controller-->>Client: 200 OK + [JSON array]
+        end
+    end
+```
+#### GET '/badges/:id'
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Client
+    participant Router
+    participant AuthMiddleware
+    participant AdminMiddleware
+    participant ValidationMiddleware
+    participant Controller
+    participant Service
+    participant Repository
+    participant Dao
+    participant ErrorMiddleware
+
+    Client->>Router: GET /badges/:id
+
+    Router->>AuthMiddleware: Verify JWT
+    alt Missing or invalid token
+        AuthMiddleware->>ErrorMiddleware: throw 401 Unauthorized
+        ErrorMiddleware-->>Client: 401 Unauthorized + JSON error
+    else Valid token
+        AuthMiddleware-->>Router: req.user
+
+        Router->>AdminMiddleware: Verify admin role
+        alt Non-admin user
+            AdminMiddleware->>ErrorMiddleware: throw 403 Forbidden
+            ErrorMiddleware-->>Client: 403 Forbidden + JSON error
+        else Valid Admin
+            AdminMiddleware-->>Router: ok
+
+            Router->>ValidationMiddleware: Validate id param
+            alt Invalid ID (not UUID)
+                ValidationMiddleware->>ErrorMiddleware: throw 400 Bad Request
+                ErrorMiddleware-->>Client: 400 Bad Request + JSON error
+            else Valid ID
+                ValidationMiddleware-->>Router: ok
+
+                Router->>Controller: badgeController.getBadge
+                Controller->>Service: service.getBadge(id)
+                Service->>Repository: repo.findById(id)
+                Repository->>Dao: dao.get(id)
+                alt Badge found
+                    Dao-->>Repository: Badge
+                    Repository-->>Service: Badge
+                    Service-->>Controller: Badge
+                    Controller-->>Client: 200 OK + Badge (JSON)
+                else Badge not found
+                    Dao-->>Repository: null
+                    Repository-->>Service: null
+                    Service->>ErrorMiddleware: throw 404 Not Found
+                    ErrorMiddleware-->>Client: 404 Not Found + JSON error
+                end
+            end
+        end
+    end
+```
+
+#### POST '/badges'
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Client
+    participant Router
+    participant AuthMiddleware
+    participant AdminMiddleware
+    participant ValidationMiddleware
+    participant Controller
+    participant Service
+    participant UserRepository
+    participant BadgeRepository
+    participant BadgeDao
+    participant ErrorMiddleware
+
+    Client->>Router: POST /badges { userId, status?, unauthorizedAttempts?, firstUnauthorizedAttempt? }
+    Router->>AuthMiddleware: Verify JWT
+    alt Missing or invalid token
+        AuthMiddleware->>ErrorMiddleware: throw 401 Unauthorized
+        ErrorMiddleware-->>Client: 401 Unauthorized + JSON error
+    else Valid token
+        AuthMiddleware-->>Router: req.user
+
+        Router->>AdminMiddleware: Verify admin role
+        alt Non-admin user
+            AdminMiddleware->>ErrorMiddleware: throw 403 Forbidden
+            ErrorMiddleware-->>Client: 403 Forbidden + JSON error
+        else Valid Admin
+            AdminMiddleware-->>Router: ok
+
+            Router->>ValidationMiddleware: Validate body (userId required, others optional)
+            alt Invalid data
+                ValidationMiddleware->>ErrorMiddleware: throw 400 Bad Request
+                ErrorMiddleware-->>Client: 400 Bad Request + JSON error
+            else Valid data
+                ValidationMiddleware-->>Router: ok
+
+                Router->>Controller: badgeController.createBadge
+                Controller->>Service: service.createBadge(data)
+                Service->>UserRepository: findById(userId)
+                alt User not found
+                    UserRepository-->>Service: null
+                    Service->>ErrorMiddleware: throw 404 Not Found (User not found)
+                    ErrorMiddleware-->>Client: 404 Not Found + JSON error
+                else User found
+                    UserRepository-->>Service: User
+                    alt User with Gate role
+                        Service->>ErrorMiddleware: throw 403 Forbidden (Users with role Gate cannot be assigned a badge)
+                        ErrorMiddleware-->>Client: 403 Forbidden + JSON error
+                    else Valid role
+                        Service->>BadgeRepository: findByUserId(userId)
+                        alt Badge already exists for userId
+                            BadgeRepository-->>Service: Badge
+                            Service->>ErrorMiddleware: throw 409 Conflict (User already has a badge)
+                            ErrorMiddleware-->>Client: 409 Conflict + JSON error
+                        else No badge for user
+                            BadgeRepository-->>Service: null
+                            Service->>BadgeRepository: create(data)
+                            BadgeRepository->>BadgeDao: create(data)
+                            BadgeDao-->>BadgeRepository: New Badge
+                            BadgeRepository-->>Service: New Badge
+                            Service-->>Controller: New Badge
+                            Controller-->>Client: 201 Created + New Badge (JSON)
+                        end
+                    end
+                end
+            end
+        end
+    end
+```
+
+#### PUT '/badges/:id'
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Client
+    participant Router
+    participant AuthMiddleware
+    participant AdminMiddleware
+    participant ValidationMiddleware
+    participant Controller
+    participant Service
+    participant Repository
+    participant Dao
+    participant ErrorMiddleware
+
+    Client->>Router: PUT /badges/:id { status?, unauthorizedAttempts?, firstUnauthorizedAttempt? }
+    Router->>AuthMiddleware: Verify JWT
+    alt Missing or invalid token
+        AuthMiddleware->>ErrorMiddleware: throw 401 Unauthorized
+        ErrorMiddleware-->>Client: 401 Unauthorized + JSON error
+    else Valid token
+        AuthMiddleware-->>Router: req.user
+
+        Router->>AdminMiddleware: Verify admin role
+        alt Non-admin user
+            AdminMiddleware->>ErrorMiddleware: throw 403 Forbidden
+            ErrorMiddleware-->>Client: 403 Forbidden + JSON error
+        else Valid Admin
+            AdminMiddleware-->>Router: ok
+
+            Router->>ValidationMiddleware: Validate id param and body (optional fields)
+            alt ID not UUID or invalid body
+                ValidationMiddleware->>ErrorMiddleware: throw 400 Bad Request
+                ErrorMiddleware-->>Client: 400 Bad Request + JSON error
+            else Valid data
+                ValidationMiddleware-->>Router: ok
+
+                Router->>Controller: badgeController.updateBadge
+                Controller->>Service: service.updateBadge(id, data)
+                Service->>Repository: repo.findById(id)
+                Repository->>Dao: dao.get(id)
+                Dao-->>Repository: foundBadge or null
+                alt Badge not found
+                    Service->>ErrorMiddleware: throw 404 Not Found
+                    ErrorMiddleware-->>Client: 404 Not Found + JSON error
+                else Badge found
+                    Repository-->>Service: badge
+                    alt status == Active
+                        Service->>Service: reset unauthorizedAttempts and firstUnauthorizedAttempt
+                    end
+                    Service->>Repository: repo.update(badge, data)
+                    Repository->>Dao: dao.update(badge, data)
+                    Dao-->>Repository: updatedBadge
+                    Repository-->>Service: updatedBadge
+                    Service-->>Controller: updatedBadge
+                    Controller-->>Client: 200 OK + updatedBadge (JSON)
+                end
+            end
+        end
+    end
+```
+#### DELETE 'badges/:id'
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Client
+    participant Router
+    participant AuthMiddleware
+    participant AdminMiddleware
+    participant ValidationMiddleware
+    participant Controller
+    participant Service
+    participant Repository
+    participant Dao
+    participant ErrorMiddleware
+
+    Client->>Router: DELETE /badges/:id
+
+    Router->>AuthMiddleware: Verify JWT
+    alt Missing or invalid token
+        AuthMiddleware->>ErrorMiddleware: throw 401 Unauthorized
+        ErrorMiddleware-->>Client: 401 Unauthorized + JSON error
+    else Valid token
+        AuthMiddleware-->>Router: req.user
+
+        Router->>AdminMiddleware: Verify admin role
+        alt Non-admin user
+            AdminMiddleware->>ErrorMiddleware: throw 403 Forbidden
+            ErrorMiddleware-->>Client: 403 Forbidden + JSON error
+        else Valid Admin
+            AdminMiddleware-->>Router: ok
+
+            Router->>ValidationMiddleware: Validate id param
+            alt Invalid ID (not UUID)
+                ValidationMiddleware->>ErrorMiddleware: throw 400 Bad Request
+                ErrorMiddleware-->>Client: 400 Bad Request + JSON error
+            else Valid ID
+                ValidationMiddleware-->>Router: ok
+
+                Router->>Controller: badgeController.deleteBadge
+                Controller->>Service: service.deleteBadge(id)
+                Service->>Repository: repo.findById(id)
+                Repository->>Dao: dao.get(id)
+                alt Badge found
+                    Dao-->>Repository: Badge
+                    Repository-->>Service: Badge
+                    Service->>Repository: repo.delete(badge)
+                    Repository->>Dao: dao.delete(badge)
+                    Dao-->>Repository: ok
+                    Repository-->>Service: ok
+                    Service-->>Controller: ok
+                    Controller-->>Client: 204 No Content
+                else Badge not found
+                    Dao-->>Repository: null
+                    Repository-->>Service: null
+                    Service->>ErrorMiddleware: throw 404 Not Found
+                    ErrorMiddleware-->>Client: 404 Not Found + JSON error
+                end
+            end
+        end
+    end
+```
+#### GET '/badges_suspended'
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Client
+    participant Router
+    participant AuthMiddleware
+    participant AdminMiddleware
+    participant Controller
+    participant Service
+    participant Repository
+    participant Dao
+    participant ErrorMiddleware
+
+    Client->>Router: GET /badges_suspended
+
+    Router->>AuthMiddleware: Verify JWT
+    alt Missing or invalid token
+        AuthMiddleware->>ErrorMiddleware: throw 401 Unauthorized
+        ErrorMiddleware-->>Client: 401 Unauthorized + JSON error
+    else Valid token
+        AuthMiddleware-->>Router: req.user
+
+        Router->>AdminMiddleware: Verify admin role
+        alt Non-admin user
+            AdminMiddleware->>ErrorMiddleware: throw 403 Forbidden
+            ErrorMiddleware-->>Client: 403 Forbidden + JSON error
+        else Valid Admin
+            AdminMiddleware-->>Router: ok
+
+            Router->>Controller: badgeController.getSuspendedBadges()
+            Controller->>Service: service.getSuspendedBadges()
+            Service->>Repository: repo.findManyFilteredByStatus(Suspended)
+            Repository->>Dao: dao.getManyFiltered({ status: Suspended })
+
+            Dao-->>Repository: Badge[]
+            Repository-->>Service: Badge[]
+            Service-->>Controller: Badge[]
+            Controller-->>Client: 200 OK + [JSON array]
+        end
+    end
+```
+#### PUT '/reactivate_badges'               
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Client
+    participant Router
+    participant AuthMiddleware
+    participant AdminMiddleware
+    participant ValidationMiddleware
+    participant Controller
+    participant Service
+    participant Repository
+    participant Dao
+    participant ErrorMiddleware
+
+    Client->>Router: PUT /reactivate_badges { badgeIds }
+    Router->>AuthMiddleware: Verify JWT
+    alt Missing or invalid token
+        AuthMiddleware->>ErrorMiddleware: throw 401 Unauthorized
+        ErrorMiddleware-->>Client: 401 Unauthorized + JSON error
+    else Valid token
+        AuthMiddleware-->>Router: req.user
+
+        Router->>AdminMiddleware: Verify admin role
+        alt Non-admin user
+            AdminMiddleware->>ErrorMiddleware: throw 403 Forbidden
+            ErrorMiddleware-->>Client: 403 Forbidden + JSON error
+        else Valid Admin
+            AdminMiddleware-->>Router: ok
+
+            Router->>ValidationMiddleware: Validate body (badgeIds)
+            alt Invalid badgeIds
+                ValidationMiddleware->>ErrorMiddleware: throw 400 Bad Request
+                ErrorMiddleware-->>Client: 400 Bad Request + JSON error
+            else Valid badgeIds
+                ValidationMiddleware-->>Router: ok
+
+                Router->>Controller: badgeController.reactivateBadges
+                Controller->>Service: service.reactivateBadges(badgeIds)
+                Service->>Repository: repo.findManyFilteredById(badgeIds)
+                Repository->>Dao: dao.getManyFiltered({ id: badgeIds })
+                Dao-->>Repository: foundBadges[]
+                Repository-->>Service: foundBadges[]
+
+                %% Internal: array calculation
+                Service->>Service: notFoundBadges = ids.filter(id ∉ foundBadges)
+                Service->>Service: suspendedBadges = foundBadges.filter(status == Suspended)
+
+                Service->>Repository: repo.updateMany(suspendedBadges, data)
+                Repository->>Dao: dao.updateMany(suspendedBadges, data)
+                Dao-->>Repository: updatedBadges[]
+                Repository-->>Service: updatedBadges[]
+
+                Service-->>Controller: { updatedBadges, notFoundBadges }
+                Controller-->>Client: 200 OK + { updatedBadges, notFoundBadges }
+            end
+        end
+    end
+```
 
 # API Routes
 
