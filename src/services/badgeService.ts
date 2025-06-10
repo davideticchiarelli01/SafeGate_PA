@@ -105,25 +105,29 @@ export class BadgeService {
             throw ErrorFactory.createError(ReasonPhrases.BAD_REQUEST, 'The list of badge IDs cannot be empty');
         }
 
-        const foundIds = await this.repo.findManyFilteredById(ids);
-        const mapFoundedIds = new Set(foundIds.map(badge => badge.id))
-        const wrongBadges = ids.filter(id => !mapFoundedIds.has(id));
+        const foundBadges = await this.repo.findManyFilteredById(ids);
+        const badgeMappedSet = new Set(foundBadges.map(b => b.id));
+        const notFoundBadges = ids.filter(id => !badgeMappedSet.has(id));
+        const suspended = foundBadges.filter(b => b.status === BadgeStatus.Suspended);
 
-        const suspended: Badge[] = await this.repo.findManyByIdAndStatus(ids, BadgeStatus.Suspended);
-        if (suspended.length === 0) return [];
+        if (suspended.length === 0) {
+            return {
+                updatedBadges: [],
+                notFoundBadges
+            };
+        }
 
-        // Reactive badges, but also reset unauthorized attempts and firstUnauthorizedAttempt
         const data: Partial<BadgeAttributes> = {
             status: BadgeStatus.Active,
             unauthorizedAttempts: 0,
             firstUnauthorizedAttempt: null
         };
 
-        const updated = await this.repo.updateMany(suspended, data);
+        const updatedBadges = await this.repo.updateMany(suspended, data);
 
         return {
-            updated: updated,
-            wrongBadges: wrongBadges
+            updatedBadges,
+            notFoundBadges
         };
     }
 

@@ -1029,11 +1029,11 @@ La risposta attesa avrà questa forma:
 
 La richiesta può essere svolta in questo modo:
 ```ts
-PUT http://localhost:3000/badges_suspended
+PUT http://localhost:3000/reactivate_badges
 Authorization: Bearer {{jwt_token}}
 
 {
-    "badgeIds": ["d70c2d10-b56c-4cbb-bb00-6c2f1e1cb723"]
+    "badgeIds": ["a30c2d10-b56c-4cbb-bb00-6c2f1e1cb555", "d70c2d10-b56c-4cbb-bb00-6c2f1e1cb723", "b77c2d10-b56c-4cbb-bb00-6c2f1e1cb555"]
 }
 ```
 
@@ -1041,17 +1041,23 @@ La risposta attesa avrà questa forma:
 ```ts
 200 OK
 
-[
-    {
+{
+  "updatedBadges": [
+      {
         "id": "d70c2d10-b56c-4cbb-bb00-6c2f1e1cb723",
         "userId": "fa4d116f-7b3f-4c9d-88d6-8f01b36dc8c6",
         "status": "active",
         "unauthorizedAttempts": 0,
         "firstUnauthorizedAttempt": null,
-        "createdAt": "2025-06-09T16:15:15.207Z",
-        "updatedAt": "2025-06-09T16:54:31.159Z"
-    }
-]
+        "createdAt": "2025-06-10T10:23:56.793Z",
+        "updatedAt": "2025-06-10T10:24:11.595Z"
+      }
+  ],
+  "notFoundBadges": [
+      "a30c2d10-b56c-4cbb-bb00-6c2f1e1cb555",
+      "b77c2d10-b56c-4cbb-bb00-6c2f1e1cb555"
+  ]
+}
 ```
 
 # Configurazione e uso
