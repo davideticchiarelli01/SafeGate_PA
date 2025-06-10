@@ -54,7 +54,7 @@ controllo di un cantiere. Per raggiungere questo obiettivo, è necessario implem
   Amministratore o di un Varco:
     - Nel caso di un numero di tentativi non autorizzati superiore a 3 in un intervallo temporale di 20min è necessario
       sospendere l’utenza (inserire tali parametri come var di env).
-- Restituire un eleneco di badgeId sospesi;
+- Restituire un elenco di badgeId sospesi;
 - Riattivare uno o più badgeId sospesi;
 - Restituire uno specifico transito a un utente o ad un amministratore;
 - Eliminazione e Update di un transito;
@@ -286,34 +286,32 @@ sequenceDiagram
 
     Client->>Router: GET /gates
 
-    %% Autenticazione
-    Router->>AuthMiddleware: Verifica JWT
-    alt Token mancante o malformato
+    %% Authentication
+    Router->>AuthMiddleware: Verify JWT
+    alt Missing or malformed token
         AuthMiddleware->>ErrorMiddleware: throw 401 Unauthorized
         ErrorMiddleware-->>Client: 401 Unauthorized + JSON error
-    else JWT valido
+    else Valid token
         AuthMiddleware-->>Router: req.user
 
-        %% Autorizzazione
-        Router->>AdminMiddleware: Verifica ruolo admin
-        alt Utente non admin
+        %% Authorization
+        Router->>AdminMiddleware: Verify admin role
+        alt Non-admin user
             AdminMiddleware->>ErrorMiddleware: throw 403 Forbidden
             ErrorMiddleware-->>Client: 403 Forbidden + JSON error
-        else Admin valido
+        else Valid Admin
             AdminMiddleware-->>Router: ok
 
-            %% Chiamata al controller
+            %% Controller call
             Router->>Controller: gateController.getAllGates()
             Controller->>Service: service.getAllGates()
             Service->>Repository: repo.findAll()
             Repository->>Dao: dao.getAll()
-
-            alt Query eseguita
-                Dao-->>Repository: Gate[]
-                Repository-->>Service: Gate[]
-                Service-->>Controller: Gate[]
-                Controller-->>Client: 200 OK + [JSON array]
-            end
+            Dao-->>Repository: Gate[]
+            Repository-->>Service: Gate[]
+            Service-->>Controller: Gate[]
+            Controller-->>Client: 200 OK + [JSON array]
+        
         end
     end
 
@@ -336,42 +334,42 @@ sequenceDiagram
 
     Client->>Router: GET /gates/:id
 
-    %% Autenticazione
-    Router->>AuthMiddleware: Verifica JWT
-    alt Token mancante o malformato
+    %% Authentication
+    Router->>AuthMiddleware: JWT verification
+    alt Missing or invalid token 
         AuthMiddleware->>ErrorMiddleware: throw 401 Unauthorized
         ErrorMiddleware-->>Client: 401 Unauthorized + JSON error
-    else JWT valido
+    else Valid token
         AuthMiddleware-->>Router: req.user
 
-        %% Autorizzazione
-        Router->>AdminMiddleware: Verifica ruolo admin
-        alt Utente non admin
+        %% Authorization
+        Router->>AdminMiddleware: Verify admin role
+        alt Non-admin user
             AdminMiddleware->>ErrorMiddleware: throw 403 Forbidden
             ErrorMiddleware-->>Client: 403 Forbidden + JSON error
-        else Admin valido
+        else Admin user
             AdminMiddleware-->>Router: ok
 
-            %% Validazione ID
-            Router->>ValidationMiddleware: Valida param id
-            alt ID non UUID o mancante
+            %% ID validation
+            Router->>ValidationMiddleware: Validate id param
+            alt ID not UUID or missing
                 ValidationMiddleware->>ErrorMiddleware: throw 400 Bad Request
                 ErrorMiddleware-->>Client: 400 Bad Request + JSON error
-            else ID valido
+            else Valid ID
                 ValidationMiddleware-->>Router: ok
 
-                %% Chiamata al controller
+                %% Controller call
                 Router->>Controller: gateController.getGate(id)
                 Controller->>Service: service.getGate(id)
                 Service->>Repository: repo.findById(id)
                 Repository->>Dao: dao.get(id)
 
-                alt Gate trovato
+                alt Gate found
                     Dao-->>Repository: Gate
                     Repository-->>Service: Gate
                     Service-->>Controller: Gate
                     Controller-->>Client: 200 OK + Gate JSON
-                else Gate non trovato
+                else Gate not found
                     Dao-->>Repository: null
                     Repository-->>Service: null
                     Service->>ErrorMiddleware: throw 404 Not Found
@@ -384,6 +382,72 @@ sequenceDiagram
 #### POST '/gates'
 #### PUT '/gates/:id'
 #### DELETE '/gates/:id'
+``` mermaid
+sequenceDiagram
+    autonumber
+    participant Client
+    participant Router
+    participant AuthMiddleware
+    participant AdminMiddleware
+    participant ValidationMiddleware
+    participant Controller
+    participant Service
+    participant Repository
+    participant Dao
+    participant ErrorMiddleware
+
+    Client->>Router: DELETE /gates/:id
+
+    %% Authentication
+    Router->>AuthMiddleware: Verify JWT
+    alt Missing or invalid token
+        AuthMiddleware->>ErrorMiddleware: throw 401 Unauthorized
+        ErrorMiddleware-->>Client: 401 Unauthorized + JSON error
+    else Valid token
+        AuthMiddleware-->>Router: req.user
+
+        %% Authorization
+        Router->>AdminMiddleware: Check for admin role
+        alt Non-admin user
+            AdminMiddleware->>ErrorMiddleware: throw 403 Forbidden
+            ErrorMiddleware-->>Client: 403 Forbidden + JSON error
+        else Admin user
+            AdminMiddleware-->>Router: ok
+
+            %% ID validation
+            Router->>ValidationMiddleware: Validate ID parameter
+            alt ID is not a UUID or is missing
+                ValidationMiddleware->>ErrorMiddleware: throw 400 Bad Request
+                ErrorMiddleware-->>Client: 400 Bad Request + JSON error
+            else Valid ID
+                ValidationMiddleware-->>Router: ok
+
+                %% Controller call
+                Router->>Controller: gateController.deleteGate(id)
+                Controller->>Service: service.deleteGate(id)
+                Service->>Repository: repo.findById(id)
+                Repository->>Dao: dao.get(id)
+
+                alt Gate not found
+                    Dao-->>Repository: null
+                    Repository-->>Service: null
+                    Service->>ErrorMiddleware: throw 404 Not Found
+                    ErrorMiddleware-->>Client: 404 Not Found + JSON error
+                else Gate found
+                    Dao-->>Repository: Gate
+                    Repository-->>Service: Gate
+                    Service->>Repository: repo.delete(gate)
+                    Repository->>Dao: dao.delete(gate)
+                    Dao-->>Repository: void
+                    Repository-->>Service: void
+                    Service-->>Controller: void
+                    Controller-->>Client: 204 No Content
+                end
+            end
+        end
+    end
+```
+
 #### GET '/badges'
 #### GET '/badges/:id'
 #### POST '/badges'
