@@ -1927,6 +1927,28 @@ sequenceDiagram
 | **GET**    | `/badges_suspended`                | Recupera tutti i badge sospesi.                            | ✅       | Admin                   |
 | **PUT**    | `/reactivate_badges`               | Riattiva uno o più badge.                                  | ✅       | Admin                   |
 
+> **Nota sull'utilizzo delle date**
+>
+> - Le date devono essere fornite in formato **ISO 8601**  
+>   *(es. `2025-06-08T12:00:00Z` oppure `2025-06-08T12:00:00+02:00`)*.
+>
+> - Se **non viene specificato un fuso orario**, la data sarà interpretata come **UTC**.
+>   - Esempio: `2025-06-08T12:00:00` sarà considerata **12:00 UTC**, ovvero le **14:00 italiane** (UTC+2).
+>
+> - Le date restituite nelle risposte sono sempre in **UTC**.
+>   - È normale che, ad esempio, un `createdAt` risulti **12:00 UTC** se l’operazione è avvenuta alle **14:00 italiane**.
+>
+> - Questo comportamento si applica sia:
+>   - ai campi data presenti nel **body** delle richieste (`POST`, `PUT`, ecc.)
+>   - sia ai parametri nella **query string** (`GET`)
+>     - In questo caso, se si specifica anche il fuso orario, deve essere **URL-encoded**.
+>
+>     **Esempio corretto:**
+>     ```
+>     ?endDate=2025-06-08T12:30:00%2B02:00
+>     ```
+ 
+
 ## POST /login
 ### Parametri
 | **Posizione**   | **Nome**            | **Tipo**               | **Descrizione**                                | **Opzionalità**         |
