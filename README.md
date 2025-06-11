@@ -267,13 +267,13 @@ sequenceDiagram
     participant Service
     participant Repository
     participant DAO
-    participant ErrorHandler
+    participant ErrorMiddleware
 
     Client->>Router: POST /login
     Router->>validateLogin: validate email & password
     alt Validation fails
-        validateLogin->>ErrorHandler: 400 Bad Request
-        ErrorHandler-->>Client: 400 Validation Error + JSON error
+        validateLogin->>ErrorMiddleware: 400 Bad Request
+        ErrorMiddleware-->>Client: 400 Validation Error + JSON error
     else Validation passes
         validateLogin->>Router: OK
 
@@ -286,13 +286,13 @@ sequenceDiagram
         Repository-->>Service: User|null
 
         alt User not found
-            Service->>ErrorHandler: 401 Unauthorized
-            ErrorHandler-->>Client: 401 Invalid credentials + JSON error
+            Service->>ErrorMiddleware: 401 Unauthorized
+            ErrorMiddleware-->>Client: 401 Invalid credentials + JSON error
         else User found
             Service->>Service: bcrypt.compare(password, user.password)
             alt Password mismatch
-                Service->>ErrorHandler: 401 Unauthorized
-                ErrorHandler-->>Client: 401 Invalid credentials + JSON error
+                Service->>ErrorMiddleware: 401 Unauthorized
+                ErrorMiddleware-->>Client: 401 Invalid credentials + JSON error
             else Password match
                 Service->>Service: getPrivateJwtKey()
                 Service-->>Service: privateKey
@@ -672,23 +672,23 @@ sequenceDiagram
     participant Service
     participant Repository
     participant DAO
-    participant ErrorHandler
+    participant ErrorMiddleware
 
     Client->>Router: GET /transits_stats/:badgeId?gateId&startDate&endDate
 
     %% --- AUTHENTICATION ---
     Router->>authMiddleware: JWT verification
     alt Missing or invalid token
-        authMiddleware->>ErrorHandler: 401 Unauthorized
-        ErrorHandler-->>Client: 401 Unauthorized
+        authMiddleware->>ErrorMiddleware: 401 Unauthorized
+        ErrorMiddleware-->>Client: 401 Unauthorized
     else Token valid
         authMiddleware->>Router: req.user
 
         %% --- VALIDATION ---
         Router->>validateMiddleware: validate badgeId, gateId?, startDate?, endDate?
         alt Validation fails
-            validateMiddleware->>ErrorHandler: 400 Bad Request
-            ErrorHandler-->>Client: 400 Validation Error
+            validateMiddleware->>ErrorMiddleware: 400 Bad Request
+            ErrorMiddleware-->>Client: 400 Validation Error
         else Valid input
             validateMiddleware->>Router: OK
 
@@ -698,25 +698,25 @@ sequenceDiagram
 
             %% --- AUTHORIZATION & DATA FETCH ---
             alt user.role == Gate
-                Service->>ErrorHandler: 403 Forbidden
-                ErrorHandler-->>Client: 403 Forbidden
+                Service->>ErrorMiddleware: 403 Forbidden
+                ErrorMiddleware-->>Client: 403 Forbidden
             else user.role == User
                 Service->>Repository: badgeRepo.findById(badgeId)
                 Repository->>DAO: BadgeDao.get(badgeId)
                 DAO-->>Repository: Badge|null
                 Repository-->>Service: Badge|null
                 alt Badge not found
-                    Service->>ErrorHandler: 404 Not Found
-                    ErrorHandler-->>Client: 404 Badge not found
+                    Service->>ErrorMiddleware: 404 Not Found
+                    ErrorMiddleware-->>Client: 404 Badge not found
                 else Badge found
                     alt badge.userId != user.id
-                        Service->>ErrorHandler: 403 Forbidden
-                        ErrorHandler-->>Client: 403 Forbidden
+                        Service->>ErrorMiddleware: 403 Forbidden
+                        ErrorMiddleware-->>Client: 403 Forbidden
                     else Owner match
                         Service->>Service: validate date range
                         alt startDate > endDate
-                            Service->>ErrorHandler: 400 Bad Request
-                            ErrorHandler-->>Client: 400 Invalid date range
+                            Service->>ErrorMiddleware: 400 Bad Request
+                            ErrorMiddleware-->>Client: 400 Invalid date range
                         else Valid date range
                             Service->>Repository: transitRepo.findByBadgeGateAndDate(badgeId, gateId?, startDate?, endDate?)
                         end
@@ -725,8 +725,8 @@ sequenceDiagram
             else user.role == Admin
                 Service->>Service: validate date range
                 alt startDate > endDate
-                    Service->>ErrorHandler: 400 Bad Request
-                    ErrorHandler-->>Client: 400 Invalid date range
+                    Service->>ErrorMiddleware: 400 Bad Request
+                    ErrorMiddleware-->>Client: 400 Invalid date range
                 else Valid date range
                     Service->>Repository: transitRepo.findByBadgeGateAndDate(badgeId, gateId?, startDate?, endDate?)
                 end
@@ -758,31 +758,31 @@ sequenceDiagram
     participant Service
     participant Repository
     participant DAO
-    participant ErrorHandler
+    participant ErrorMiddleware
 
     Client->>Router: GET /gate_report
 
     %% --- AUTHENTICATION ---
     Router->>authMiddleware: JWT verification
     alt Missing or invalid token
-        authMiddleware->>ErrorHandler: 401 Unauthorized
-        ErrorHandler-->>Client: 401 Unauthorized + JSON error
+        authMiddleware->>ErrorMiddleware: 401 Unauthorized
+        ErrorMiddleware-->>Client: 401 Unauthorized + JSON error
     else Valid token
         authMiddleware->>Router: req.user
 
         %% --- AUTHORIZATION ---
         Router->>adminMiddleware: Admin role check
         alt User is not admin
-            adminMiddleware->>ErrorHandler: 403 Forbidden
-            ErrorHandler-->>Client: 403 Forbidden + JSON error
+            adminMiddleware->>ErrorMiddleware: 403 Forbidden
+            ErrorMiddleware-->>Client: 403 Forbidden + JSON error
         else User is admin
             adminMiddleware->>Router: OK
 
             %% --- VALIDATION ---
             Router->>validateMiddleware: validate format?, startDate?, endDate?
             alt Validation fails
-                validateMiddleware->>ErrorHandler: 400 Bad Request
-                ErrorHandler-->>Client: 400 Validation Error + JSON error
+                validateMiddleware->>ErrorMiddleware: 400 Bad Request
+                ErrorMiddleware-->>Client: 400 Validation Error + JSON error
             else Valid input
                 validateMiddleware->>Router: OK
 
@@ -792,8 +792,8 @@ sequenceDiagram
 
                 %% --- DATE RANGE CHECK (in Service) ---
                 alt startDate > endDate
-                    Service->>ErrorHandler: 400 Bad Request
-                    ErrorHandler-->>Client: 400 Invalid date range + JSON error
+                    Service->>ErrorMiddleware: 400 Bad Request
+                    ErrorMiddleware-->>Client: 400 Invalid date range + JSON error
                 else Valid date range
 
                     %% --- FETCH TRANSITS ---
@@ -829,31 +829,31 @@ sequenceDiagram
     participant Service
     participant Repository
     participant DAO
-    participant ErrorHandler
+    participant ErrorMiddleware
 
     Client->>Router: GET /badge_report?format&startDate&endDate
 
     %% --- AUTHENTICATION ---
     Router->>authMiddleware: JWT verification
     alt Invalid or missing token
-        authMiddleware->>ErrorHandler: 401 Unauthorized
-        ErrorHandler-->>Client: 401 Unauthorized + JSON error
+        authMiddleware->>ErrorMiddleware: 401 Unauthorized
+        ErrorMiddleware-->>Client: 401 Unauthorized + JSON error
     else Token valid
         authMiddleware->>Router: req.user
 
         %% --- AUTHORIZATION ---
         Router->>userOrAdminMiddleware: User or Admin check
         alt Not authorized
-            userOrAdminMiddleware->>ErrorHandler: 403 Forbidden
-            ErrorHandler-->>Client: 403 Forbidden + JSON error
+            userOrAdminMiddleware->>ErrorMiddleware: 403 Forbidden
+            ErrorMiddleware-->>Client: 403 Forbidden + JSON error
         else Authorized
             userOrAdminMiddleware->>Router: OK
 
             %% --- VALIDATION ---
             Router->>validateMiddleware: validate format?, startDate?, endDate?
             alt Validation fails
-                validateMiddleware->>ErrorHandler: 400 Bad Request
-                ErrorHandler-->>Client: 400 Validation Error + JSON error
+                validateMiddleware->>ErrorMiddleware: 400 Bad Request
+                ErrorMiddleware-->>Client: 400 Validation Error + JSON error
             else Valid input
                 validateMiddleware->>Router: OK
 
@@ -871,8 +871,8 @@ sequenceDiagram
                     DAO-->>Repository: Badge|null
                     alt Badge not found
                         Repository->>Service: null
-                        Service->>ErrorHandler: 404 Not Found
-                        ErrorHandler-->>Client: 404 Badge not found + JSON error
+                        Service->>ErrorMiddleware: 404 Not Found
+                        ErrorMiddleware-->>Client: 404 Badge not found + JSON error
                     else Badge found
                         Service->>Repository: transitRepo.findByBadgeGateAndDate(badge.id, undefined, startDate, endDate)
                         Repository->>DAO: TransitDao.getManyFiltered()
@@ -1207,7 +1207,7 @@ sequenceDiagram
 ``` mermaid
 sequenceDiagram
     autonumber
-    participant Client
+    actor Client
     participant Router
     participant AuthMiddleware
     participant AdminMiddleware
@@ -1254,7 +1254,7 @@ sequenceDiagram
 ``` mermaid
 sequenceDiagram
     autonumber
-    participant Client
+    actor Client
     participant Router
     participant AuthMiddleware
     participant AdminMiddleware
@@ -1438,7 +1438,7 @@ sequenceDiagram
 ``` mermaid
 sequenceDiagram
     autonumber
-    participant Client
+    actor Client
     participant Router
     participant AuthMiddleware
     participant AdminMiddleware
