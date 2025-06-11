@@ -71,7 +71,7 @@ export const isISODateField = (
         .isString().withMessage(`Field "${field}" in ${location} must be a string`)
         .bail()
         .trim()
-        .isISO8601().withMessage(`Field "${field}" in ${location} must be a valid ISO 8601 date (e.g., 2023-10-01T12:00:00Z)`)
+        .withMessage(`Field "${field}" in ${location} must be a valid ISO 8601 date (e.g., 2025-06-11T12:00:00Z or 2025-06-11T12:00:00+02:00)`)
         .bail()
         .toDate();
 };
