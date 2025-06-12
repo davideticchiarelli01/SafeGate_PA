@@ -34,7 +34,7 @@ Prof. Adriano Mancini.<br>
         - [Diagramma dei casi d'uso](#diagramma-dei-casi-duso)
         - [Diagramma E-R](#diagramma-e-r)
         - [Diagrammi delle sequenze](#diagrammi-delle-sequenze)
-- [API Routes](#api-routes)
+- [Rotte API](#rotte-api)
 - [Configurazione e uso](#configurazione-e-uso)
 - [Strumenti utilizzati](#strumenti-utilizzati)
 - [Divisione dei Compiti](#divisione-dei-compiti)
@@ -1897,7 +1897,7 @@ sequenceDiagram
     end
 ```
 
-# API Routes
+# Rotte API
 
 | **HTTP**   | **Endpoint**                       | **Descrizione**                                            | **JWT**  | **Ruolo**               |
 |------------|------------------------------------|------------------------------------------------------------|----------|-------------------------|
@@ -1927,25 +1927,28 @@ sequenceDiagram
 | **GET**    | `/badges_suspended`                | Recupera tutti i badge sospesi.                            | ✅       | Admin                   |
 | **PUT**    | `/reactivate_badges`               | Riattiva uno o più badge.                                  | ✅       | Admin                   |
 
-> **Nota sull'utilizzo delle date**
+> #### Nota sull'utilizzo delle date
+> 
+> - Le date devono essere fornite in formato **ISO 8601**, supportando:
+>   - solo data → `YYYY-MM-DD`;
+>   - data + orario → `YYYY-MM-DDTHH:mm:ss`;
+>   - data + orario + offset → `YYYY-MM-DDTHH:mm:ssZ` oppure `YYYY-MM-DDTHH:mm:ss+02:00`.
 >
-> - Le date devono essere fornite in formato **ISO 8601**  
->   *(es. `2025-06-08T12:00:00Z` oppure `2025-06-08T12:00:00+02:00`)*.
+>   *Esempi validi: `2025-06-08`, `2025-06-08T12:00:00`, `2025-06-08T12:00:00Z`, `2025-06-08T12:00:00+02:00`*
 >
-> - Se **non viene specificato un fuso orario**, la data sarà interpretata come **UTC**.
->   - Esempio: `2025-06-08T12:00:00` sarà considerata **12:00 UTC**, ovvero le **14:00 italiane** (UTC+2).
+> - Se **non viene specificato il fuso orario** (`Z` o `±hh:mm`), la data sarà interpretata come **UTC**.
+>   - Esempio: `2025-06-08T12:00:00` sarà considerata `12:00 UTC`, ovvero 	`14:00` italiane (UTC+02:00).
 >
-> - Le date restituite nelle risposte sono sempre in **UTC**.
->   - È normale che, ad esempio, un `createdAt` risulti **12:00 UTC** se l’operazione è avvenuta alle **14:00 italiane**.
+> - Le date restituite dalle API sono sempre espresse in **UTC**.
+>   - È quindi normale che un campo `createdAt` risulti, ad esempio, `2025-06-08T12:00:00Z` se l’operazione è avvenuta alle `14:00` italiane.
 >
 > - Questo comportamento si applica sia:
->   - ai campi data presenti nel **body** delle richieste (`POST`, `PUT`, ecc.)
->   - sia ai parametri nella **query string** (`GET`)
->     - In questo caso, se si specifica anche il fuso orario, deve essere **URL-encoded**.
->
+>   - ai campi data presenti nel **body** delle richieste (`POST`, `PUT`, ecc.);
+>   - che ai parametri nella **query string** delle richieste `GET` (in questo specifico caso il valore deve essere **URL-encoded**).
+>     
 >     **Esempio corretto:**
 >     ```
->     ?endDate=2025-06-08T12:30:00%2B02:00
+>     ?endDate=2025-06-08T12:30:00%2B02:00  (%2B corrisponde al simbolo + codificato)
 >     ```
  
 
