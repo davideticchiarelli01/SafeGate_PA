@@ -1,9 +1,9 @@
-import { NextFunction, Request, Response } from "express";
-import { ReasonPhrases } from "http-status-codes";
-import { HttpError, ErrorFactory } from "../factories/errorFactory";
-import { handleSequelizeError } from "../utils/errorHandlers/sequelizeErrorHandler";
-import { handleHttpErrorResponse } from "../utils/errorHandlers/httpErrorResponseHandler";
-import { handleJsonSyntaxError } from "../utils/errorHandlers/jsonErrorHandler";
+import {NextFunction, Request, Response} from "express";
+import {ReasonPhrases} from "http-status-codes";
+import {HttpError, ErrorFactory} from "../factories/errorFactory";
+import {handleSequelizeError} from "../utils/errorHandlers/sequelizeErrorHandler";
+import {handleHttpErrorResponse} from "../utils/errorHandlers/httpErrorResponseHandler";
+import {handleJsonSyntaxError} from "../utils/errorHandlers/jsonErrorHandler";
 
 /**
  * Middleware to catch JSON syntax errors in the request body.
@@ -82,7 +82,6 @@ function genericErrorMiddleware(err: unknown, _req: Request, res: Response, _nex
  * Array of error-handling middlewares to be used in the Express app.
  * The order is important: from the most specific to the most generic.
  *
- * @type {Array<Function>}
  */
 export const errorMiddlewares = [
     jsonSyntaxErrorMiddleware,   // Handles JSON syntax errors

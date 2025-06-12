@@ -66,12 +66,24 @@ export const isISODateField = (
     optional = false
 ): ValidationChain => {
     const chain: ValidationChain = buildValidatorChain(field, location, optional);
-
+    const rgxISO8601Date = /^(\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}:\d{2}(\.\d+)?(Z|[+-]\d{2}:\d{2})?)?)$/
     return chain
         .isString().withMessage(`Field "${field}" in ${location} must be a string`)
         .bail()
         .trim()
-        .withMessage(`Field "${field}" in ${location} must be a valid ISO 8601 date (e.g., 2025-06-11T12:00:00Z or 2025-06-11T12:00:00+02:00)`)
+        .matches(rgxISO8601Date) // structural validation for ISO 8601 date format (stricter than isISO8601)
+        .withMessage(
+            `Field "${field}" in ${location} must follow ISO 8601 format. ` +
+            `Accepted formats: "YYYY-MM-DD", "YYYY-MM-DDTHH:mm:ss", or with timezone (e.g. "Z", "+02:00"). ` +
+            `If timezone is omitted, UTC is assumed.`
+        )
+        .bail()
+        .isISO8601() // structural validation but also checks for valid date values
+        .withMessage(
+            `Field "${field}" in ${location} must contain a valid calendar date and time following the ISO 8601 standard. ` +
+            `The expected structure is "YYYY-MM-DD" for dates, optionally followed by "THH:mm:ss" for time and a timezone indicator ("Z" or "+/-HH:MM"). ` +
+            `Invalid dates with non-existent days, months, or time values will be rejected.`
+        )
         .bail()
         .toDate();
 };
