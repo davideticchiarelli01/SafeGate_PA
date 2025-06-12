@@ -7,6 +7,8 @@ import {errorMiddlewares} from './middlewares/errorMiddleware';
 import BadgeRoute from "./routes/badgeRoute";
 import loginRoute from "./routes/loginRoute";
 import authorizationRoute from "./routes/authorizationRoute";
+import {ErrorFactory, HttpError} from "./factories/errorFactory";
+import {ReasonPhrases} from "http-status-codes";
 
 const app = express();
 const PORT: string = process.env.APP_PORT || '3000';
@@ -55,8 +57,22 @@ app.use(loginRoute);
  * @route GET /
  * @returns {string} Simple message response.
  */
-app.get('/', (req, res) => {
+app.get('/', (_req, res) => {
     res.send('Hello from app!');
+});
+
+/**
+ * Middleware to handle requests to undefined routes.
+ * Creates a `HttpError` with a 404 status and passes it to the next middleware.
+ *
+ * @param {Request} req - The Express request object.
+ * @param {Response} _res - The Express response object (unused).
+ * @param {NextFunction} next - The Express next middleware function.
+ */
+app.use((req, _res, next) => {
+    const msg: string = `Route ${req.originalUrl} not found`;
+    const error: HttpError = ErrorFactory.createError(ReasonPhrases.NOT_FOUND, msg);
+    next(error);
 });
 
 /**
