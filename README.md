@@ -213,7 +213,7 @@ erDiagram
     
 
     GATE {
-        uuid id PK
+        uuidV4 id PK
         string name
         dpi[] requiredDPIs
         timestamp createdAt
@@ -221,19 +221,19 @@ erDiagram
     }
 
     USER {
-        uuid id PK
+        uuidV4 id PK
         string email
         string password
         user_role role
-        uuid linkedGateId FK
+        uuidV4 linkedGateId FK
         int token
         timestamp createdAt
         timestamp updatedAt
     }
 
     BADGE {
-        uuid id PK
-        uuid userId FK
+        uuidV4 id PK
+        uuidV4 userId FK
         badge_status status
         int unauthorizedAttempts
         timestamp firstUnauthorizedAttempt
@@ -242,9 +242,9 @@ erDiagram
     }
 
     TRANSIT {
-        uuid id PK
-        uuid gateId FK
-        uuid badgeId FK
+        uuidV4 id PK
+        uuidV4 gateId FK
+        uuidV4 badgeId FK
         transit_status status
         dpi[] usedDPIs
         boolean DPIviolation
@@ -253,8 +253,8 @@ erDiagram
     }
     
     AUTHORIZATION {
-        uuid badgeId PK, FK
-        uuid gateId PK, FK
+        uuidV4 badgeId PK, FK
+        uuidV4 gateId PK, FK
         timestamp createdAt
         timestamp updatedAt
     }
