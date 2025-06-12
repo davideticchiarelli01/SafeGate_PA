@@ -110,13 +110,13 @@ SafeGate_PA/
 ### Model-Controller-Service
 Il pattern **Model-Controller-Service** è un pattern architetturale molto diffuso per sviluppo di aplicazioni modulari e backend che, a differenza del pattern MVC (Model-View-Controller), non prevede appunto l'implementazione di viste ma si concentra sulla gestione e sulla logica di business dell'applicativo da sviluppare. Questo pattern prevede quindi tre componenti principali:
 - ***Model***: rappresenta la struttura dati dell'applicazione e si occupa dell'interazione di essa con il database. Nel caso di SafeGate, i modelli interagiscono con il sistema di storicizzazione dei dati grazie all'ausilio dell'ORM Sequelize il quale offre un insieme di funzioni che permette un dialogo intuitivo con il livello sottostante. Questa pratica consente di astrarre la logica SQL sottostante, mantenendo il codice modulare e facilmente manutenibile.
-- ***Controller***: è il componente responsabile della gestione delle richieste in ingresso ed è quindi, il punto di accesso tra il client e l'applicazione; riceve la richiesta (precedentemente validata) e la inoltra successivamente ad uno specifico Service che si occuperà di elaborarla.
+- ***Controller***: è il componente responsabile della gestione delle richieste in ingresso ed è quindi, il punto di accesso tra il client e l'applicazione; riceve la richiesta (precedentemente validata) e inoltra i dati necessari ad uno specifico Service.
 - ***Service***: è il componente in cui risiede la logica di business dell'applicazione. Qui vengono eseguite le operazioni più complesse e avviene l'interazione con il layer dati. Nel caso di SafeGate, il Service layer si interfaccia con le Repositories, permettendo così l'interazione indiretta con il database.
 
 ### Repository
 Il **Repository** è un pattern architetturale che introduce un ulteriore strato di astrazione logica tra le tecnologie di persistenza dei dati (es. Sequelize) e la logica di business e il dominio applicativo. 
 
-Nel progetto SafeGate **Repository** funge dunque, da strato intermedio collocato tra il **DAO** e il **Service** ed ha il compito di *astrarre e arricchire la logica di accesso ai dati*, nello specifico:
+Nel progetto SafeGate **Repository** funge da strato intermedio collocato tra il **DAO** e il **Service** ed ha il compito di *astrarre e arricchire la logica di accesso ai dati*, nello specifico:
 - Ogni Repository è associato a un singolo DAO.
 - Espone metodi più espressivi e orientati al dominio (es. `findByBadgeGateAndDate`, `findManyByIdAndStatus`).
 - Consente al Service Layer di interagire con i dati in modo pulito, senza occuparsi dei dettagli di accesso.
@@ -150,14 +150,18 @@ Il pattern **Unit of Work** consente di **coordinare più operazioni su entità 
 Nel progetto:
 - Consente di gestire **operazioni sequenziali su più entità** (es. aggiornamento di `Badge` seguito dalla creazione di un `Transit`) in modo sicuro e controllato tramite le **Transaction**.
 - Permette di **centralizzare le operazioni di commit e rollback**, mantenendo il codice dei service più pulito e disaccoppiato dalla logica transazionale.
-  
+
+Il motivo principale che ha spinto all'adozione di questo pattern è la necessità di gestire le transazioni a livello di service senza esporre direttamente Sequelize, evitando così di mischiare la logica di più DAO all'interno di un singolo repository.
+
 ### Singleton
 Il **Singleton** è un pattern creazionale che assicura l’esistenza di **una singola istanza di una classe** e fornisce un punto di accesso globale ad essa. Questo approccio è particolarmente utile per la gestione di risorse condivise, come connessioni al database o configurazioni globali. 
 
 Nel progetto è stato adottato il pattern **Singleton** per garantire che alcune componenti fondamentali dell’applicazione, come la connessione al database, siano istanziate una sola volta durante l’intero ciclo di vita del server. 
 
 ### Factory
-Il **Factory** è un pattern creazionale che permette di delegare un'istanzazione basata su parametri dinamici ad una specifica classe chiamata *Factory*. A differenza di un classico Factory Method che prevede un'effettiva gerarchia tra classi e sottoclassi che implementano dei metodi di creazione specifici, nel caso di SafeGate è stata definita una classe principale, come ad esempio `ErrorFactory` o `ReportFactory`, che centralizza la logica di costruzione di oggetti attraverso metodi statici. Questo pattern è stato implementato al fine di garantire modularità, leggibilità, scalabilità e manutenibilità. 
+Il Factory è un pattern creazionale che consente di centralizzare la creazione degli oggetti, separando la logica costruttiva dal resto dell’applicazione. Questo approccio è utile quando si desidera disaccoppiare l’istanziazione delle classi dalla loro implementazione concreta, facilitando l’estensione e la gestione del codice. Nel caso SafeGate, il pattern Factory è stato adottato per incapsulare la logica di creazione di oggetti complessi o condizionati. Sono state definite due classi come ErrorFactory e ReportFactory che espongono metodi statici per costruire oggetti specifici (ad esempio, errori personalizzati o generatori di report in vari formati come JSON, PDF, CSV). 
+
+Questo pattern è stato implementato al fine di garantire modularità, leggibilità, scalabilità e manutenibilità.
 
 ### Chain Of Responsability
 Il **Chain Of Responsability (COR)** è un pattern comportamentale che consente di inserire una richiesta all'interno di una *catena di handlers* che possono o meno effettuare delle operazioni su di essa prima di passarla al gestore successivo. 
@@ -171,6 +175,8 @@ In SafeGate, i middleware sono stati utilizzati per implementare logiche fondame
 - **Middleware di validazione (`express-validator`)**: Controlla che i dati forniti nella richiesta (body, params, query) siano corretti e coerenti con le specifiche previste. In caso contrario, la catena si interrompe e viene restituito un errore dettagliato.
 
 - **Middleware di gestione degli errori**: Intercetta e gestisce centralmente le eccezioni e gli errori sollevati nella catena, restituendo risposte coerenti e formattate tramite la `ErrorFactory`.
+
+ Questo pattern è stato adottato per gestire le richieste in modo chiaro e scalabile, con responsabilità ben separate tra i vari handler, semplificando sia lo sviluppo che la manutenzione del sistema.
 
 ## Diagrammi UML
 
