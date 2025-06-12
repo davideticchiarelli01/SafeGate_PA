@@ -1,0 +1,33 @@
+{
+	"id": "720ce3ec-739d-43a2-9d42-2922d41b96c0",
+	"name": "Environment_SafeGate_PA_Ticchiarelli_Marino_2025",
+	"values": [
+		{
+			"key": "jwt_token",
+			"value": "",
+			"type": "any",
+			"enabled": true
+		},
+		{
+			"key": "created_badge_id",
+			"value": "",
+			"type": "any",
+			"enabled": true
+		},
+		{
+			"key": "created_gate_id",
+			"value": "",
+			"type": "default",
+			"enabled": true
+		},
+		{
+			"key": "created_transit_id",
+			"value": "",
+			"type": "default",
+			"enabled": true
+		}
+	],
+	"_postman_variable_scope": "environment",
+	"_postman_exported_at": "2025-06-09T14:03:35.314Z",
+	"_postman_exported_using": "Postman/11.48.5"
+}

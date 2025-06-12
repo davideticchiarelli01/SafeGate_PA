@@ -1,0 +1,1031 @@
+{
+	"info": {
+		"_postman_id": "89973a1b-48e3-46db-95c2-ac583f148609",
+		"name": "Collection_SafeGate_PA_Ticchiarelli_Marino_2025",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "44233316",
+		"_collection_link": "https://davideticchiarelli-455893.postman.co/workspace/Davide-Ticchiarelli's-Workspace~efc0478a-a79a-401a-876c-49d0897cc55e/collection/44233316-89973a1b-48e3-46db-95c2-ac583f148609?action=share&source=collection_link&creator=44233316"
+	},
+	"item": [
+		{
+			"name": "Login",
+			"item": [
+				{
+					"name": "POST /login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const json = pm.response.json();",
+									"pm.environment.set(\"jwt_token\", json.token);"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"admin@example.com\",\n  \"password\": \"Admin123!\"\n}"
+						},
+						"url": {
+							"raw": "http://localhost:3000/login",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"login"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Badge",
+			"item": [
+				{
+					"name": "GET /badges",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:3000/badges",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"badges"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "POST /badges",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const json = pm.response.json();\r",
+									"\r",
+									"if (json.badge && json.badge.id) {\r",
+									"    pm.environment.set(\"created_badge_id\", json.badge.id);\r",
+									"    console.log(\"Badge ID salvato come variabile d'ambiente:\", json.badge.id);\r",
+									"} else {\r",
+									"    console.warn(\"Badge ID non trovato nella risposta.\");\r",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"userId\": \"6c39f5a9-40e6-4863-a86e-583e1506dfe0\",\n  \"status\": \"Active\"\n}"
+						},
+						"url": {
+							"raw": "http://localhost:3000/badges",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"badges"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET /badges/:id",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:3000/badges/{{created_badge_id}}",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"badges",
+								"{{created_badge_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "PUT /badges/:id",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"status\": \"suspended\"\n}"
+						},
+						"url": {
+							"raw": "http://localhost:3000/badges/{{created_badge_id}}",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"badges",
+								"{{created_badge_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET /badges_suspended",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:3000/badges_suspended",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"badges_suspended"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "PUT /reactivate_badges",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"badgeIds\": [\n    \"{{created_badge_id}}\",\n    \"fa4d116f-7b3f-4c9d-88d6-8f01b36dc8c6\",\n    \"d70c2d10-b56c-4cbb-bb00-6c2f1e1cb723\"\n  ]\n}"
+						},
+						"url": {
+							"raw": "http://localhost:3000/reactivate_badges",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"reactivate_badges"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "DELETE /badges/:id",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:3000/badges/{{created_badge_id}}",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"badges",
+								"{{created_badge_id}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Gate",
+			"item": [
+				{
+					"name": "GET /gates",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:3000/gates",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"gates"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "POST /gates",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const json = pm.response.json();\r",
+									"\r",
+									"if (json.gate && json.gate.id) {\r",
+									"    pm.environment.set(\"created_gate_id\", json.gate.id);\r",
+									"    console.log(\"Gate ID salvato come variabile d'ambiente:\", json.gate.id);\r",
+									"} else {\r",
+									"    console.warn(\"Gate ID non trovato nella risposta.\");\r",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"New Gate\",\n  \"requiredDPIs\":[\n    \"helmet\",\n    \"gloves\"\n  ]\n}"
+						},
+						"url": {
+							"raw": "http://localhost:3000/gates",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"gates"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET /gates/:id",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:3000/gates/{{created_gate_id}}",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"gates",
+								"{{created_gate_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "PUT /gates/:id",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"requiredDPIs\":[\"vest\"]\n}"
+						},
+						"url": {
+							"raw": "http://localhost:3000/gates/{{created_gate_id}}",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"gates",
+								"{{created_gate_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "DELETE /gates/:id",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:3000/gates/{{created_gate_id}}",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"gates",
+								"{{created_gate_id}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Authorization",
+			"item": [
+				{
+					"name": "GET /authorizations",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:3000/authorizations",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"authorizations"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "POST /authorizations",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"badgeId\": \"d70c2d10-b56c-4cbb-bb00-6c2f1e1cb723\",\n  \"gateId\": \"8a8e1f4d-bb7a-4b6e-bb44-7386228f637c\"\n}"
+						},
+						"url": {
+							"raw": "http://localhost:3000/authorizations",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"authorizations"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET /authorizations/:badgeId/:gateId",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:3000/authorizations/d70c2d10-b56c-4cbb-bb00-6c2f1e1cb723/8a8e1f4d-bb7a-4b6e-bb44-7386228f637c",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"authorizations",
+								"d70c2d10-b56c-4cbb-bb00-6c2f1e1cb723",
+								"8a8e1f4d-bb7a-4b6e-bb44-7386228f637c"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "DELETE /authorizations/:badgeId/:gateId",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:3000/authorizations/d70c2d10-b56c-4cbb-bb00-6c2f1e1cb723/8a8e1f4d-bb7a-4b6e-bb44-7386228f637c",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"authorizations",
+								"d70c2d10-b56c-4cbb-bb00-6c2f1e1cb723",
+								"8a8e1f4d-bb7a-4b6e-bb44-7386228f637c"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Transit",
+			"item": [
+				{
+					"name": "GET /transits",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:3000/transits",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"transits"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "POST /transits",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const json = pm.response.json();\r",
+									"\r",
+									"if (json.transit && json.transit.id) {\r",
+									"    pm.environment.set(\"created_transit_id\", json.transit.id);\r",
+									"    console.log(\"Transit ID salvato come variabile d'ambiente:\", json.transit.id);\r",
+									"} else {\r",
+									"    console.warn(\"Transit ID non trovato nella risposta.\");\r",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"badgeId\": \"d70c2d10-b56c-4cbb-bb00-6c2f1e1cb723\",\n  \"gateId\": \"5e3e4445-3a6e-4b83-9438-8ef7f5a2b9df\",\n  \"usedDPIs\": [\n    \"gloves\"\n  ]\n}"
+						},
+						"url": {
+							"raw": "http://localhost:3000/transits",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"transits"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET /transits/:id",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:3000/transits/{{created_transit_id}}",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"transits",
+								"{{created_transit_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "PUT /transits/:id",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"status\": \"unauthorized\",\n    \"usedDPIs\": [],\n    \"DPIviolation\": true\n}"
+						},
+						"url": {
+							"raw": "http://localhost:3000/transits/{{created_transit_id}}",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"transits",
+								"{{created_transit_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "DELETE /transits/:id",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:3000/transits/{{created_transit_id}}",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"transits",
+								"{{created_transit_id}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Report",
+			"item": [
+				{
+					"name": "GET /transits_stats/:badgeId",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:3000/transits_stats/d70c2d10-b56c-4cbb-bb00-6c2f1e1cb723",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"transits_stats",
+								"d70c2d10-b56c-4cbb-bb00-6c2f1e1cb723"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET /gate_report",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:3000/gate_report?format=pdf",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"gate_report"
+							],
+							"query": [
+								{
+									"key": "format",
+									"value": "pdf"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET /badge_report",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:3000/badge_report?format=json&startDate=2025-06-08&endDate=2025-06-15",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"badge_report"
+							],
+							"query": [
+								{
+									"key": "format",
+									"value": "json"
+								},
+								{
+									"key": "startDate",
+									"value": "2025-06-08"
+								},
+								{
+									"key": "endDate",
+									"value": "2025-06-15"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:3000/api"
+		},
+		{
+			"key": "token",
+			"value": ""
+		}
+	]
+}
