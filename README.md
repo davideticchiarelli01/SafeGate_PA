@@ -213,7 +213,7 @@ erDiagram
     
 
     GATE {
-        uuid id PK
+        uuidV4 id PK
         string name
         dpi[] requiredDPIs
         timestamp createdAt
@@ -221,19 +221,19 @@ erDiagram
     }
 
     USER {
-        uuid id PK
+        uuidV4 id PK
         string email
         string password
         user_role role
-        uuid linkedGateId FK
+        uuidV4 linkedGateId FK
         int token
         timestamp createdAt
         timestamp updatedAt
     }
 
     BADGE {
-        uuid id PK
-        uuid userId FK
+        uuidV4 id PK
+        uuidV4 userId FK
         badge_status status
         int unauthorizedAttempts
         timestamp firstUnauthorizedAttempt
@@ -242,9 +242,9 @@ erDiagram
     }
 
     TRANSIT {
-        uuid id PK
-        uuid gateId FK
-        uuid badgeId FK
+        uuidV4 id PK
+        uuidV4 gateId FK
+        uuidV4 badgeId FK
         transit_status status
         dpi[] usedDPIs
         boolean DPIviolation
@@ -253,8 +253,8 @@ erDiagram
     }
     
     AUTHORIZATION {
-        uuid badgeId PK, FK
-        uuid gateId PK, FK
+        uuidV4 badgeId PK, FK
+        uuidV4 gateId PK, FK
         timestamp createdAt
         timestamp updatedAt
     }
@@ -2063,9 +2063,9 @@ La risposta attesa avrà questa forma:
 | Header          | *Authorization*     | `string`               | JWT token necessario per l'autenticazione                         | No                      |
 | Body            | *gateId*            | `string`               | UUID relativo al gate in cui viene registrato il transito         | No                      |
 | Body            | *badgeId*           | `string`               | UUID relativo al badge che registra il transito                   | No                      |
-| Body            | *status*            | `transit_status`       | Stato del transito effettuato                                     | No                      |
-| Body            | *usedDPIs*          | `dpi[]`                | Elenco di DPI utilizzati al momento del transito                  | No                      |
-| Body            | *DPIviolation*      | `boolean`              | Definisce se è stata commessa una violazione dei DPI necessari per accedere a quello specifico gate   | No                      |
+| Body            | *status*            | `transit_status`       | Stato del transito effettuato                                     | Si                      |
+| Body            | *usedDPIs*          | `dpi[]`                | Elenco di DPI utilizzati al momento del transito                  | Si                      |
+| Body            | *DPIviolation*      | `boolean`              | Definisce se è stata commessa una violazione dei DPI necessari per accedere a quello specifico gate   | Si                      |
 
 La richiesta può essere svolta in questo modo:
 ```ts
@@ -2107,6 +2107,7 @@ La risposta attesa avrà questa forma:
 | **Posizione**   | **Nome**            | **Tipo**               | **Descrizione**                                                   | **Opzionalità**         |
 |-----------------|---------------------|------------------------|-------------------------------------------------------------------|-------------------------|
 | Header          | *Authorization*     | `string`               | JWT token necessario per l'autenticazione                         | No                      |
+| Params          | *id*                | `string`               | UUID relativo allo specifico transito che si vuole modificare     | No                      |
 | Body            | *status*            | `transit_status`       | Stato del transito da aggiornare                                  | Si                      |
 | Body            | *usedDPIs*          | `dpi[]`                | Elenco di DPI da aggiornare nel transito                          | Si                      |
 | Body            | *DPIviolation*      | `boolean`              | Esito della violazione di DPI da aggiornare                       | Si                      |
@@ -2164,9 +2165,9 @@ La risposta attesa avrà questa forma:
 | **Posizione**   | **Nome**            | **Tipo**               | **Descrizione**                                                                     | **Opzionalità**         |
 |-----------------|---------------------|------------------------|-------------------------------------------------------------------------------------|-------------------------|
 | Header          | *Authorization*     | `string`               | JWT token necessario per l'autenticazione                                           | No                      |
-| Params          | *id*                | `string`               | UUID relativo allo specifico badge di cui si vogliono visualizzare le statistiche   | No                      |
+| Params          | *badgeId*           | `string`               | UUID relativo allo specifico badge di cui si vogliono visualizzare le statistiche   | No                      |
 | Query Params    | *gateId*            | `string`               | UUID relativo allo specifico gate per cui si vuole filtrare                         | Si                      |
-| Query Params    | *startDate*         | `timestamp`            | Data di inzio dell'intervallo temporale per cui si vuole filtrare                   | Si                      |
+| Query Params    | *startDate*         | `timestamp`            | Data di inizio dell'intervallo temporale per cui si vuole filtrare                  | Si                      |
 | Query Params    | *endDate*           | `timestamp`            | Data di fine dell'intervallo temporale per cui si vuole filtrare                    | Si                      |
 
 La richiesta può essere svolta in questo modo:
@@ -2199,7 +2200,7 @@ La risposta attesa avrà questa forma:
 | **Posizione**   | **Nome**            | **Tipo**               | **Descrizione**                                                                     | **Opzionalità**         |
 |-----------------|---------------------|------------------------|-------------------------------------------------------------------------------------|-------------------------|
 | Header          | *Authorization*     | `string`               | JWT token necessario per l'autenticazione                                           | No                      |
-| Query Params    | *startDate*         | `timestamp`            | Data di inzio dell'intervallo temporale per cui si vuole filtrare                   | Si                      |
+| Query Params    | *startDate*         | `timestamp`            | Data di inizio dell'intervallo temporale per cui si vuole filtrare                  | Si                      |
 | Query Params    | *endDate*           | `timestamp`            | Data di fine dell'intervallo temporale per cui si vuole filtrare                    | Si                      |
 | Query Params    | *format*            | `report_format`        | Data di fine dell'intervallo temporale per cui si vuole filtrare                    | Si                      |
 
@@ -2220,7 +2221,7 @@ La risposta attesa avrà questa forma:
 | **Posizione**   | **Nome**            | **Tipo**               | **Descrizione**                                                                     | **Opzionalità**         |
 |-----------------|---------------------|------------------------|-------------------------------------------------------------------------------------|-------------------------|
 | Header          | *Authorization*     | `string`               | JWT token necessario per l'autenticazione                                           | No                      |
-| Query Params    | *startDate*         | `timestamp`            | Data di inzio dell'intervallo temporale per cui si vuole filtrare                   | Si                      |
+| Query Params    | *startDate*         | `timestamp`            | Data di inizio dell'intervallo temporale per cui si vuole filtrare                  | Si                      |
 | Query Params    | *endDate*           | `timestamp`            | Data di fine dell'intervallo temporale per cui si vuole filtrare                    | Si                      |
 | Query Params    | *format*            | `report_format`        | Data di fine dell'intervallo temporale per cui si vuole filtrare                    | Si                      |
 
@@ -2417,7 +2418,7 @@ La risposta attesa avrà questa forma:
 |-----------------|---------------------|------------------------|------------------------------------------------|-------------------------|
 | Header          | *Authorization*     | `string`               | JWT token necessario per l'autenticazione      | No                      |
 | Body            | *nome*              | `string`               | Nome del gate che si vuole creare              | No                      |
-| Body            | *requiredDPIs*      | `dpi[]`                | DPI richiesti per accedere al nuovo gate       | No                      |
+| Body            | *requiredDPIs*      | `dpi[]`                | DPI richiesti per accedere al nuovo gate       | Si                      |
 
 La richiesta può essere svolta in questo modo:
 ```ts
@@ -2458,7 +2459,7 @@ La risposta attesa avrà questa forma:
 |-----------------|---------------------|------------------------|------------------------------------------------|-------------------------|
 | Header          | *Authorization*     | `string`               | JWT token necessario per l'autenticazione      | No                      |
 | Params          | *nome*              | `string`               | Nome del gate che si vuole modificare          | No                      |
-| Body            | *requiredDPIs*      | `dpi[]`                | DPI richiesti aggiornati per accedere al gate  | No                      |
+| Body            | *requiredDPIs*      | `dpi[]`                | DPI richiesti aggiornati per accedere al gate  | Si                      |
 
 La richiesta può essere svolta in questo modo:
 ```ts
@@ -2607,24 +2608,6 @@ La risposta attesa avrà questa forma:
 }
 ```
 
-## DELETE /badges/:id
-### Parametri
-| **Posizione**   | **Nome**            | **Tipo**               | **Descrizione**                                | **Opzionalità**         |
-|-----------------|---------------------|------------------------|------------------------------------------------|-------------------------|
-| Header          | *Authorization*     | `string`               | JWT token necessario per l'autenticazione      | No                      |
-| Params          | *id*                | `string`               | UUID del badge  che si vuole eliminare         | No                      |
-
-La richiesta può essere svolta in questo modo:
-```ts
-DELETE http://localhost:3000/badges/74807608-ed83-4e1b-b630-3045d3656836
-Authorization: Bearer {{jwt_token}}
-```
-
-La risposta attesa avrà questa forma:
-```ts
-204 NO_CONTENT
-```
-
 ## PUT /badges/:id
 ### Parametri
 | **Posizione**   | **Nome**                    | **Tipo**               | **Descrizione**                                      | **Opzionalità**         |
@@ -2660,6 +2643,24 @@ La risposta attesa avrà questa forma:
   "createdAt": "2025-06-09T16:15:15.207Z",
   "updatedAt": "2025-06-09T16:47:46.686Z"
 }
+```
+
+## DELETE /badges/:id
+### Parametri
+| **Posizione**   | **Nome**            | **Tipo**               | **Descrizione**                                | **Opzionalità**         |
+|-----------------|---------------------|------------------------|------------------------------------------------|-------------------------|
+| Header          | *Authorization*     | `string`               | JWT token necessario per l'autenticazione      | No                      |
+| Params          | *id*                | `string`               | UUID del badge  che si vuole eliminare         | No                      |
+
+La richiesta può essere svolta in questo modo:
+```ts
+DELETE http://localhost:3000/badges/74807608-ed83-4e1b-b630-3045d3656836
+Authorization: Bearer {{jwt_token}}
+```
+
+La risposta attesa avrà questa forma:
+```ts
+204 NO_CONTENT
 ```
 
 ## GET /badges_suspended
