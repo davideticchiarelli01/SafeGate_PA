@@ -1,9 +1,9 @@
-import { NextFunction, Request, Response } from 'express';
-import { UserPayload, validateUserPayload } from '../utils/userPayload';
-import { extractAndValidateJwtToken, getPublicJwtKey, jwtVerify } from '../utils/jwt';
-import { ErrorFactory } from "../factories/errorFactory";
-import { ReasonPhrases } from "http-status-codes";
-import { UserRole } from '../enum/userRoles';
+import {NextFunction, Request, Response} from 'express';
+import {UserPayload, validateUserPayload} from '../utils/userPayload';
+import {extractAndValidateJwtToken, getPublicJwtKey, jwtVerify} from '../utils/jwt';
+import {ErrorFactory} from "../factories/errorFactory";
+import {ReasonPhrases} from "http-status-codes";
+import {UserRole} from '../enum/userRoles';
 
 /**
  * Middleware to authenticate users via JWT.
@@ -44,9 +44,12 @@ export const adminMiddleware = (
     res: Response,
     next: NextFunction
 ) => {
-    if (req.user && req.user.role === 'admin') {
+
+    const role: string | undefined = req.user?.role;
+    if (role === UserRole.Admin) {
         return next();
     }
+
     return next(ErrorFactory.createError(
         ReasonPhrases.FORBIDDEN,
         'Forbidden, administrators only can perform this action'
@@ -66,9 +69,12 @@ export const gateOrAdminMiddleware = (
     res: Response,
     next: NextFunction
 ) => {
-    if (req.user && (req.user.role === UserRole.Gate || req.user?.role === UserRole.Admin)) {
+
+    const role: string | undefined = req.user?.role;
+    if (role === UserRole.Gate || role === UserRole.Admin) {
         return next();
     }
+
     return next(ErrorFactory.createError(
         ReasonPhrases.FORBIDDEN,
         'Forbidden, only gate or admin users can perform this action'
@@ -88,11 +94,15 @@ export const userOrAdminMiddleware = (
     res: Response,
     next: NextFunction
 ) => {
-    if (req.user && (req.user.role === UserRole.User || req.user?.role === UserRole.Admin)) {
+
+    const role: string | undefined = req.user?.role;
+    if (role === UserRole.User || role === UserRole.Admin) {
         return next();
     }
+
     return next(ErrorFactory.createError(
         ReasonPhrases.FORBIDDEN,
         'Forbidden, only users or administrators can perform this action'
     ));
 }
+
