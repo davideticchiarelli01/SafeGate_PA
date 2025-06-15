@@ -2344,7 +2344,7 @@ Authorization: Bearer {{jwt_token}}
 ```
 
 La risposta attesa avrà questa forma:
-```json
+```ts
 204 NO_CONTENT
 ```
 
@@ -2789,7 +2789,15 @@ Per testare l'applicazione è possibile utilizzare il client Postman sfruttando 
 
 > **Nota**
 >
-> Per testare l'applicazione sono disponibili le credenziali di accesso (email e password) per ciascun utente nel file `01_Seeders.sql`.
+> Per testare l'applicazione sono disponibili le seguenti credenziali di accesso (email e password) per ogni livello di autorizzazione:
+> - Admin:
+>   - *email:* `admin@example.com` | *password:* `Admin123!`
+> - Gate:
+>   - *email:* `gate@example.com` | *password:* `Gate123!`
+> - User:
+>   - *email:* `user@example.com` | *password:* `User123!`
+> 
+> ulteriori credenziali di accesso per altri utenti sono reperibili nel file `01_Seeders.sql`.
 >  
 
 # Strumenti utilizzati
