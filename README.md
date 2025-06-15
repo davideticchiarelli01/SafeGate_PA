@@ -2802,7 +2802,7 @@ Per testare l'applicazione è possibile utilizzare il client Postman sfruttando 
 
 ## Test con Jest
 
-Sono stati creati degli unit test utilizzando Jest per verificare il corretto funzionamento dei middleware di autenticazione, autorizzazione e login.
+Sono stati creati degli unit test utilizzando Jest per verificare il corretto funzionamento dei middleware *authMiddleware*, *authorizationMiddleware* e *loginMiddleware*.
 
 Per eseguire correttamente i test, è necessario installare tutte le dipendenze necessarie sulla propria macchina con il seguente comando:
 ```
