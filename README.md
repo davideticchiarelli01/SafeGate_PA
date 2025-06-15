@@ -2804,9 +2804,9 @@ Per testare l'applicazione è possibile utilizzare il client Postman sfruttando 
 
 Sono stati creati degli unit test utilizzando Jest per verificare il corretto funzionamento dei middleware di autenticazione, autorizzazione e login.
 
-Per eseguire correttamente i test, è necessario installare le dipendenze richieste con il seguente comando:
+Per eseguire correttamente i test, è necessario installare tutte le dipendenze necessarie sulla propria macchina con il seguente comando:
 ```
-npm install jest
+npm install 
 ```
 
 Una volta completata l'installazione, è possibile eseguire i test con il comando:
