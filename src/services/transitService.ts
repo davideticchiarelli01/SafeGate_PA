@@ -2,26 +2,26 @@
  * TransitService handles business logic related to transit registration, access control,
  * DPI checks, unauthorized access handling, badge suspension, and report generation.
  */
-import {TransitRepository} from "../repositories/transitRepository";
-import {BadgeRepository} from "../repositories/badgeRepository";
-import {AuthorizationRepository} from "../repositories/authorizationRepository";
-import {GateRepository} from "../repositories/gateRepository";
-import {UserPayload} from "../utils/userPayload";
-import {ErrorFactory} from "../factories/errorFactory";
-import {ReasonPhrases} from "http-status-codes";
-import {Transit, TransitCreationAttributes, TransitUpdateAttributes} from "../models/transit";
-import {UserRole} from "../enum/userRoles";
-import {TransitStatus} from "../enum/transitStatus";
-import {Gate} from "../models/gate";
-import {Badge, BadgeUpdateAttributes} from "../models/badge";
-import {BadgeStatus} from "../enum/badgeStatus";
-import {Authorization} from "../models/authorization";
-import {ReportFactory} from "../factories/reportFactory";
-import {ReportFormats} from "../enum/reportFormats";
-import {BadgeTransitsReport, GateTransitsReport} from "../factories/reportFactory";
+import { TransitRepository } from "../repositories/transitRepository";
+import { BadgeRepository } from "../repositories/badgeRepository";
+import { AuthorizationRepository } from "../repositories/authorizationRepository";
+import { GateRepository } from "../repositories/gateRepository";
+import { UserPayload } from "../utils/userPayload";
+import { ErrorFactory } from "../factories/errorFactory";
+import { ReasonPhrases } from "http-status-codes";
+import { Transit, TransitCreationAttributes, TransitUpdateAttributes } from "../models/transit";
+import { UserRole } from "../enum/userRoles";
+import { TransitStatus } from "../enum/transitStatus";
+import { Gate } from "../models/gate";
+import { Badge, BadgeUpdateAttributes } from "../models/badge";
+import { BadgeStatus } from "../enum/badgeStatus";
+import { Authorization } from "../models/authorization";
+import { ReportFactory } from "../factories/reportFactory";
+import { ReportFormats } from "../enum/reportFormats";
+import { BadgeTransitsReport, GateTransitsReport } from "../factories/reportFactory";
 import Logger from "../logger/logger";
-import {DPI} from "../enum/dpi";
-import {unitOfWork} from "../utils/unitOfWork";
+import { DPI } from "../enum/dpi";
+import { unitOfWork } from "../utils/unitOfWork";
 
 /**
  * Service class for handling `Transit` related operations.
@@ -113,7 +113,7 @@ export class TransitService {
      * @throws {HttpError} If gate or badge is not found.
      */
     async createTransit(data: TransitCreationAttributes): Promise<Transit> {
-        const {gateId, badgeId, usedDPIs = []} = data;
+        const { gateId, badgeId, usedDPIs = [] } = data;
 
         const gate: Gate | null = await this.gateRepo.findById(gateId);
         if (!gate) throw ErrorFactory.createError(ReasonPhrases.NOT_FOUND, 'Gate not found');
@@ -159,11 +159,11 @@ export class TransitService {
                 if (!dpiViolation) {
                     status = TransitStatus.Authorized;
                 } else {
-                    message = 'DPI violation detected';
+                    message = ' DPI violation detected';
                 }
             }
         } else {
-            message = `Badge is not active, current status: ${badge.status}`;
+            message = ` Badge is not active, current status: ${badge.status}`;
         }
 
         // Set variables for access insert
@@ -183,6 +183,7 @@ export class TransitService {
         } else {
             badgeUpdate.unauthorizedAttempts = 0;
             badgeUpdate.firstUnauthorizedAttempt = null;
+            message = ' Authorized transit'
         }
 
         // Update badge and create transit (using transaction)
@@ -190,8 +191,8 @@ export class TransitService {
         data.DPIviolation = dpiViolation;
 
         const transit = await unitOfWork(async (tx) => {
-            await this.badgeRepo.update(badge, badgeUpdate, {transaction: tx});
-            return await this.transitRepo.create(data, {transaction: tx});
+            await this.badgeRepo.update(badge, badgeUpdate, { transaction: tx });
+            return await this.transitRepo.create(data, { transaction: tx });
         });
 
         // Logging
