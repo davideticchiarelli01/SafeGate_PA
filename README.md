@@ -2800,6 +2800,22 @@ Per testare l'applicazione è possibile utilizzare il client Postman sfruttando 
 > ulteriori credenziali di accesso per altri utenti sono reperibili nel file `01_Seeders.sql`.
 >  
 
+## Test con Jest
+
+Sono stati creati degli unit test utilizzando Jest per verificare il corretto funzionamento dei middleware di autenticazione, autorizzazione e login.
+
+Per eseguire correttamente i test, è necessario installare le dipendenze richieste con il seguente comando:
+```
+npm install jest
+```
+
+Una volta completata l'installazione, è possibile eseguire i test con il comando:
+ ```
+npx jest --verbose
+```
+
+Il flag `--verbose` consente una visualizzazione dettagliata dell'esito di ciascun test eseguito.
+
 # Strumenti utilizzati
 
 - **Node.js**: Ambiente di esecuzione JavaScript lato server, utilizzato per costruire l’intero backend
