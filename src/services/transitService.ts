@@ -159,11 +159,11 @@ export class TransitService {
                 if (!dpiViolation) {
                     status = TransitStatus.Authorized;
                 } else {
-                    message = ' DPI violation detected';
+                    message = 'DPI violation detected';
                 }
             }
         } else {
-            message = ` Badge is not active, current status: ${badge.status}`;
+            message = `Badge is not active, current status: ${badge.status}`;
         }
 
         // Set variables for access insert
@@ -183,7 +183,7 @@ export class TransitService {
         } else {
             badgeUpdate.unauthorizedAttempts = 0;
             badgeUpdate.firstUnauthorizedAttempt = null;
-            message = ' Authorized transit'
+            message = 'Authorized transit'
         }
 
         // Update badge and create transit (using transaction)
