@@ -678,74 +678,63 @@ sequenceDiagram
     participant Service
     participant Repository
     participant DAO
-    participant ErrorMiddleware
+    participant ErrorHandler
 
     Client->>Router: GET /transits_stats/:badgeId?gateId&startDate&endDate
-
-    %% --- AUTHENTICATION ---
     Router->>authMiddleware: JWT verification
     alt Missing or invalid token
-        authMiddleware->>ErrorMiddleware: 401 Unauthorized
-        ErrorMiddleware-->>Client: 401 Unauthorized
+        authMiddleware->>ErrorHandler: 401 Unauthorized
+        ErrorHandler-->>Client: 401 Unauthorized
     else Token valid
-        authMiddleware->>Router: req.user
-
-        %% --- VALIDATION ---
-        Router->>validateMiddleware: validate badgeId, gateId?, startDate?, endDate?
+        authMiddleware->>validateMiddleware: validate badgeId, gateId?, startDate?, endDate?
         alt Validation fails
-            validateMiddleware->>ErrorMiddleware: 400 Bad Request
-            ErrorMiddleware-->>Client: 400 Validation Error
+            validateMiddleware->>ErrorHandler: 400 Bad Request
+            ErrorHandler-->>Client: 400 Validation Error
         else Valid input
             validateMiddleware->>Router: OK
-
-            %% --- CONTROLLER + SERVICE ---
             Router->>Controller: getTransitStats(req)
-            Controller->>Service: getTransitStats(badgeId, gateId?, startDate?, endDate?, user)
+            Controller->>Service: getTransitStats(badgeId, gateId?, startDate?, endDate?)
 
-            %% --- AUTHORIZATION & DATA FETCH ---
-            alt user.role == Gate
-                Service->>ErrorMiddleware: 403 Forbidden
-                ErrorMiddleware-->>Client: 403 Forbidden
-            else user.role == User
-                Service->>Repository: badgeRepo.findById(badgeId)
-                Repository->>DAO: BadgeDao.get(badgeId)
-                DAO-->>Repository: Badge|null
-                Repository-->>Service: Badge|null
-                alt Badge not found
-                    Service->>ErrorMiddleware: 404 Not Found
-                    ErrorMiddleware-->>Client: 404 Badge not found
-                else Badge found
-                    alt badge.userId != user.id
-                        Service->>ErrorMiddleware: 403 Forbidden
-                        ErrorMiddleware-->>Client: 403 Forbidden
-                    else Owner match
-                        Service->>Service: validate date range
-                        alt startDate > endDate
-                            Service->>ErrorMiddleware: 400 Bad Request
-                            ErrorMiddleware-->>Client: 400 Invalid date range
-                        else Valid date range
-                            Service->>Repository: transitRepo.findByBadgeGateAndDate(badgeId, gateId?, startDate?, endDate?)
-                        end
+            %% Badge existence check
+            Service->>Repository: badgeRepo.findById(badgeId)
+            Repository->>DAO: BadgeDao.get(badgeId)
+            DAO-->>Repository: Badge|null
+            Repository-->>Service: Badge|null
+            alt Badge not found
+                Service->>ErrorHandler: 404 Not Found
+                ErrorHandler-->>Client: 404 Badge not found
+            else Badge found
+
+                %% Gate existence check (optional)
+                alt gateId provided
+                    Service->>Repository: gateRepo.findById(gateId)
+                    Repository->>DAO: GateDao.get(gateId)
+                    DAO-->>Repository: Gate|null
+                    Repository-->>Service: Gate|null
+                    alt Gate not found
+                        Service->>ErrorHandler: 404 Not Found
+                        ErrorHandler-->>Client: 404 Gate not found
+                    else Gate found
                     end
                 end
-            else user.role == Admin
-                Service->>Service: validate date range
+
+                %% Date range validation
                 alt startDate > endDate
-                    Service->>ErrorMiddleware: 400 Bad Request
-                    ErrorMiddleware-->>Client: 400 Invalid date range
-                else Valid date range
+                    Service->>ErrorHandler: 400 Bad Request
+                    ErrorHandler-->>Client: 400 Invalid date range
+                else Dates valid
+
+                    %% Fetch transits
                     Service->>Repository: transitRepo.findByBadgeGateAndDate(badgeId, gateId?, startDate?, endDate?)
+                    Repository->>DAO: TransitDao.getManyFiltered()
+                    DAO-->>Repository: Transit[]
+                    Repository-->>Service: Transit[]
+
+                    %% Compute statistics and respond
+                    Service-->>Controller: stats object
+                    Controller-->>Client: 200 OK + stats JSON
                 end
             end
-
-            %% --- FETCH TRANSITS ---
-            Repository->>DAO: TransitDao.getManyFiltered()
-            DAO-->>Repository: Transit[]
-            Repository-->>Service: Transit[]
-
-            %% --- BUILD & RESPONSE ---
-            Service-->>Controller: stats object
-            Controller-->>Client: 200 OK + stats JSON
         end
     end
 
@@ -871,7 +860,7 @@ sequenceDiagram
                 alt Admin user
                     Service->>Repository: transitRepo.findAllInRange(startDate, endDate)
                     Repository->>DAO: TransitDao.getManyFiltered()
-                else
+                else User
                     Service->>Repository: badgeRepo.findByUserId(user.id)
                     Repository->>DAO: BadgeDao.getByUserId()
                     DAO-->>Repository: Badge|null
@@ -1913,7 +1902,7 @@ sequenceDiagram
 | **POST**   | `/transits`                        | Crea un transito (esito positivo o negativo).              | ✅       | Admin, Gate             |
 | **PUT**    | `/transits/:id`                    | Modifica un transito esistente.                            | ✅       | Admin                   |
 | **DELETE** | `/transits/:id`                    | Elimina un transito esistente.                             | ✅       | Admin                   |
-| **GET**    | `/transits_stats/:badgeId`         | Recupera le statistiche dei transiti di un badge.          | ✅       | Admin, User (solo suoi) |
+| **GET**    | `/transits_stats/:badgeId`         | Recupera le statistiche dei transiti di un badge.          | ✅       | Tutti                   |
 | **GET**    | `/gate_report`                     | Esporta il numero di transiti in un gate (JSON, PDF e CSV).| ✅       | Admin                   |
 | **GET**    | `/badge_report`                    | Esporta le statistiche per i transiti di un badge (JSON, PDF e CSV).           | ✅       | Admin, User (solo le sue) |
 | **GET**    | `/authorizations`                  | Recupera tutte le autorizzazioni.                          | ✅       | Admin                   |
